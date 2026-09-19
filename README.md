@@ -134,14 +134,16 @@ const result = await runJevAutonomousLoop(page, "先打开 new 页面，再打�
 console.log(result); // { success, reason, steps, history }
 ```
 
-在已有工具里加一个「自动驾驶」入口（可选，`skill/`）：
+把「自动驾驶」作为**独立技能**装给 Agent（可选）：
 
 ```bash
-./skill/apply.sh          # 把 Jev 章节追加/更新进 ego-browser 的 SKILL.md
+./skill/install.sh        # 链接到 ~/.agents/skills/ego-jev/
 ```
 
-> ego lite 升级会替换应用包内的 skill 目录，**改动会被覆盖**——升级后重跑 `apply.sh` 即可。
-> 该脚本会顺着符号链接找到真实落点，并先备份原文件。
+> **不要**把 Jev 章节加进 ego lite 应用包里的 `SKILL.md`。那是供应商受签名的应用包，
+> 升级会替换 `Resources/ego-skills/` 目录（版本号目录都会换），改动必然丢失。
+> 本技能刻意放在包外，升级后无需重做。`install.sh` 只做符号链接，可用
+> `AGENT_SKILLS_DIR` 换目标目录。
 
 ## 文本生成（可选）
 
@@ -193,9 +195,11 @@ console.log(result); // { success, reason, steps, history }
   仅当数量完全一致时才敢用，否则显示「勾选态未知」而不会谎报。
 - **浏览器自动翻译会影响判断**：实测页面被译成中文后，元素名与选项名与目标语言不一致。
   Jev 跨语言选择正常，但 `--until` / `check` 用 UI 字符串比较会误判——请比对 URL 路径或 DOM 状态。
-- **ego 运行时两个静默失败**（排查时很坑，已在 skill 补丁里记录）：
+- **ego 运行时会静默吞掉两件事**（排查时很坑）：
   静态 `import ... from "node:http"` 会让整个脚本无输出、exit 0（必须用 `await import()`）；
   运行时不能起服务也不能访问 loopback（`fetch("http://127.0.0.1:...")` 会挂起后 exit 0）。
+- **运行时拿不到自定义环境变量，且 `process.cwd()` 是 `/`**：`export FOO=bar` 在脚本里读不到，
+  相对路径也不能用。要传配置只能在父进程把值替换进脚本文本（本项目的 CLI 就是这么做的）。
 - **真实验证码/登录墙未测**（只在合成拦截页上验证过 `blocked` 分支）。
 - Jev 走完**不等于业务正确**，最终页面状态仍要按 ego-browser skill 的观察纪律复核。
 
@@ -212,8 +216,8 @@ cd examples/bench
 
 ## 致谢
 
-- [citrolabs/ego-lite](https://github.com/citrolabs/ego-lite)（MIT）—— 本项目的运行基础，
-  `skill/ego-jev-section.md` 是给它的 `ego-browser` skill 写的**追加章节**
+- [citrolabs/ego-lite](https://github.com/citrolabs/ego-lite)（MIT）—— 本项目的运行基础。
+  `skill/SKILL.md` 是本项目自带的**附加技能**，装在应用包之外，不是对它的文档做的修改
 - [browser-use/jev-ultrafast](https://github.com/browser-use/jev-ultrafast) —— 架构灵感来源
   （dynamic operation + target、代码侧选项索引、推测性 target 头）
 - [TypeSafe](https://docs.typesafe.ai) —— Jev / System One

@@ -1,4 +1,20 @@
-## ⚡ Jev 极速驱动加速 (ego-jev)
+---
+name: ego-jev
+description: 用 Jev（TypeSafe System One）给 ego-browser 的浏览器操作加速的**附加技能**。多步点击、翻页、搜索表单、导航跳转这类线性任务，可在单个进程内由 Jev 闭环决策，不再每走一步都退回大模型慢思考。同时记录了 ego 内嵌运行时的两条静默失败限制（静态 import 内置模块会无声退出、不能起服务也不能访问 loopback）、凭证为何必须落盘、实测对照数据与失效边界。当任务涉及 ego-browser 多步操作，或要写 ego-browser nodejs 脚本（尤其用到 await import / fetch）时读它。
+metadata:
+  version: "1.0.0"
+  date: "2026-09-19"
+  requires: ego-browser
+---
+
+# ego-jev — 给 ego-browser 装一个 Jev 决策闭环
+
+这是一个**附加技能（外挂）**：它只存在于 `~/.agents/skills/ego-jev/`，**不修改 ego lite 应用包里的
+任何文件**，因此 ego lite 升级不会把它冲掉。
+
+基础用法、Space/Page/选择器/收尾纪律仍以 `ego-browser` 技能为准；本技能只负责「让 Jev 加速」这件事。
+
+## 加速能力
 
 多步按钮点击、翻页、搜索表单、导航跳转这类「下一步做什么很明确」的线性任务，不要每走一步都
 退出来交给大模型慢思考。可以让 Jev（TypeSafe System One）在单个进程内闭环决策执行。
@@ -142,3 +158,27 @@ console.log(result); // { success, reason, steps, history }
 - 该站可能开启自动翻译（实测 Chrome 把注入的英文表单译成中文，`Switzerland`→`瑞士`），
   元素名与选项名可能与目标语言不一致；Jev 跨语言选择正常，但用**字符串比较**做 `--until` 或
   `check` 会误判，请改用 URL 路径或 DOM 状态。
+
+## ego 内嵌运行时的两条静默失败限制（实测）
+
+写 `ego-browser nodejs` 脚本时踩过，两条都是**无声失败**，排查很坑：
+
+1. **静态 import 内置模块会让整个脚本无声退出**：`import { createServer } from "node:http"`
+   不报错、无输出、exit 0。**必须用 `await import("node:http")`**。
+   本地文件与引擎同理，用 `await import("/绝对/路径.mjs")`。
+2. **运行时不能起服务、也不能访问 loopback**：`server.listen()` 的回调永不触发；
+   `fetch("http://127.0.0.1:…")` 会挂起后 exit 0。外部 HTTPS `fetch()` 正常。
+   要测本地代码，把服务起在 ego 之外，用普通 node 进程去测。
+
+配套的两条环境事实：
+
+- **自定义环境变量一律不传入**（不止 `TYPESAFE_API_KEY`）：`export FOO=bar` 在运行时里读不到。
+  需要传配置时，在**父进程把值替换进脚本文本**再送进去（`ego-jev` CLI 就是这么处理凭证的）。
+- **`process.cwd()` 是 `/`**，不是 shell 的工作目录。脚本里不要依赖相对路径。
+
+## 不要改应用包里的文件
+
+有需要时不要在
+`/Applications/ego lite.app/Contents/Frameworks/ego Framework.framework/Versions/*/Resources/ego-skills/ego-browser/SKILL.md`
+里加内容：那是供应商受签名的应用包，升级会替换该目录（`Versions/0.5.0.32` → 新版本号），
+改动会丢失。要扩展就放到包外的 `~/.agents/skills/<自己的技能>/`。
