@@ -1,0 +1,694 @@
+{
+  "startedAt": "2026-09-19T16:39:22.874Z",
+  "rounds": 5,
+  "records": [
+    {
+      "round": 1,
+      "task": "x-control",
+      "site": "X",
+      "control": true,
+      "targetDepth": "首屏",
+      "elapsedMs": 2664,
+      "steps": 4,
+      "success": false,
+      "reason": "stuck",
+      "finalUrl": "https://x.com/home",
+      "jevCalls": 4,
+      "protocolCalls": 32,
+      "revealCount": 0,
+      "revealMaxAttempt": 0,
+      "revealCap": null,
+      "hitCapAndFailed": false,
+      "usedSearchBox": false,
+      "targetScreen": 0.26,
+      "actionLabels": [
+        "scroll_down",
+        "scroll_down",
+        "scroll_down",
+        "scroll_down"
+      ],
+      "revealLog": [],
+      "setup": {
+        "id": "2101329217392955430",
+        "screen": 0.26
+      }
+    },
+    {
+      "round": 1,
+      "task": "x-below",
+      "site": "X",
+      "control": false,
+      "targetDepth": "1.5–4 屏",
+      "elapsedMs": 2010,
+      "steps": 4,
+      "success": false,
+      "reason": "stuck",
+      "finalUrl": "https://x.com/home",
+      "jevCalls": 4,
+      "protocolCalls": 32,
+      "revealCount": 0,
+      "revealMaxAttempt": 0,
+      "revealCap": null,
+      "hitCapAndFailed": false,
+      "usedSearchBox": false,
+      "targetScreen": 1.51,
+      "actionLabels": [
+        "scroll_down",
+        "scroll_down",
+        "scroll_down",
+        "scroll_down"
+      ],
+      "revealLog": [],
+      "setup": {
+        "id": "2101319984467358028",
+        "screen": 1.51
+      }
+    },
+    {
+      "round": 1,
+      "task": "x-deep",
+      "site": "X",
+      "control": false,
+      "targetDepth": ">4 屏",
+      "elapsedMs": 2108,
+      "steps": 4,
+      "success": false,
+      "reason": "stuck",
+      "finalUrl": "https://x.com/home",
+      "jevCalls": 4,
+      "protocolCalls": 32,
+      "revealCount": 0,
+      "revealMaxAttempt": 0,
+      "revealCap": null,
+      "hitCapAndFailed": false,
+      "usedSearchBox": false,
+      "targetScreen": 2.75,
+      "actionLabels": [
+        "scroll_down",
+        "scroll_down",
+        "scroll_down",
+        "scroll_down"
+      ],
+      "revealLog": [],
+      "setup": {
+        "id": "2101348958349951054",
+        "screen": 2.75
+      }
+    },
+    {
+      "round": 1,
+      "task": "wiki-first",
+      "site": "Wikipedia 搜索结果",
+      "control": true,
+      "targetDepth": "首屏",
+      "elapsedMs": 991,
+      "steps": 1,
+      "success": true,
+      "reason": "check_passed_after_step",
+      "finalUrl": "https://en.wikipedia.org/wiki/Japanese_encephalitis?wprov=srpw1_0",
+      "jevCalls": 1,
+      "protocolCalls": 9,
+      "revealCount": 0,
+      "revealMaxAttempt": 0,
+      "revealCap": null,
+      "hitCapAndFailed": false,
+      "usedSearchBox": false,
+      "targetScreen": 0.73,
+      "actionLabels": [
+        "click:ref=23"
+      ],
+      "revealLog": [],
+      "setup": {
+        "title": "日本脑炎",
+        "screen": 0.73
+      }
+    },
+    {
+      "round": 1,
+      "task": "wiki-deep",
+      "site": "Wikipedia 搜索结果",
+      "control": false,
+      "targetDepth": ">2 屏",
+      "elapsedMs": 356,
+      "steps": 1,
+      "success": false,
+      "reason": "blocked",
+      "finalUrl": "https://en.wikipedia.org/wiki/Japanese_encephalitis",
+      "jevCalls": 1,
+      "protocolCalls": 2,
+      "revealCount": 0,
+      "revealMaxAttempt": 0,
+      "revealCap": null,
+      "hitCapAndFailed": false,
+      "usedSearchBox": false,
+      "targetScreen": 2.02,
+      "actionLabels": [
+        "blocked"
+      ],
+      "revealLog": [],
+      "setup": {
+        "title": "Emmanuel Yisa Orker-Jev",
+        "screen": 2.02
+      }
+    },
+    {
+      "round": 2,
+      "task": "x-control",
+      "site": "X",
+      "control": true,
+      "targetDepth": "首屏",
+      "elapsedMs": 2657,
+      "steps": 4,
+      "success": false,
+      "reason": "stuck",
+      "finalUrl": "https://x.com/home",
+      "jevCalls": 4,
+      "protocolCalls": 31,
+      "revealCount": 0,
+      "revealMaxAttempt": 0,
+      "revealCap": null,
+      "hitCapAndFailed": false,
+      "usedSearchBox": false,
+      "targetScreen": 0.26,
+      "actionLabels": [
+        "scroll_down",
+        "scroll_down",
+        "scroll_down",
+        "scroll_down"
+      ],
+      "revealLog": [],
+      "setup": {
+        "id": "2101183121307947377",
+        "screen": 0.26
+      }
+    },
+    {
+      "round": 2,
+      "task": "x-below",
+      "site": "X",
+      "control": false,
+      "targetDepth": "1.5–4 屏",
+      "elapsedMs": 2221,
+      "steps": 4,
+      "success": false,
+      "reason": "stuck",
+      "finalUrl": "https://x.com/home",
+      "jevCalls": 4,
+      "protocolCalls": 32,
+      "revealCount": 0,
+      "revealMaxAttempt": 0,
+      "revealCap": null,
+      "hitCapAndFailed": false,
+      "usedSearchBox": false,
+      "targetScreen": 1.61,
+      "actionLabels": [
+        "scroll_down",
+        "scroll_down",
+        "scroll_down",
+        "scroll_down"
+      ],
+      "revealLog": [],
+      "setup": {
+        "id": "2101321494676513268",
+        "screen": 1.61
+      }
+    },
+    {
+      "round": 2,
+      "task": "x-deep",
+      "site": "X",
+      "control": false,
+      "targetDepth": ">4 屏",
+      "elapsedMs": 2159,
+      "steps": 4,
+      "success": false,
+      "reason": "stuck",
+      "finalUrl": "https://x.com/home",
+      "jevCalls": 4,
+      "protocolCalls": 32,
+      "revealCount": 0,
+      "revealMaxAttempt": 0,
+      "revealCap": null,
+      "hitCapAndFailed": false,
+      "usedSearchBox": false,
+      "targetScreen": 3.25,
+      "actionLabels": [
+        "scroll_down",
+        "scroll_down",
+        "scroll_down",
+        "scroll_down"
+      ],
+      "revealLog": [],
+      "setup": {
+        "id": "2101304446190018611",
+        "screen": 3.25
+      }
+    },
+    {
+      "round": 2,
+      "task": "wiki-first",
+      "site": "Wikipedia 搜索结果",
+      "control": true,
+      "targetDepth": "首屏",
+      "elapsedMs": 1017,
+      "steps": 1,
+      "success": true,
+      "reason": "check_passed_after_step",
+      "finalUrl": "https://en.wikipedia.org/wiki/Japanese_encephalitis",
+      "jevCalls": 1,
+      "protocolCalls": 9,
+      "revealCount": 0,
+      "revealMaxAttempt": 0,
+      "revealCap": null,
+      "hitCapAndFailed": false,
+      "usedSearchBox": false,
+      "targetScreen": 0.73,
+      "actionLabels": [
+        "click:ref=23"
+      ],
+      "revealLog": [],
+      "setup": {
+        "title": "日本脑炎",
+        "screen": 0.73
+      }
+    },
+    {
+      "round": 2,
+      "task": "wiki-deep",
+      "site": "Wikipedia 搜索结果",
+      "control": false,
+      "targetDepth": ">2 屏",
+      "elapsedMs": 348,
+      "steps": 1,
+      "success": false,
+      "reason": "blocked",
+      "finalUrl": "https://en.wikipedia.org/wiki/Japanese_encephalitis",
+      "jevCalls": 1,
+      "protocolCalls": 2,
+      "revealCount": 0,
+      "revealMaxAttempt": 0,
+      "revealCap": null,
+      "hitCapAndFailed": false,
+      "usedSearchBox": false,
+      "targetScreen": 2.02,
+      "actionLabels": [
+        "blocked"
+      ],
+      "revealLog": [],
+      "setup": {
+        "title": "杰文斯悖论",
+        "screen": 2.02
+      }
+    },
+    {
+      "round": 3,
+      "task": "x-control",
+      "site": "X",
+      "control": true,
+      "targetDepth": "首屏",
+      "elapsedMs": 2515,
+      "steps": 4,
+      "success": false,
+      "reason": "stuck",
+      "finalUrl": "https://x.com/home",
+      "jevCalls": 4,
+      "protocolCalls": 32,
+      "revealCount": 0,
+      "revealMaxAttempt": 0,
+      "revealCap": null,
+      "hitCapAndFailed": false,
+      "usedSearchBox": false,
+      "targetScreen": 0.26,
+      "actionLabels": [
+        "scroll_down",
+        "scroll_down",
+        "scroll_down",
+        "scroll_down"
+      ],
+      "revealLog": [],
+      "setup": {
+        "id": "2101321494676513268",
+        "screen": 0.26
+      }
+    },
+    {
+      "round": null,
+      "task": "x-below",
+      "site": "X",
+      "control": false,
+      "targetDepth": "1.5–4 屏",
+      "elapsedMs": null,
+      "steps": null,
+      "success": false,
+      "reason": "harness_error",
+      "error": "Error: Jev API Error (400): {\"detail\":{\"error_type\":\"api_usage_error\",\"message\":\"Request contains invalid Unicode text.\"}}"
+    },
+    {
+      "round": null,
+      "task": "x-deep",
+      "site": "X",
+      "control": false,
+      "targetDepth": ">4 屏",
+      "elapsedMs": null,
+      "steps": null,
+      "success": false,
+      "reason": "harness_error",
+      "error": "Error: Jev API Error (400): {\"detail\":{\"error_type\":\"api_usage_error\",\"message\":\"Request contains invalid Unicode text.\"}}"
+    },
+    {
+      "round": 3,
+      "task": "wiki-first",
+      "site": "Wikipedia 搜索结果",
+      "control": true,
+      "targetDepth": "首屏",
+      "elapsedMs": 1087,
+      "steps": 1,
+      "success": true,
+      "reason": "check_passed_after_step",
+      "finalUrl": "https://en.wikipedia.org/wiki/Japanese_encephalitis?wprov=srpw1_0",
+      "jevCalls": 1,
+      "protocolCalls": 9,
+      "revealCount": 0,
+      "revealMaxAttempt": 0,
+      "revealCap": null,
+      "hitCapAndFailed": false,
+      "usedSearchBox": false,
+      "targetScreen": 0.73,
+      "actionLabels": [
+        "click:ref=23"
+      ],
+      "revealLog": [],
+      "setup": {
+        "title": "日本脑炎",
+        "screen": 0.73
+      }
+    },
+    {
+      "round": 3,
+      "task": "wiki-deep",
+      "site": "Wikipedia 搜索结果",
+      "control": false,
+      "targetDepth": ">2 屏",
+      "elapsedMs": 356,
+      "steps": 1,
+      "success": false,
+      "reason": "blocked",
+      "finalUrl": "https://en.wikipedia.org/wiki/Japanese_encephalitis",
+      "jevCalls": 1,
+      "protocolCalls": 2,
+      "revealCount": 0,
+      "revealMaxAttempt": 0,
+      "revealCap": null,
+      "hitCapAndFailed": false,
+      "usedSearchBox": false,
+      "targetScreen": 2.02,
+      "actionLabels": [
+        "blocked"
+      ],
+      "revealLog": [],
+      "setup": {
+        "title": "杰文斯悖论",
+        "screen": 2.02
+      }
+    },
+    {
+      "round": 4,
+      "task": "x-control",
+      "site": "X",
+      "control": true,
+      "targetDepth": "首屏",
+      "elapsedMs": 3258,
+      "steps": 4,
+      "success": false,
+      "reason": "stuck",
+      "finalUrl": "https://x.com/home",
+      "jevCalls": 4,
+      "protocolCalls": 32,
+      "revealCount": 0,
+      "revealMaxAttempt": 0,
+      "revealCap": null,
+      "hitCapAndFailed": false,
+      "usedSearchBox": false,
+      "targetScreen": 0.26,
+      "actionLabels": [
+        "scroll_down",
+        "scroll_down",
+        "scroll_down",
+        "scroll_down"
+      ],
+      "revealLog": [],
+      "setup": {
+        "id": "2101145806187450526",
+        "screen": 0.26
+      }
+    },
+    {
+      "round": 4,
+      "task": "x-below",
+      "site": "X",
+      "control": false,
+      "targetDepth": "1.5–4 屏",
+      "elapsedMs": 2161,
+      "steps": 4,
+      "success": false,
+      "reason": "stuck",
+      "finalUrl": "https://x.com/home",
+      "jevCalls": 4,
+      "protocolCalls": 32,
+      "revealCount": 0,
+      "revealMaxAttempt": 0,
+      "revealCap": null,
+      "hitCapAndFailed": false,
+      "usedSearchBox": false,
+      "targetScreen": 1.49,
+      "actionLabels": [
+        "scroll_down",
+        "scroll_down",
+        "scroll_down",
+        "scroll_down"
+      ],
+      "revealLog": [],
+      "setup": {
+        "id": "2101122287990874204",
+        "screen": 1.49
+      }
+    },
+    {
+      "round": 4,
+      "task": "x-deep",
+      "site": "X",
+      "control": false,
+      "targetDepth": ">4 屏",
+      "elapsedMs": 2256,
+      "steps": 4,
+      "success": false,
+      "reason": "stuck",
+      "finalUrl": "https://x.com/home",
+      "jevCalls": 4,
+      "protocolCalls": 32,
+      "revealCount": 0,
+      "revealMaxAttempt": 0,
+      "revealCap": null,
+      "hitCapAndFailed": false,
+      "usedSearchBox": false,
+      "targetScreen": 2.93,
+      "actionLabels": [
+        "scroll_down",
+        "scroll_down",
+        "scroll_down",
+        "scroll_down"
+      ],
+      "revealLog": [],
+      "setup": {
+        "id": "2101094378500415995",
+        "screen": 2.93
+      }
+    },
+    {
+      "round": 4,
+      "task": "wiki-first",
+      "site": "Wikipedia 搜索结果",
+      "control": true,
+      "targetDepth": "首屏",
+      "elapsedMs": 967,
+      "steps": 1,
+      "success": true,
+      "reason": "check_passed_after_step",
+      "finalUrl": "https://en.wikipedia.org/wiki/Japanese_encephalitis?wprov=srpw1_0",
+      "jevCalls": 1,
+      "protocolCalls": 9,
+      "revealCount": 0,
+      "revealMaxAttempt": 0,
+      "revealCap": null,
+      "hitCapAndFailed": false,
+      "usedSearchBox": false,
+      "targetScreen": 0.73,
+      "actionLabels": [
+        "click:ref=23"
+      ],
+      "revealLog": [],
+      "setup": {
+        "title": "日本脑炎",
+        "screen": 0.73
+      }
+    },
+    {
+      "round": 4,
+      "task": "wiki-deep",
+      "site": "Wikipedia 搜索结果",
+      "control": false,
+      "targetDepth": ">2 屏",
+      "elapsedMs": 480,
+      "steps": 1,
+      "success": false,
+      "reason": "blocked",
+      "finalUrl": "https://en.wikipedia.org/wiki/Japanese_encephalitis",
+      "jevCalls": 1,
+      "protocolCalls": 2,
+      "revealCount": 0,
+      "revealMaxAttempt": 0,
+      "revealCap": null,
+      "hitCapAndFailed": false,
+      "usedSearchBox": false,
+      "targetScreen": 2.02,
+      "actionLabels": [
+        "blocked"
+      ],
+      "revealLog": [],
+      "setup": {
+        "title": "Emmanuel Yisa Orker-Jev",
+        "screen": 2.02
+      }
+    },
+    {
+      "round": 5,
+      "task": "x-control",
+      "site": "X",
+      "control": true,
+      "targetDepth": "首屏",
+      "elapsedMs": 2462,
+      "steps": 4,
+      "success": false,
+      "reason": "stuck",
+      "finalUrl": "https://x.com/home",
+      "jevCalls": 4,
+      "protocolCalls": 31,
+      "revealCount": 0,
+      "revealMaxAttempt": 0,
+      "revealCap": null,
+      "hitCapAndFailed": false,
+      "usedSearchBox": false,
+      "targetScreen": 0.26,
+      "actionLabels": [
+        "scroll_down",
+        "scroll_down",
+        "scroll_down",
+        "scroll_down"
+      ],
+      "revealLog": [],
+      "setup": {
+        "id": "2101122287990874204",
+        "screen": 0.26
+      }
+    },
+    {
+      "round": 5,
+      "task": "x-below",
+      "site": "X",
+      "control": false,
+      "targetDepth": "1.5–4 屏",
+      "elapsedMs": 2108,
+      "steps": 4,
+      "success": false,
+      "reason": "stuck",
+      "finalUrl": "https://x.com/home",
+      "jevCalls": 4,
+      "protocolCalls": 31,
+      "revealCount": 0,
+      "revealMaxAttempt": 0,
+      "revealCap": null,
+      "hitCapAndFailed": false,
+      "usedSearchBox": false,
+      "targetScreen": 1.23,
+      "actionLabels": [
+        "scroll_down",
+        "scroll_down",
+        "scroll_down",
+        "scroll_down"
+      ],
+      "revealLog": [],
+      "setup": {
+        "id": "2101182122748956857",
+        "screen": 1.23
+      }
+    },
+    {
+      "round": null,
+      "task": "x-deep",
+      "site": "X",
+      "control": false,
+      "targetDepth": ">4 屏",
+      "elapsedMs": null,
+      "steps": null,
+      "success": false,
+      "reason": "harness_error",
+      "error": "Error: Jev API Error (400): {\"detail\":{\"error_type\":\"api_usage_error\",\"message\":\"Request contains invalid Unicode text.\"}}"
+    },
+    {
+      "round": 5,
+      "task": "wiki-first",
+      "site": "Wikipedia 搜索结果",
+      "control": true,
+      "targetDepth": "首屏",
+      "elapsedMs": 991,
+      "steps": 1,
+      "success": true,
+      "reason": "check_passed_after_step",
+      "finalUrl": "https://en.wikipedia.org/wiki/Japanese_encephalitis?wprov=srpw1_0",
+      "jevCalls": 1,
+      "protocolCalls": 9,
+      "revealCount": 0,
+      "revealMaxAttempt": 0,
+      "revealCap": null,
+      "hitCapAndFailed": false,
+      "usedSearchBox": false,
+      "targetScreen": 0.73,
+      "actionLabels": [
+        "click:ref=23"
+      ],
+      "revealLog": [],
+      "setup": {
+        "title": "日本脑炎",
+        "screen": 0.73
+      }
+    },
+    {
+      "round": 5,
+      "task": "wiki-deep",
+      "site": "Wikipedia 搜索结果",
+      "control": false,
+      "targetDepth": ">2 屏",
+      "elapsedMs": 460,
+      "steps": 1,
+      "success": false,
+      "reason": "blocked",
+      "finalUrl": "https://en.wikipedia.org/wiki/Japanese_encephalitis",
+      "jevCalls": 1,
+      "protocolCalls": 2,
+      "revealCount": 0,
+      "revealMaxAttempt": 0,
+      "revealCap": null,
+      "hitCapAndFailed": false,
+      "usedSearchBox": false,
+      "targetScreen": 2.02,
+      "actionLabels": [
+        "blocked"
+      ],
+      "revealLog": [],
+      "setup": {
+        "title": "杰文斯悖论",
+        "screen": 2.02
+      }
+    }
+  ]
+}

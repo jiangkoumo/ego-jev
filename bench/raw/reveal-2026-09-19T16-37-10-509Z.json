@@ -1,0 +1,136 @@
+{
+  "startedAt": "2026-09-19T16:36:53.877Z",
+  "rounds": 1,
+  "records": [
+    {
+      "round": 1,
+      "task": "x-control",
+      "site": "X",
+      "control": true,
+      "targetDepth": "首屏",
+      "elapsedMs": 1576,
+      "steps": 1,
+      "success": true,
+      "reason": "check_passed_after_step",
+      "finalUrl": "https://x.com/harrisonitsme/status/2101347156733169916",
+      "jevCalls": 1,
+      "protocolCalls": 9,
+      "revealCount": 0,
+      "revealMaxAttempt": 0,
+      "revealCap": null,
+      "hitCapAndFailed": false,
+      "usedSearchBox": false,
+      "targetScreen": 0.26,
+      "actionLabels": [
+        "click:ref=40"
+      ],
+      "revealLog": [],
+      "setup": {
+        "id": "2101347156733169916",
+        "screen": 0.26,
+        "handle": "harrisonitsme"
+      }
+    },
+    {
+      "round": null,
+      "task": "x-below",
+      "site": "X",
+      "control": false,
+      "targetDepth": "1.5–4 屏",
+      "elapsedMs": null,
+      "steps": null,
+      "success": false,
+      "reason": "harness_error",
+      "error": "Error: Jev API Error (400): {\"detail\":{\"error_type\":\"api_usage_error\",\"message\":\"Request contains invalid Unicode text.\"}}"
+    },
+    {
+      "round": 1,
+      "task": "x-deep",
+      "site": "X",
+      "control": false,
+      "targetDepth": ">4 屏",
+      "elapsedMs": 3928,
+      "steps": 4,
+      "success": false,
+      "reason": "stuck",
+      "finalUrl": "https://x.com/harrisonitsme/status/2101347156733169916",
+      "jevCalls": 4,
+      "protocolCalls": 35,
+      "revealCount": 0,
+      "revealMaxAttempt": 0,
+      "revealCap": null,
+      "hitCapAndFailed": false,
+      "usedSearchBox": false,
+      "targetScreen": 2.96,
+      "actionLabels": [
+        "scroll_down",
+        "scroll_down",
+        "scroll_down",
+        "scroll_down"
+      ],
+      "revealLog": [],
+      "setup": {
+        "id": "2101291484591108168",
+        "screen": 2.96,
+        "handle": "Flowers_hurt"
+      }
+    },
+    {
+      "round": 1,
+      "task": "wiki-first",
+      "site": "Wikipedia 搜索结果",
+      "control": true,
+      "targetDepth": "首屏",
+      "elapsedMs": 1960,
+      "steps": 1,
+      "success": true,
+      "reason": "check_passed_after_step",
+      "finalUrl": "https://en.wikipedia.org/wiki/Japanese_encephalitis?wprov=srpw1_0",
+      "jevCalls": 1,
+      "protocolCalls": 9,
+      "revealCount": 0,
+      "revealMaxAttempt": 0,
+      "revealCap": null,
+      "hitCapAndFailed": false,
+      "usedSearchBox": false,
+      "targetScreen": 0.76,
+      "actionLabels": [
+        "click:ref=22"
+      ],
+      "revealLog": [],
+      "setup": {
+        "title": "Japanese encephalitis",
+        "screen": 0.76
+      }
+    },
+    {
+      "round": 1,
+      "task": "wiki-deep",
+      "site": "Wikipedia 搜索结果",
+      "control": false,
+      "targetDepth": ">2 屏",
+      "elapsedMs": 901,
+      "steps": 2,
+      "success": false,
+      "reason": "blocked",
+      "finalUrl": "https://en.wikipedia.org/wiki/Japanese_encephalitis",
+      "jevCalls": 2,
+      "protocolCalls": 9,
+      "revealCount": 0,
+      "revealMaxAttempt": 0,
+      "revealCap": null,
+      "hitCapAndFailed": false,
+      "usedSearchBox": false,
+      "targetScreen": 2.15,
+      "actionLabels": [
+        "scroll_down",
+        "blocked"
+      ],
+      "revealLog": [],
+      "setup": {
+        "title": "Emmanuel Yisa Orker-Jev",
+        "screen": 2.15
+      }
+    }
+  ]
+}

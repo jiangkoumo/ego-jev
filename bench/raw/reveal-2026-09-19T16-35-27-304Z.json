@@ -1,0 +1,108 @@
+{
+  "startedAt": "2026-09-19T16:35:12.083Z",
+  "rounds": 1,
+  "records": [
+    {
+      "round": null,
+      "task": "x-control",
+      "site": "X",
+      "control": true,
+      "targetDepth": "首屏",
+      "elapsedMs": 1012,
+      "steps": 1,
+      "success": true,
+      "reason": "check_passed_after_step",
+      "finalUrl": "https://x.com/sitinme/status/2101278631557566824",
+      "jevCalls": 1,
+      "protocolCalls": 9,
+      "revealCount": 0,
+      "revealMaxAttempt": 0,
+      "revealCap": null,
+      "hitCapAndFailed": false,
+      "targetScreen": 0.26,
+      "actionLabels": [
+        "click:ref=40"
+      ],
+      "revealLog": [],
+      "setup": {
+        "id": "2101278631557566824",
+        "screen": 0.26,
+        "handle": "sitinme"
+      }
+    },
+    {
+      "round": null,
+      "task": "x-below",
+      "site": "X",
+      "control": false,
+      "targetDepth": "1.5–4 屏",
+      "elapsedMs": null,
+      "steps": null,
+      "success": false,
+      "reason": "harness_error",
+      "error": "Error: Jev API Error (400): {\"detail\":{\"error_type\":\"api_usage_error\",\"message\":\"Request contains invalid Unicode text.\"}}"
+    },
+    {
+      "round": 1,
+      "task": "x-deep",
+      "site": "X",
+      "success": false,
+      "reason": "no_anchor",
+      "note": "该轮未找到符合深度要求的锚点"
+    },
+    {
+      "round": null,
+      "task": "wiki-first",
+      "site": "Wikipedia 搜索结果",
+      "control": true,
+      "targetDepth": "首屏",
+      "elapsedMs": 1400,
+      "steps": 1,
+      "success": true,
+      "reason": "check_passed_after_step",
+      "finalUrl": "https://en.wikipedia.org/wiki/Japanese_encephalitis",
+      "jevCalls": 1,
+      "protocolCalls": 9,
+      "revealCount": 0,
+      "revealMaxAttempt": 0,
+      "revealCap": null,
+      "hitCapAndFailed": false,
+      "targetScreen": 0.73,
+      "actionLabels": [
+        "click:ref=22"
+      ],
+      "revealLog": [],
+      "setup": {
+        "title": "Japanese encephalitis",
+        "screen": 0.73
+      }
+    },
+    {
+      "round": null,
+      "task": "wiki-deep",
+      "site": "Wikipedia 搜索结果",
+      "control": false,
+      "targetDepth": ">2 屏",
+      "elapsedMs": 3954,
+      "steps": 1,
+      "success": true,
+      "reason": "check_passed_after_step",
+      "finalUrl": "https://en.wikipedia.org/wiki/Jevons_paradox",
+      "jevCalls": 1,
+      "protocolCalls": 11,
+      "revealCount": 0,
+      "revealMaxAttempt": 0,
+      "revealCap": null,
+      "hitCapAndFailed": false,
+      "targetScreen": 2.02,
+      "actionLabels": [
+        "type_text_submit:ref=2"
+      ],
+      "revealLog": [],
+      "setup": {
+        "title": "Jevons paradox",
+        "screen": 2.02
+      }
+    }
+  ]
+}

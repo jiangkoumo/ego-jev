@@ -1,0 +1,68 @@
+{
+  "probedAt": "2026-09-19T16:23:56.308Z",
+  "engineMd5Expected": "9b760682cebac9fdde7d4172639a928a",
+  "sites": {
+    "x": {
+      "label": "X 时间线（ego 侧，只读）",
+      "url": "https://x.com/home",
+      "gotoMs": 1069,
+      "finalUrl": "https://x.com/home",
+      "title": "(1) 主页 / X",
+      "loginWall": false,
+      "hasTimeline": true,
+      "tweetCount": 5,
+      "cellCount": 5,
+      "composerPresent": true,
+      "bodyHead": "要查看键盘快捷键，按下问号 查看键盘快捷键 1 为你推荐 正在关注 武汉~ 科技 科学 AI 加密 恋爱 五道口信息交流社群 X创作者规则研究区 Chasen和他的朋友 哔哔大队- Worldwide Voice Crew 查看新帖子 有什么新鲜事？ 发帖 你的主页时间线 ❤️Konizaza❤️ @Konizaza ",
+      "docHeight": 12234,
+      "viewportH": 682
+    },
+    "cnki": {
+      "label": "CNKI 检索页（ego 侧）",
+      "url": "https://kns.cnki.net/kns8s/search",
+      "gotoMs": 1902,
+      "finalUrl": "https://kns.cnki.net/kns8s/search",
+      "title": "检索-中国知网",
+      "hasSearchInput": true,
+      "resultRows": 0,
+      "captcha": true,
+      "bodyHead": " 总库 检索 CNKI AI 出版来源 我的CNKI 充值 会员 机构登录 个人登录 主题 结果中检索 检索设置 总库 中文 外文 学术期刊 学位论文 图书 会议 报纸 年鉴 专利 标准 法律法规 读者服务 购买知网卡 充值中心 我的CNKI 帮助中心 CNKI常用软件下载 CAJViewer浏览器 知网研学（原E-S",
+      "docHeight": 688,
+      "viewportH": 682
+    },
+    "wiki-search-results": {
+      "label": "Wikipedia 搜索结果（备选）",
+      "url": "https://en.wikipedia.org/w/index.php?search=Jev&fulltext=1",
+      "gotoMs": 1218,
+      "finalUrl": "https://en.wikipedia.org/w/index.php?search=Jev&fulltext=1&ns0=1",
+      "title": "Jev - 搜索结果 - 维基百科 --- Jev - Search results - Wikipedia",
+      "resultLinks": 26,
+      "bodyHead": "Jump to content Main menu Search Donate Create account Log in 搜索结果 Help Tools 外观 隐藏 文本 小 标准 大 本页面始终使用小号字体 宽度 标准 宽 颜色 自动 浅色 深色 搜索 结果 1 – 20，共 463 条 高级搜索： 搜索范围： （",
+      "docHeight": 3606,
+      "viewportH": 682
+    },
+    "github-issues": {
+      "label": "GitHub issue 列表（备选）",
+      "url": "https://github.com/microsoft/vscode/issues",
+      "gotoMs": 2661,
+      "finalUrl": "https://github.com/microsoft/vscode/issues",
+      "title": "议题 · microsoft/vscode · GitHub",
+      "issueRows": 25,
+      "bodyHead": "Skip to content Navigation Menu 平台 解决方案 资源 开源 企业 定价 登录 注册 microsoft / vscode 公共 通知 复刻 42.7k 星标 193k 代码 议题 5k+ 拉取请求 2.7k 操作 项目 Wiki 安全和质量 54 洞察 议题 分配给您 由您创建 提及 最",
+      "docHeight": 2318,
+      "viewportH": 682
+    },
+    "hn-p2": {
+      "label": "HN 第 2 页（兜底基准）",
+      "url": "https://news.ycombinator.com/?p=2",
+      "gotoMs": 1035,
+      "finalUrl": "https://news.ycombinator.com/?p=2",
+      "title": "黑客新闻 --- Hacker News",
+      "storyLinks": 0,
+      "moreLink": true,
+      "bodyHead": " Hacker Newsnew | past | comments | ask | show | jobs | submit login 31. OpenAI 如何利用其自身的 LLM 设计其 Jalapeño 芯片 (ieee.org) 172 points by maxall4 17 hours ago | hid",
+      "docHeight": 1232,
+      "viewportH": 682
+    }
+  }
+}

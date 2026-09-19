@@ -1,0 +1,14 @@
+{
+  "probedAt": "2026-09-19T16:21:49.395Z",
+  "sites": {
+    "x": {
+      "url": "https://x.com/home",
+      "gotoMs": 431,
+      "error": "Error: The user has taken control of this task space, so browser commands are paused.\nThis is a hard stop, not an obstacle to route around — do not retry and do not take control back on your own.\nWait"
+    },
+    "cnki": {
+      "url": "https://kns.cnki.net/kns8s/search",
+      "error": "Error: The user has taken control of this task space, so browser commands are paused.\nThis is a hard stop, not an obstacle to route around — do not retry and do not take control back on your own.\nWait"
+    }
+  }
+}
