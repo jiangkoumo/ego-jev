@@ -3,3 +3,6 @@ node_modules/
 *.log
 examples/bench/state-*.json
 examples/bench/*-measurement.json
+
+# 本地待提交的上游 PR 草稿
+.contrib/
