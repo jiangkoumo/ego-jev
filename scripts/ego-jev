@@ -11,7 +11,16 @@ while [ -L "$SOURCE" ]; do
 done
 SCRIPT_DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
 
-LIB="${EGO_JEV_LIB:-$SCRIPT_DIR/../ego-jev.mjs}"
+# 引擎查找顺序：显式指定 → 同目录（本仓库布局）→ 仓库根 → 用户级 lib
+if [ -n "${EGO_JEV_LIB:-}" ]; then
+  LIB="$EGO_JEV_LIB"
+else
+  LIB=""
+  for candidate in "$SCRIPT_DIR/ego-jev.mjs" "$SCRIPT_DIR/../ego-jev.mjs" "$HOME/.agents/lib/ego-jev.mjs"; do
+    if [ -f "$candidate" ]; then LIB="$candidate"; break; fi
+  done
+  LIB="${LIB:-$SCRIPT_DIR/ego-jev.mjs}"
+fi
 CONFIG_FILE="${TYPESAFE_API_KEY_FILE:-$HOME/.config/typesafe/api_key}"
 EGO_BIN="${EGO_BROWSER_BIN:-ego-browser}"
 
@@ -39,7 +48,7 @@ USAGE() {
 环境变量:
   TYPESAFE_API_KEY_FILE      Jev 凭证文件（默认 ~/.config/typesafe/api_key）
   TYPESAFE_TEXT_MODEL_FILE   文本生成配置（默认 ~/.config/typesafe/text_model.json）
-  EGO_JEV_LIB                引擎路径（默认脚本同级 ../ego-jev.mjs）
+  EGO_JEV_LIB                引擎路径（默认按 同目录/仓库根/用户级 lib 依次查找）
   EGO_BROWSER_BIN            ego-browser 可执行文件（默认 PATH 里的 ego-browser）
 
 退出码:

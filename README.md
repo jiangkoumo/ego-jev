@@ -76,13 +76,40 @@ A = `ego-jev` 单进程闭环；B = 经典循环（**每步一个独立进程** 
 
 ## 安装
 
-需要 [ego lite](https://github.com/citrolabs/ego-lite)（浏览器 + `ego-browser` CLI）。
+### 方式 1：skills CLI（推荐，一行，支持 40+ 种 Agent）
+
+```bash
+npx skills add jiangkoumo/ego-jev
+```
+
+装完技能落在 Agent 的技能目录里（如 `~/.agents/skills/ego-jev/`），引擎和 CLI 一起带过去。
+
+### 方式 2：克隆后跑安装脚本
 
 ```bash
 git clone https://github.com/jiangkoumo/ego-jev.git
 cd ego-jev
-mkdir -p ~/.local/bin
-ln -sf "$PWD/bin/ego-jev" ~/.local/bin/ego-jev   # 或把 bin/ 加进 PATH
+./install.sh          # 链接 CLI 进 ~/.local/bin，并准备凭证文件
+./install.sh --test   # 顺带跑一次端到端冒烟测试
+```
+
+### 方式 3：把这段 prompt 丢给你的 Agent
+
+> 帮我安装 https://github.com/jiangkoumo/ego-jev ：
+> 1. 执行 `npx skills add jiangkoumo/ego-jev`（skills CLI 不可用就改成克隆仓库跑 `./install.sh`）；
+> 2. 确认 `ego-browser --version` 正常，没有 ego lite 就先让我装；
+> 3. 确认 `~/.config/typesafe/api_key` 存在且权限 600，缺了就问我要 Key——**不要自己编，也不要回显它**；
+> 4. 跑下面「验证安装」里的命令，把真实输出和退出码报给我。
+
+### 验证安装（别只看代码，跑起来）
+
+```bash
+ego-browser --version                                        # 前置条件
+"<技能目录>/scripts/ego-jev" \
+  --url "https://en.wikipedia.org/wiki/Main_Page" \
+  --text "Jev" --until "/wiki/JEV" --steps 5 \
+  "在搜索框输入 Jev 并提交"
+# 期望：exit 0，且输出里 "success": true
 ```
 
 ### 凭证：必须落盘成文件
@@ -137,13 +164,14 @@ console.log(result); // { success, reason, steps, history }
 把「自动驾驶」作为**独立技能**装给 Agent（可选）：
 
 ```bash
-./skill/install.sh        # 链接到 ~/.agents/skills/ego-jev/
+npx skills add jiangkoumo/ego-jev          # 推荐
+# 或本地链接：
+mkdir -p ~/.agents/skills/ego-jev && ln -sfn "$PWD/SKILL.md" ~/.agents/skills/ego-jev/SKILL.md
 ```
 
 > **不要**把 Jev 章节加进 ego lite 应用包里的 `SKILL.md`。那是供应商受签名的应用包，
 > 升级会替换 `Resources/ego-skills/` 目录（版本号目录都会换），改动必然丢失。
-> 本技能刻意放在包外，升级后无需重做。`install.sh` 只做符号链接，可用
-> `AGENT_SKILLS_DIR` 换目标目录。
+> 本技能刻意放在包外，升级后无需重做。
 
 ## 文本生成（可选）
 
@@ -214,10 +242,21 @@ cd examples/bench
 
 基准脚本需要 OpenCode Go（或任何 OpenAI 兼容网关）的凭证，路径写在脚本里，按需修改。
 
+## 仓库结构
+
+```
+SKILL.md                 技能本体（刻意放在根目录——`npx skills add` 就是找它）
+AGENTS.md                给其他 Agent 的安装/验证指令（可直接粘贴的 prompt 在里面）
+scripts/ego-jev.mjs      引擎
+scripts/ego-jev          CLI（自动在 同目录 / 仓库根 / ~/.agents/lib 里找引擎）
+examples/bench/          A/B 对照基准脚本
+install.sh               手工安装（不装技能，只把 CLI 接进 PATH 并准备凭证）
+```
+
 ## 致谢
 
 - [citrolabs/ego-lite](https://github.com/citrolabs/ego-lite)（MIT）—— 本项目的运行基础。
-  `skill/SKILL.md` 是本项目自带的**附加技能**，装在应用包之外，不是对它的文档做的修改
+  根目录的 `SKILL.md` 是本项目自带的**附加技能**，装在应用包之外，不是对它的文档做的修改
 - [browser-use/jev-ultrafast](https://github.com/browser-use/jev-ultrafast) —— 架构灵感来源
   （dynamic operation + target、代码侧选项索引、推测性 target 头）
 - [TypeSafe](https://docs.typesafe.ai) —— Jev / System One

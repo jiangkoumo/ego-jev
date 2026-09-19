@@ -6,11 +6,25 @@ metadata:
   date: "2026-09-19"
   requires: ego-browser
 ---
-
 # ego-jev — 给 ego-browser 装一个 Jev 决策闭环
 
-这是一个**附加技能（外挂）**：它只存在于 `~/.agents/skills/ego-jev/`，**不修改 ego lite 应用包里的
-任何文件**，因此 ego lite 升级不会把它冲掉。
+这是一个**附加技能（外挂）**：它只存在于 Agent 的技能目录里（如 `~/.agents/skills/ego-jev/`），
+**不修改 ego lite 应用包里的任何文件**，因此 ego lite 升级不会把它冲掉。
+
+本技能的组成（都在本 SKILL.md 所在目录内）：
+
+| 路径 | 作用 |
+| --- | --- |
+| `scripts/ego-jev.mjs` | 引擎（Jev 决策闭环、元素表解析、退出判定） |
+| `scripts/ego-jev` | 命令行入口（会自动在 同目录 / 仓库根 / `~/.agents/lib/` 里找引擎） |
+| `examples/bench/` | 对照基准脚本（A 组 Jev 闭环 vs B 组经典循环） |
+
+命令行两种调用方式，任选其一：
+
+```bash
+ego-jev --url "…" "目标"                        # 已链接进 PATH 时
+"<本技能目录>/scripts/ego-jev" --url "…" "目标"  # 直接用技能内的入口
+```
 
 基础用法、Space/Page/选择器/收尾纪律仍以 `ego-browser` 技能为准；本技能只负责「让 Jev 加速」这件事。
 
@@ -107,7 +121,7 @@ ego-jev --space 3 --keep-space --steps 15 "点击未发送帖子并保存"
 2. **在任何 `ego-browser nodejs` 脚本中导入复用**：
 
 ```js
-import { runJevAutonomousLoop } from "~/ego-jev/ego-jev.mjs";
+import { runJevAutonomousLoop } from "<本技能目录>/scripts/ego-jev.mjs";
 
 // Jev 在当前页面自主连续操作，直到 check 通过或 Jev 判定 done
 const result = await runJevAutonomousLoop(page, "依次打开 new 页面，再打开 comments 页面", {

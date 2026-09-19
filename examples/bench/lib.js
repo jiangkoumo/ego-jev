@@ -7,8 +7,8 @@ const { resolve } = await import("node:path");
 const { readFileSync } = await import("node:fs");
 
 export function resolveLib(benchDir) {
-  const found = [benchDir, `${benchDir}/..`, `${benchDir}/../..`]
-    .map((dir) => resolve(dir, "ego-jev.mjs"))
+  const found = [`${benchDir}/../..`, `${benchDir}/../../..`]
+    .flatMap((dir) => [resolve(dir, "scripts/ego-jev.mjs"), resolve(dir, "ego-jev.mjs")])
     .find(existsSync);
   if (!found) throw new Error(`找不到 ego-jev.mjs（benchDir=${benchDir}）`);
   return found;
