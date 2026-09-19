@@ -173,8 +173,10 @@ console.log(result); // { success, reason, steps, history }
 - `blocked` 由 Jev 判断（验证码/登录墙/无可用推进手段/反复无进展）。合成拦截页已验证：
   纯拦截页首步即判 `blocked`，登录墙试一次后判 `blocked`。**真实**验证码站未测。
 - 比较「页面是否变化」时忽略 URL 的 `#hash`：点锚点链接不算有进展。
-- 每步浏览器调用：1 次 `page.snapshot()` + 1 次批量 `page.evaluate()`（补齐下拉选项/勾选态/
-  真实值）+ url/title。这个批量调用是换取准确性的代价，不是免费。
+- 每步浏览器调用：默认 **1 次 `page.evaluate`**（在页面内自建元素表）+ url/title；
+  `page.snapshot()` 仅在显式 `observe: "snapshot"` 时使用。实测（HN 首页）：自建元素表约
+  **2ms / ~1.8k 字符**，`page.snapshot()` **110–130ms / 27484 字符**。
+- 下面两条关于「快照」的实测限制（下拉选项、复选框覆盖）适用于 `observe: "snapshot"` 这条旧路径。
 - 真实站点实测：原生下拉能读到全选项（wikipedia.org 语言选择器 77 项，1 步改选成功）；
   但**并非所有控件都进快照**——DuckDuckGo 设置页 DOM 有 18 个复选框，快照里是 0 个，
   这类元素引擎无从感知。httpbin 表单的复选框在快照里既无 loc 也无名称，靠「文档顺序」
