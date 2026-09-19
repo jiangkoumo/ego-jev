@@ -79,7 +79,7 @@ A = `ego-jev` 单进程闭环；B = 经典循环（**每步一个独立进程** 
 需要 [ego lite](https://github.com/citrolabs/ego-lite)（浏览器 + `ego-browser` CLI）。
 
 ```bash
-git clone https://github.com/<you>/ego-jev.git
+git clone https://github.com/jiangkoumo/ego-jev.git
 cd ego-jev
 mkdir -p ~/.local/bin
 ln -sf "$PWD/bin/ego-jev" ~/.local/bin/ego-jev   # 或把 bin/ 加进 PATH
