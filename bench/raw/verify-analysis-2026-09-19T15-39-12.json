@@ -1,0 +1,545 @@
+{
+  "sourceFile": "verify-2026-09-19T15-39-12.jsonl",
+  "rows": 100,
+  "seed": 20260919,
+  "bootstrapResamples": 10000,
+  "generatedAt": "2026-09-19T15:49:17.862Z",
+  "tasks": {
+    "hn-nav": {
+      "stacks": {
+        "A": {
+          "total": 10,
+          "success": 10,
+          "successRate": "10/10",
+          "elapsed": {
+            "n": 10,
+            "min": 1987,
+            "q1": 2032,
+            "median": 2105.5,
+            "q3": 2510.5,
+            "max": 3349,
+            "iqr": 478.5
+          },
+          "medianSteps": 2,
+          "medianJevCalls": 2,
+          "reasons": {},
+          "retriedRounds": 0
+        },
+        "B": {
+          "total": 10,
+          "success": 10,
+          "successRate": "10/10",
+          "elapsed": {
+            "n": 10,
+            "min": 2320,
+            "q1": 2413.5,
+            "median": 2445,
+            "q3": 3337.75,
+            "max": 7231,
+            "iqr": 924.25
+          },
+          "medianSteps": 2,
+          "medianJevCalls": 2,
+          "reasons": {},
+          "retriedRounds": 0
+        }
+      },
+      "paired": {
+        "usableRounds": 10,
+        "pairs": [
+          {
+            "round": 1,
+            "A": 2125,
+            "B": 2438,
+            "d": -313
+          },
+          {
+            "round": 2,
+            "A": 3349,
+            "B": 3628,
+            "d": -279
+          },
+          {
+            "round": 3,
+            "A": 2059,
+            "B": 2452,
+            "d": -393
+          },
+          {
+            "round": 4,
+            "A": 2134,
+            "B": 2320,
+            "d": -186
+          },
+          {
+            "round": 5,
+            "A": 3162,
+            "B": 7231,
+            "d": -4069
+          },
+          {
+            "round": 6,
+            "A": 2021,
+            "B": 2406,
+            "d": -385
+          },
+          {
+            "round": 7,
+            "A": 2636,
+            "B": 5149,
+            "d": -2513
+          },
+          {
+            "round": 8,
+            "A": 2023,
+            "B": 2395,
+            "d": -372
+          },
+          {
+            "round": 9,
+            "A": 2086,
+            "B": 2436,
+            "d": -350
+          },
+          {
+            "round": 10,
+            "A": 1987,
+            "B": 2467,
+            "d": -480
+          }
+        ],
+        "diffs": [
+          -313,
+          -279,
+          -393,
+          -186,
+          -4069,
+          -385,
+          -2513,
+          -372,
+          -350,
+          -480
+        ],
+        "medianDiff": -378.5,
+        "meanDiff": -934,
+        "ci": {
+          "lo": -1453,
+          "hi": -313
+        },
+        "winsA": 10,
+        "winsB": 0,
+        "signTestP": 0.001953125,
+        "crossesZero": false
+      },
+      "verdict": "A 更快"
+    },
+    "hn-page2": {
+      "stacks": {
+        "A": {
+          "total": 10,
+          "success": 0,
+          "successRate": "0/10",
+          "elapsed": null,
+          "medianSteps": null,
+          "medianJevCalls": null,
+          "reasons": {
+            "target_missing": 10
+          },
+          "retriedRounds": 0
+        },
+        "B": {
+          "total": 10,
+          "success": 0,
+          "successRate": "0/10",
+          "elapsed": null,
+          "medianSteps": null,
+          "medianJevCalls": null,
+          "reasons": {
+            "status=blocked": 10
+          },
+          "retriedRounds": 0
+        }
+      },
+      "paired": {
+        "usableRounds": 0,
+        "pairs": [],
+        "diffs": [],
+        "medianDiff": null,
+        "meanDiff": null,
+        "ci": null,
+        "winsA": 0,
+        "winsB": 0,
+        "signTestP": null,
+        "crossesZero": null
+      },
+      "verdict": "样本不足（配对轮 < 5）"
+    },
+    "wiki-search": {
+      "stacks": {
+        "A": {
+          "total": 10,
+          "success": 10,
+          "successRate": "10/10",
+          "elapsed": {
+            "n": 10,
+            "min": 3258,
+            "q1": 3566,
+            "median": 3955.5,
+            "q3": 4136,
+            "max": 5935,
+            "iqr": 570
+          },
+          "medianSteps": 1,
+          "medianJevCalls": 1,
+          "reasons": {},
+          "retriedRounds": 0
+        },
+        "B": {
+          "total": 10,
+          "success": 10,
+          "successRate": "10/10",
+          "elapsed": {
+            "n": 10,
+            "min": 4202,
+            "q1": 4466.75,
+            "median": 4771,
+            "q3": 5155.5,
+            "max": 6477,
+            "iqr": 688.75
+          },
+          "medianSteps": 3,
+          "medianJevCalls": 3,
+          "reasons": {},
+          "retriedRounds": 0
+        }
+      },
+      "paired": {
+        "usableRounds": 10,
+        "pairs": [
+          {
+            "round": 1,
+            "A": 3891,
+            "B": 5205,
+            "d": -1314
+          },
+          {
+            "round": 2,
+            "A": 4157,
+            "B": 4747,
+            "d": -590
+          },
+          {
+            "round": 3,
+            "A": 4020,
+            "B": 4368,
+            "d": -348
+          },
+          {
+            "round": 4,
+            "A": 3471,
+            "B": 4202,
+            "d": -731
+          },
+          {
+            "round": 5,
+            "A": 4939,
+            "B": 4739,
+            "d": 200
+          },
+          {
+            "round": 6,
+            "A": 3258,
+            "B": 4795,
+            "d": -1537
+          },
+          {
+            "round": 7,
+            "A": 5935,
+            "B": 5231,
+            "d": 704
+          },
+          {
+            "round": 8,
+            "A": 4073,
+            "B": 5007,
+            "d": -934
+          },
+          {
+            "round": 9,
+            "A": 3851,
+            "B": 6477,
+            "d": -2626
+          },
+          {
+            "round": 10,
+            "A": 3469,
+            "B": 4376,
+            "d": -907
+          }
+        ],
+        "diffs": [
+          -1314,
+          -590,
+          -348,
+          -731,
+          200,
+          -1537,
+          704,
+          -934,
+          -2626,
+          -907
+        ],
+        "medianDiff": -819,
+        "meanDiff": -808.3,
+        "ci": {
+          "lo": -1314,
+          "hi": -195
+        },
+        "winsA": 8,
+        "winsB": 2,
+        "signTestP": 0.10937500000000007,
+        "crossesZero": false
+      },
+      "verdict": "A 更快"
+    },
+    "httpbin-form": {
+      "stacks": {
+        "A": {
+          "total": 10,
+          "success": 9,
+          "successRate": "9/10",
+          "elapsed": {
+            "n": 9,
+            "min": 3965,
+            "q1": 4198,
+            "median": 4565,
+            "q3": 5002,
+            "max": 5715,
+            "iqr": 804
+          },
+          "medianSteps": 3,
+          "medianJevCalls": 3,
+          "reasons": {
+            "no_targets": 1
+          },
+          "retriedRounds": 0
+        },
+        "B": {
+          "total": 10,
+          "success": 8,
+          "successRate": "8/10",
+          "elapsed": {
+            "n": 8,
+            "min": 3339,
+            "q1": 3461,
+            "median": 3558,
+            "q3": 4290.5,
+            "max": 8125,
+            "iqr": 829.5
+          },
+          "medianSteps": 3,
+          "medianJevCalls": 3,
+          "reasons": {
+            "status=blocked": 2
+          },
+          "retriedRounds": 0
+        }
+      },
+      "paired": {
+        "usableRounds": 7,
+        "pairs": [
+          {
+            "round": 3,
+            "A": 4804,
+            "B": 4066,
+            "d": 738
+          },
+          {
+            "round": 4,
+            "A": 5191,
+            "B": 8125,
+            "d": -2934
+          },
+          {
+            "round": 6,
+            "A": 5715,
+            "B": 3544,
+            "d": 2171
+          },
+          {
+            "round": 7,
+            "A": 3965,
+            "B": 3572,
+            "d": 393
+          },
+          {
+            "round": 8,
+            "A": 4198,
+            "B": 3339,
+            "d": 859
+          },
+          {
+            "round": 9,
+            "A": 4377,
+            "B": 4964,
+            "d": -587
+          },
+          {
+            "round": 10,
+            "A": 3999,
+            "B": 3347,
+            "d": 652
+          }
+        ],
+        "diffs": [
+          738,
+          -2934,
+          2171,
+          393,
+          859,
+          -587,
+          652
+        ],
+        "medianDiff": 652,
+        "meanDiff": 184.57142857142858,
+        "ci": {
+          "lo": -587,
+          "hi": 859
+        },
+        "winsA": 2,
+        "winsB": 5,
+        "signTestP": 0.4531250000000002,
+        "crossesZero": true
+      },
+      "verdict": "无差异"
+    },
+    "select-native": {
+      "stacks": {
+        "A": {
+          "total": 10,
+          "success": 10,
+          "successRate": "10/10",
+          "elapsed": {
+            "n": 10,
+            "min": 1461,
+            "q1": 1488.5,
+            "median": 1509,
+            "q3": 1577.25,
+            "max": 2172,
+            "iqr": 88.75
+          },
+          "medianSteps": 2,
+          "medianJevCalls": 2,
+          "reasons": {},
+          "retriedRounds": 0
+        },
+        "B": {
+          "total": 10,
+          "success": 10,
+          "successRate": "10/10",
+          "elapsed": {
+            "n": 10,
+            "min": 1172,
+            "q1": 1239.5,
+            "median": 1259.5,
+            "q3": 1356.75,
+            "max": 3658,
+            "iqr": 117.25
+          },
+          "medianSteps": 2,
+          "medianJevCalls": 2,
+          "reasons": {},
+          "retriedRounds": 0
+        }
+      },
+      "paired": {
+        "usableRounds": 10,
+        "pairs": [
+          {
+            "round": 1,
+            "A": 2172,
+            "B": 1390,
+            "d": 782
+          },
+          {
+            "round": 2,
+            "A": 1462,
+            "B": 1261,
+            "d": 201
+          },
+          {
+            "round": 3,
+            "A": 1486,
+            "B": 1385,
+            "d": 101
+          },
+          {
+            "round": 4,
+            "A": 1520,
+            "B": 1172,
+            "d": 348
+          },
+          {
+            "round": 5,
+            "A": 1788,
+            "B": 1258,
+            "d": 530
+          },
+          {
+            "round": 6,
+            "A": 1575,
+            "B": 3658,
+            "d": -2083
+          },
+          {
+            "round": 7,
+            "A": 1496,
+            "B": 1272,
+            "d": 224
+          },
+          {
+            "round": 8,
+            "A": 1498,
+            "B": 1234,
+            "d": 264
+          },
+          {
+            "round": 9,
+            "A": 1461,
+            "B": 1229,
+            "d": 232
+          },
+          {
+            "round": 10,
+            "A": 1578,
+            "B": 1256,
+            "d": 322
+          }
+        ],
+        "diffs": [
+          782,
+          201,
+          101,
+          348,
+          530,
+          -2083,
+          224,
+          264,
+          232,
+          322
+        ],
+        "medianDiff": 248,
+        "meanDiff": 92.1,
+        "ci": {
+          "lo": 162.5,
+          "hi": 426
+        },
+        "winsA": 1,
+        "winsB": 9,
+        "signTestP": 0.021484375000000003,
+        "crossesZero": false
+      },
+      "verdict": "B 更快"
+    }
+  }
+}

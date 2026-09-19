@@ -1,0 +1,48 @@
+数据源: verify-2026-09-19T15-39-12.jsonl  （100 轮）
+
+=== 1. 描述统计（成功样本）与成功率（全部有效轮）===
+
+-- hn-nav
+   A: 成功率 10/10  中位 2106ms  IQR [2032..2511]  极值 [1987..3349]  步中位 2  Jev中位 2  重试轮 0  失败原因 {}
+   B: 成功率 10/10  中位 2445ms  IQR [2414..3338]  极值 [2320..7231]  步中位 2  Jev中位 2  重试轮 0  失败原因 {}
+   配对 (10 轮): A−B 中位差 -378ms  均值差 -934ms
+   bootstrap 95% CI [-1453, -313]  → 不跨 0   A 胜 10 / B 胜 0  符号检验 p=0.002
+   → 结论：A 更快
+
+-- hn-page2
+   A: 成功率 0/10  中位 -ms  IQR [-..-]  极值 [-..-]  步中位 null  Jev中位 null  重试轮 0  失败原因 {"target_missing":10}
+   B: 成功率 0/10  中位 -ms  IQR [-..-]  极值 [-..-]  步中位 null  Jev中位 null  重试轮 0  失败原因 {"status=blocked":10}
+   配对可用轮次仅 0（<5）→ 不出结论；成功率差异见上。
+
+-- wiki-search
+   A: 成功率 10/10  中位 3956ms  IQR [3566..4136]  极值 [3258..5935]  步中位 1  Jev中位 1  重试轮 0  失败原因 {}
+   B: 成功率 10/10  中位 4771ms  IQR [4467..5156]  极值 [4202..6477]  步中位 3  Jev中位 3  重试轮 0  失败原因 {}
+   配对 (10 轮): A−B 中位差 -819ms  均值差 -808ms
+   bootstrap 95% CI [-1314, -195]  → 不跨 0   A 胜 8 / B 胜 2  符号检验 p=0.109
+   → 结论：A 更快
+
+-- httpbin-form
+   A: 成功率 9/10  中位 4565ms  IQR [4198..5002]  极值 [3965..5715]  步中位 3  Jev中位 3  重试轮 0  失败原因 {"no_targets":1}
+   B: 成功率 8/10  中位 3558ms  IQR [3461..4291]  极值 [3339..8125]  步中位 3  Jev中位 3  重试轮 0  失败原因 {"status=blocked":2}
+   配对 (7 轮): A−B 中位差 +652ms  均值差 +185ms
+   bootstrap 95% CI [-587, 859]  → 跨 0   A 胜 2 / B 胜 5  符号检验 p=0.453
+   → 结论：无差异
+
+-- select-native
+   A: 成功率 10/10  中位 1509ms  IQR [1489..1577]  极值 [1461..2172]  步中位 2  Jev中位 2  重试轮 0  失败原因 {}
+   B: 成功率 10/10  中位 1260ms  IQR [1240..1357]  极值 [1172..3658]  步中位 2  Jev中位 2  重试轮 0  失败原因 {}
+   配对 (10 轮): A−B 中位差 +248ms  均值差 +92ms
+   bootstrap 95% CI [163, 426]  → 不跨 0   A 胜 1 / B 胜 9  符号检验 p=0.021
+   → 结论：B 更快
+
+=== 2. 噪声源分离（成功样本中位）===
+   hn-nav          A: Jev次数中位=2   B: Jev次数中位=2 单次Jev中位=1051ms
+   hn-page2        A: Jev次数中位=-   B: Jev次数中位=-
+   wiki-search     A: Jev次数中位=1   B: Jev次数中位=3 单次Jev中位=513ms
+   httpbin-form    A: Jev次数中位=3   B: Jev次数中位=3 单次Jev中位=426ms
+   select-native   A: Jev次数中位=2   B: Jev次数中位=2 单次Jev中位=761ms
+
+=== 3. 重试与失败明细（全部保留）===
+   重试过的轮次: 0 → 无
+   A 失败轮 11: hn-page2#1:target_missing hn-page2#2:target_missing hn-page2#3:target_missing hn-page2#4:target_missing hn-page2#5:target_missing httpbin-form#5:no_targets hn-page2#6:target_missing hn-page2#7:target_missing hn-page2#8:target_missing hn-page2#9:target_missing hn-page2#10:target_missing
+   B 失败轮 12: hn-page2#1:status=blocked httpbin-form#1:status=blocked hn-page2#2:status=blocked httpbin-form#2:status=blocked hn-page2#3:status=blocked hn-page2#4:status=blocked hn-page2#5:status=blocked hn-page2#6:status=blocked hn-page2#7:status=blocked hn-page2#8:status=blocked hn-page2#9:status=blocked hn-page2#10:status=blocked
