@@ -1,0 +1,5 @@
+node_modules/
+.DS_Store
+*.log
+examples/bench/state-*.json
+examples/bench/*-measurement.json

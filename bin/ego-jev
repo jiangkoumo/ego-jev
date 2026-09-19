@@ -1,0 +1,161 @@
+#!/usr/bin/env bash
+# ego-jev — drive the ego lite browser with Jev (TypeSafe System One) decisions.
+set -euo pipefail
+
+# Resolve the real location of this script (works through symlinks)
+SOURCE="${BASH_SOURCE[0]}"
+while [ -L "$SOURCE" ]; do
+  DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
+  SOURCE="$(readlink "$SOURCE")"
+  [[ "$SOURCE" != /* ]] && SOURCE="$DIR/$SOURCE"
+done
+SCRIPT_DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
+
+LIB="${EGO_JEV_LIB:-$SCRIPT_DIR/../ego-jev.mjs}"
+CONFIG_FILE="${TYPESAFE_API_KEY_FILE:-$HOME/.config/typesafe/api_key}"
+EGO_BIN="${EGO_BROWSER_BIN:-ego-browser}"
+
+USAGE() {
+  cat <<'TXT'
+用法: ego-jev [选项] <目标描述>
+
+示例:
+  ego-jev --url "https://example.com" "点击登录按钮并聚焦输入框"
+  ego-jev --url "https://en.wikipedia.org/wiki/Main_Page" --until "/wiki/JEV" \
+    --text "Jev" "在顶部搜索框输入并提交"
+  ego-jev --space 3 --keep-space --steps 15 "点击未发送帖子并保存"
+
+选项:
+  --url <url>        先导航到的网址
+  --space <id>       复用已有 taskSpace（默认新建，不会抢占用户的 space）
+  --text <value>     可填入的候选文本，可重复传入；Jev 只能从中选择，不生成文本
+  --steps <number>   最大步数（默认 10）
+  --until <substr>   页面 URL 包含该子串时立即判成功（推荐，确定性退出条件）
+  --keep <a,b>       完成后保留的页面标签，如 p1,p2（默认全部关闭）
+  --keep-space       完成后不关闭 taskSpace，便于人工接手检查
+  --api-key <key>    直接传入 Jev API Key
+  --help, -h         显示帮助
+
+环境变量:
+  TYPESAFE_API_KEY_FILE      Jev 凭证文件（默认 ~/.config/typesafe/api_key）
+  TYPESAFE_TEXT_MODEL_FILE   文本生成配置（默认 ~/.config/typesafe/text_model.json）
+  EGO_JEV_LIB                引擎路径（默认脚本同级 ../ego-jev.mjs）
+  EGO_BROWSER_BIN            ego-browser 可执行文件（默认 PATH 里的 ego-browser）
+
+退出码:
+  0 目标达成 (check_passed / jev_done)
+  1 未达成 (blocked / no_progress / stuck / target_missing / no_targets /
+    text_model_failed / no_text_source / action_failed / max_steps_reached)
+  2 参数错误    3 缺少 Jev 凭证
+
+注意:
+  * ego-browser 内嵌运行时不会继承 shell 环境变量，所以凭证必须落盘成文件。
+  * --until 不要用会被浏览器自动翻译改写的 UI 字符串做比较，建议比对 URL 路径或 DOM 状态。
+TXT
+}
+
+TARGET_URL=""; SPACE_ID=""; MAX_STEPS="10"; UNTIL=""; KEEP=""; KEEP_SPACE="0"; API_KEY_OVERRIDE=""; GOAL=""; TEXTS=()
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --url) TARGET_URL="$2"; shift 2 ;;
+    --space) SPACE_ID="$2"; shift 2 ;;
+    --steps) MAX_STEPS="$2"; shift 2 ;;
+    --until) UNTIL="$2"; shift 2 ;;
+    --keep) KEEP="$2"; shift 2 ;;
+    --keep-space) KEEP_SPACE="1"; shift ;;
+    --api-key) API_KEY_OVERRIDE="$2"; shift 2 ;;
+    --text) TEXTS+=("$2"); shift 2 ;;
+    -h|--help) USAGE; exit 0 ;;
+    --) shift; GOAL="${GOAL:+$GOAL }$*"; break ;;
+    -*) echo "错误: 未知选项 $1" >&2; USAGE >&2; exit 2 ;;
+    *) GOAL="${GOAL:+$GOAL }$1"; shift ;;
+  esac
+done
+
+if [[ -z "$GOAL" ]]; then echo "错误: 请提供目标描述" >&2; exit 2; fi
+if [[ ! -f "$LIB" ]]; then echo "错误: 找不到引擎 $LIB（可用 EGO_JEV_LIB 指定）" >&2; exit 2; fi
+if [[ -z "$API_KEY_OVERRIDE" && ! -f "$CONFIG_FILE" && -z "${TYPESAFE_API_KEY:-}" ]]; then
+  echo "错误: 未找到 Jev 凭证。请写入 ${CONFIG_FILE}（内容为 API Key 一行），或使用 --api-key。" >&2
+  exit 3
+fi
+command -v "$EGO_BIN" >/dev/null 2>&1 || { echo "错误: 找不到 $EGO_BIN（ego lite 是否已安装？）" >&2; exit 2; }
+
+TMPD="$(mktemp -d "${TMPDIR:-/tmp}/ego-jev.XXXXXX")"
+trap 'rm -rf "$TMPD"' EXIT
+
+# 用 node 生成 JSON，避免 shell 转义问题（goal 里的引号/换行/$ 都安全）
+JEV_GOAL="$GOAL" JEV_URL="$TARGET_URL" JEV_UNTIL="$UNTIL" JEV_KEEP="$KEEP" \
+JEV_STEPS="$MAX_STEPS" JEV_KEY="$API_KEY_OVERRIDE" JEV_SPACE="$SPACE_ID" \
+JEV_KEEP_SPACE="$KEEP_SPACE" JEV_CONFIG_OUT="$TMPD/config.json" \
+node -e '
+  const fs = require("node:fs");
+  fs.writeFileSync(process.env.JEV_CONFIG_OUT, JSON.stringify({
+    goal: process.env.JEV_GOAL,
+    url: process.env.JEV_URL || null,
+    until: process.env.JEV_UNTIL || null,
+    keep: process.env.JEV_KEEP || null,
+    steps: Number(process.env.JEV_STEPS),
+    spaceId: process.env.JEV_SPACE || null,
+    keepSpace: process.env.JEV_KEEP_SPACE === "1",
+    apiKey: process.env.JEV_KEY || null,
+    texts: process.argv.slice(1),
+  }, null, 2));
+' "${TEXTS[@]+"${TEXTS[@]}"}"
+
+CFG="$TMPD/config.json"
+
+"$EGO_BIN" nodejs <<EOF
+const { readFile } = await import("node:fs/promises");
+const { runJevAutonomousLoop } = await import("$LIB");
+
+const cfg = JSON.parse(await readFile("$CFG", "utf8"));
+const startedAt = Date.now();
+
+let task;
+if (cfg.spaceId) {
+  const id = Number(cfg.spaceId);
+  try { task = await takeOverTaskSpace(id); } catch { task = await claimTaskSpace(id); }
+} else {
+  task = await taskSpace("ego-jev");
+}
+console.log("TaskSpace " + task.spaceId + " | ownership: " + task.ownership);
+
+let page;
+if (cfg.spaceId) {
+  const tabs = await task.tabs();
+  const active = tabs.find((t) => t.active) || tabs[0];
+  page = active && active.label ? task.page(active.label) : active ? await task.adopt(active.page) : task.page("p1");
+} else {
+  page = task.page("p1");
+}
+
+if (cfg.url) {
+  console.log("导航至: " + cfg.url);
+  await page.goto(cfg.url, { waitUntil: "domcontentloaded", timeout: 25000 });
+  await page.waitForTimeout(800);
+}
+
+const result = await runJevAutonomousLoop(page, cfg.goal, {
+  maxSteps: cfg.steps,
+  text: cfg.texts,
+  apiKey: cfg.apiKey || undefined,
+  check: cfg.until ? async (p) => (await p.url()).includes(cfg.until) : undefined,
+});
+
+console.log(JSON.stringify({
+  success: result.success, reason: result.reason, steps: result.steps,
+  elapsedMs: Date.now() - startedAt, url: await page.url(), title: await page.title(),
+  spaceId: task.spaceId,
+}, null, 2));
+
+if (result.success && !cfg.keepSpace) {
+  const keep = cfg.keep ? cfg.keep.split(",").map((s) => s.trim()).filter(Boolean) : [];
+  const receipt = await task.finish({ keep });
+  console.log("已关闭 TaskSpace，保留页面: " + JSON.stringify(receipt.retained || []));
+} else if (result.success) {
+  console.log("按要求保留 TaskSpace " + task.spaceId + "，可手工检查。");
+} else {
+  console.log("任务未成功，已保留 TaskSpace " + task.spaceId + " 供排查（未调用 finish）。");
+}
+process.exitCode = result.success ? 0 : 1;
+EOF
