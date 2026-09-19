@@ -1,0 +1,277 @@
+{
+  "generatedAt": "2026-09-19T16:11:18.033Z",
+  "seed": 20260919,
+  "bootstrapResamples": 10000,
+  "hnPage2": {
+    "sourceFile": "fix-hn-page2-2026-09-19T16-09-20-533Z.json",
+    "rounds": 10,
+    "engines": {
+      "old": {
+        "success": "0/10",
+        "elapsed": null,
+        "steps": null,
+        "jevCalls": null,
+        "reasons": {
+          "target_missing": 10
+        }
+      },
+      "new": {
+        "success": "10/10",
+        "elapsed": {
+          "n": 10,
+          "min": 2550,
+          "q1": 2602.75,
+          "median": 2853.5,
+          "q3": 3321.75,
+          "max": 4380
+        },
+        "steps": 4,
+        "jevCalls": 4,
+        "reasons": {}
+      }
+    }
+  },
+  "noRegress": {
+    "sourceFile": "fix-noregress-2026-09-19T16-07-36-956Z.json",
+    "rounds": 6,
+    "tasks": {
+      "hn-nav": {
+        "old": {
+          "success": "6/6",
+          "elapsed": {
+            "n": 6,
+            "min": 1379,
+            "q1": 1466,
+            "median": 1528,
+            "q3": 2094.75,
+            "max": 2326
+          }
+        },
+        "new": {
+          "success": "6/6",
+          "elapsed": {
+            "n": 6,
+            "min": 1436,
+            "q1": 1628.5,
+            "median": 1819,
+            "q3": 1950.25,
+            "max": 2003
+          }
+        },
+        "pairs": [
+          {
+            "round": 1,
+            "old": 2326,
+            "new": 1570,
+            "d": -756
+          },
+          {
+            "round": 2,
+            "old": 1455,
+            "new": 1436,
+            "d": -19
+          },
+          {
+            "round": 3,
+            "old": 1557,
+            "new": 1804,
+            "d": 247
+          },
+          {
+            "round": 4,
+            "old": 1499,
+            "new": 1834,
+            "d": 335
+          },
+          {
+            "round": 5,
+            "old": 2274,
+            "new": 2003,
+            "d": -271
+          },
+          {
+            "round": 6,
+            "old": 1379,
+            "new": 1989,
+            "d": 610
+          }
+        ],
+        "diffs": [
+          -756,
+          -19,
+          247,
+          335,
+          -271,
+          610
+        ],
+        "medianDiff": 114,
+        "ci": {
+          "lo": -513.5,
+          "hi": 472.5
+        },
+        "crossesZero": true,
+        "winsNew": 3,
+        "winsOld": 3,
+        "signTestP": 1
+      },
+      "wiki-search": {
+        "old": {
+          "success": "6/6",
+          "elapsed": {
+            "n": 6,
+            "min": 3203,
+            "q1": 3341.75,
+            "median": 3683.5,
+            "q3": 4500.75,
+            "max": 5810
+          }
+        },
+        "new": {
+          "success": "6/6",
+          "elapsed": {
+            "n": 6,
+            "min": 2858,
+            "q1": 3204,
+            "median": 3606,
+            "q3": 3984.75,
+            "max": 4630
+          }
+        },
+        "pairs": [
+          {
+            "round": 1,
+            "old": 5810,
+            "new": 4052,
+            "d": -1758
+          },
+          {
+            "round": 2,
+            "old": 3308,
+            "new": 3129,
+            "d": -179
+          },
+          {
+            "round": 3,
+            "old": 4693,
+            "new": 4630,
+            "d": -63
+          },
+          {
+            "round": 4,
+            "old": 3443,
+            "new": 2858,
+            "d": -585
+          },
+          {
+            "round": 5,
+            "old": 3924,
+            "new": 3783,
+            "d": -141
+          },
+          {
+            "round": 6,
+            "old": 3203,
+            "new": 3429,
+            "d": 226
+          }
+        ],
+        "diffs": [
+          -1758,
+          -179,
+          -63,
+          -585,
+          -141,
+          226
+        ],
+        "medianDiff": -160,
+        "ci": {
+          "lo": -1171.5,
+          "hi": 81.5
+        },
+        "crossesZero": true,
+        "winsNew": 5,
+        "winsOld": 1,
+        "signTestP": 0.21875000000000006
+      },
+      "select-native": {
+        "old": {
+          "success": "6/6",
+          "elapsed": {
+            "n": 6,
+            "min": 979,
+            "q1": 1014.25,
+            "median": 1094.5,
+            "q3": 1411,
+            "max": 1744
+          }
+        },
+        "new": {
+          "success": "6/6",
+          "elapsed": {
+            "n": 6,
+            "min": 983,
+            "q1": 1048.5,
+            "median": 1188.5,
+            "q3": 1232.5,
+            "max": 1250
+          }
+        },
+        "pairs": [
+          {
+            "round": 1,
+            "old": 1105,
+            "new": 1250,
+            "d": 145
+          },
+          {
+            "round": 2,
+            "old": 991,
+            "new": 1235,
+            "d": 244
+          },
+          {
+            "round": 3,
+            "old": 1744,
+            "new": 1152,
+            "d": -592
+          },
+          {
+            "round": 4,
+            "old": 979,
+            "new": 1225,
+            "d": 246
+          },
+          {
+            "round": 5,
+            "old": 1513,
+            "new": 983,
+            "d": -530
+          },
+          {
+            "round": 6,
+            "old": 1084,
+            "new": 1014,
+            "d": -70
+          }
+        ],
+        "diffs": [
+          145,
+          244,
+          -592,
+          246,
+          -530,
+          -70
+        ],
+        "medianDiff": 37.5,
+        "ci": {
+          "lo": -561,
+          "hi": 245
+        },
+        "crossesZero": true,
+        "winsNew": 3,
+        "winsOld": 3,
+        "signTestP": 1
+      }
+    }
+  }
+}

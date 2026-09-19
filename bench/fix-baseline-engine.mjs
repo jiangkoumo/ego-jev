@@ -205,10 +205,7 @@ function observeDom(payload) {
   const limit = (payload && payload.limit) || 60;
   const maxText = (payload && payload.maxText) || 0;
   const cache = (window.__egoJev ||= { ids: new WeakMap(), nodes: new Map(), next: 1 });
-  const shown = (cache.shown ||= new Set());
   for (const [id, el] of cache.nodes) if (!el.isConnected) cache.nodes.delete(id);
-  // shown 集合会随长页面无限增长，超限时按「仍连在文档里」剪一次
-  if (shown.size > 1200) for (const id of shown) if (!cache.nodes.has(id)) shown.delete(id);
   const identify = (el) => {
     let id = cache.ids.get(el);
     if (id === undefined) {
@@ -298,12 +295,9 @@ function observeDom(payload) {
     'a[href],button,input,textarea,select,summary,[contenteditable="true"],' +
     roles.map((role) => `[role="${role}"]`).join(",");
 
-  // 内部收集上限：比对外预算宽 4 倍，这样「未展示过的优先」才有东西可排；
-  // 仍然有界，避免长页面把观测成本拉爆。对外元素表大小依旧 = limit（默认 60）。
-  const budget = Math.min(Math.max(limit * 4, limit), 240);
-  const candidates = [];
+  const targets = [];
   for (const el of document.querySelectorAll(selector)) {
-    if (candidates.length >= budget) break;
+    if (targets.length >= limit) break;
     if (!safe(el) || !visible(el)) continue;
     if (el.matches(":disabled") || el.closest('[aria-disabled="true"]')) continue;
     const role = roleOf(el);
@@ -333,21 +327,7 @@ function observeDom(payload) {
     } else if ("value" in el && !["checkbox", "radio"].includes(el.type)) {
       item.value = String(el.value || "").slice(0, 60);
     }
-    candidates.push({ id: Number(item.ref.slice(4)), item });
-  }
-
-  // 候选多于预算时：**没展示过的优先**（各自保持 DOM 顺序），再拿展示过的补位。
-  // 这样“滚动一屏 → 重新观测”总能露出下一批，而不是反复只看 DOM 顺序最前面那一批；
-  // HN 的 More 链接在文档序第 110 位，就是被旧的“只看前 60”漏掉的。
-  // 候选不超过预算时顺序与旧版完全一致（大多数页面不受影响）。
-  const ordered = candidates.slice().sort((a, b) => (shown.has(a.id) ? 1 : 0) - (shown.has(b.id) ? 1 : 0));
-  const targets = ordered.slice(0, limit).map((c) => c.item);
-  let newCount = 0;
-  for (const c of ordered.slice(0, limit)) {
-    if (!shown.has(c.id)) {
-      newCount += 1;
-      shown.add(c.id);
-    }
+    targets.push(item);
   }
 
   let text = "";
@@ -377,34 +357,8 @@ function observeDom(payload) {
     url: location.href,
     title: document.title,
     text,
-    newCount,
-    scroll: {
-      y: scrollY,
-      height: document.documentElement.scrollHeight,
-      viewportH: innerHeight,
-      canScrollDown: scrollY + innerHeight < document.documentElement.scrollHeight - 2,
-      canScrollUp: scrollY > 2,
-    },
+    scroll: { y: scrollY, height: document.documentElement.scrollHeight },
     targets,
-  };
-}
-
-/**
- * 页面内：滚动约一屏，用于「目标在视口外」时露出新内容（由调用方保证有界）。
- * 返回滚动前后的位置与是否还能继续滚动，供调用方决定要不要再试一次。
- */
-function revealScrollInPage(payload) {
-  const before = scrollY;
-  const delta = payload.direction === "up" ? -payload.delta : payload.delta;
-  window.scrollBy({ top: delta, behavior: "instant" });
-  const doc = document.documentElement;
-  return {
-    moved: scrollY !== before,
-    from: before,
-    to: scrollY,
-    viewportH: innerHeight,
-    canScrollDown: scrollY + innerHeight < doc.scrollHeight - 2,
-    canScrollUp: scrollY > 2,
   };
 }
 
@@ -991,23 +945,6 @@ export async function runJevStep(page, goal, options = {}) {
   let title = "";
   let observeMode = "dom";
   let observedAfterNavigation = false;
-  let newTargetCount = null;
-  let scrollInfo = null;
-  // 视口外目标：先滚动一屏再观测（调用方已保证有界）。
-  // 不调大 maxTargets 默认值 —— 元素表大小不变，只是“看哪一批”改为未展示过的优先。
-  let revealed = null;
-  if (options.reveal && options.observe !== "snapshot") {
-    try {
-      bump(metrics, "page.evaluate");
-      revealed = await page.evaluate(revealScrollInPage, {
-        direction: options.reveal.direction || "down",
-        delta: options.reveal.delta ?? Math.round((options.reveal.viewportH || 600) * 0.85),
-      });
-      await sleep(options.revealSettleMs ?? 60);
-    } catch {
-      revealed = null;
-    }
-  }
   if (options.observe !== "snapshot") {
     // 文档正在导航时 evaluate 会失败 —— 这不是错误，等它落地再重试，
     // 这样即使导航晚于 settle 的静默窗口开始，也不会被当成“页面没变化”。
@@ -1023,12 +960,9 @@ export async function runJevStep(page, goal, options = {}) {
           pageText = observed.text || "";
           urlBefore = observed.url;
           title = observed.title || "";
-          newTargetCount = observed.newCount ?? null;
-          scrollInfo = observed.scroll || null;
           elementTable = buildActionMenu(targets);
         } else if (observed) {
           targets = []; // 观测成功但页面真的没有可交互元素
-          scrollInfo = observed.scroll || null;
         }
       } catch {
         observedAfterNavigation = true; // 文档当时正在导航：本身就是“页面已变化”的证据
@@ -1061,9 +995,6 @@ export async function runJevStep(page, goal, options = {}) {
       changed: false,
       reason: "no_targets",
       observeMode,
-      revealed,
-      newTargetCount,
-      scrollInfo,
     };
   }
 
@@ -1311,9 +1242,6 @@ export async function runJevStep(page, goal, options = {}) {
     staleTarget,
     guardRejected,
     targetMissing,
-    revealed,
-    newTargetCount,
-    scrollInfo,
     error,
     changed: stableUrl(urlAfter) !== stableUrl(urlBefore) || observedAfterNavigation,
     urlBefore,
@@ -1348,9 +1276,6 @@ export async function runJevAutonomousLoop(page, goal, options = {}) {
   let noProgressStreak = 0;
   let targetMissingStreak = 0;
   let guardRejectedStreak = 0;
-  let revealAttempts = 0;
-  let revealExhausted = false;
-  let nextReveal = null;
   let invalidStreak = 0;
   let sameActionStreak = 0;
   let lastAction = null;
@@ -1368,9 +1293,7 @@ export async function runJevAutonomousLoop(page, goal, options = {}) {
       }
     }
 
-    const revealForStep = nextReveal;
-    nextReveal = null;
-    const result = await runJevStep(page, goal, { ...options, progress, reveal: revealForStep });
+    const result = await runJevStep(page, goal, { ...options, progress });
     log(
       `  └─ [Step ${step}] ${result.stepDurationMs}ms | ${result.action}` +
         (result.target ? ` → ${result.target}` : "") +
@@ -1408,40 +1331,6 @@ export async function runJevAutonomousLoop(page, goal, options = {}) {
       } catch {
         /* check 抛错不阻塞主循环 */
       }
-    }
-
-    // ── 视口外目标：有界滚动 + 重新观测 ────────────────────────────────────────
-    // 动机：元素表只覆盖当前视口，而 HN 的 More 在文档序第 110 位，被 60 条预算截掉，
-    // 导致“够不到”而非“做不到”。这里滚动一屏后重新观测（观测层会把未展示过的元素优先），
-    // 由调用方保证有界；**不调大 maxTargets 默认值**，表大小不变。
-    const unreachable = result.targetMissing || result.reason === "no_targets";
-    if (unreachable) {
-      // 滚动没有带来任何新元素 → 计入无进展，且不再继续滚（不允许用滚动无限续命）
-      const revealedNothing = Boolean(result.revealed) && (result.newTargetCount ?? 0) === 0;
-      if (revealedNothing) {
-        revealExhausted = true;
-        noProgressStreak += 1;
-      }
-      const canGo = Boolean(result.scrollInfo && (result.scrollInfo.canScrollDown || result.scrollInfo.canScrollUp));
-      if (!revealExhausted && canGo && revealAttempts < (options.maxReveals ?? 4)) {
-        revealAttempts += 1;
-        nextReveal = {
-          direction: result.scrollInfo.canScrollDown ? "down" : "up",
-          viewportH: result.scrollInfo.viewportH,
-        };
-        log(
-          `  └─ [Step ${step}] 目标在视口外：${result.scrollInfo.canScrollDown ? "下" : "上"}滚一屏后重新观测` +
-            `（第 ${revealAttempts}/${options.maxReveals ?? 4} 次）`
-        );
-        if (result.reason === "no_targets") await sleep(options.noTargetsDelay ?? 700);
-        else history.push(result);
-        continue;
-      }
-    } else {
-      // 本步正常推进：重置揭示额度，以便后续再遇到“够不到”时还能滚
-      revealAttempts = 0;
-      revealExhausted = false;
-      nextReveal = null;
     }
 
     if (result.reason !== "no_targets") {

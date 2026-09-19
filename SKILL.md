@@ -151,6 +151,11 @@ console.log(result); // { success, reason, steps, history }
   不一致记为 `staleTarget` 跳过；② **执行前守卫**：命中测试 + 可见/可用性检查，失败记为
   `guardRejected`（原因有 `node_gone`/`disconnected`/`disabled`/`invisible`/`readonly`/
   `offscreen`/`covered`/`not_select`/`option_unavailable`）。
+- **视口外目标（有界滚动揭示）**：元素表只覆盖当前视口，目标可能在下方。当某步“选了需目标的
+  动作却没解析出目标”（或元素表为空）时，引擎会**滚动约一屏后重新观测**（默认最多 4 次，
+  `maxReveals` 可调），并在候选多于预算时**优先列出本次尚未展示过的元素**，因此滚动总能露出
+  下一批而不是反复只看同一批。**`maxTargets` 默认值不变**（元素表大小不变，载荷不增长）。
+  滚动到边界、或滚动后没有带来任何新元素时立即停止，并把该次计入 `no_progress`。
 - **文本来源**三选一：`--text` 候选（Jev 从中选，优先）→ `~/.config/typesafe/text_model.json`
   的模型（**当前已配置为 opencode zen / `minimax-m3`**；严格只接受恰好一个非空 `text`
   字段的 JSON，不合格则判 `text_model_failed` 而不是猜值）→ 都没有时不提供输入操作。
@@ -159,7 +164,8 @@ console.log(result); // { success, reason, steps, history }
   靠 `jev_done` 或 `check` 判成功。
 - 退出条件。成功：`check_passed` / `check_passed_after_step`（`check` 通过，推荐）或 `jev_done`
   （Jev 判定完成）。失败：`no_progress`（连续 5 次变更类动作页面无变化）、`stuck`（同一动作连续
-  3 次无变化，含反复滚动）、`target_missing`（选了需目标的动作却没解析出目标，连续 2 次）、
+  3 次无变化，含反复滚动）、`target_missing`（选了需目标的动作却没解析出目标，**且已用完有界滚动
+  揭示额度**，连续 2 次）、
   `no_targets`（连续 3 次元素表为空）、`guard_rejected`（执行前守卫拒绝，决策已陈旧或元素不可用，
   该步未执行）、`invalid_response`（Jev 响应校验不通过，未执行）、`blocked`、`text_model_failed`、
   `no_text_source`、`action_failed`、`max_steps_reached`。

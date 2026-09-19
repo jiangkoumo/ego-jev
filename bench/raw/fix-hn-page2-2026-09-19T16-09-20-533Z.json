@@ -1,0 +1,338 @@
+{
+  "task": "hn-page2",
+  "goal": "翻到下一页（More）",
+  "rounds": 10,
+  "predicate": "finalUrl 含 p=2",
+  "records": [
+    {
+      "round": 1,
+      "engine": "old",
+      "order": "old>new",
+      "elapsedMs": 1909,
+      "steps": 3,
+      "success": false,
+      "reason": "target_missing",
+      "jevCalls": 3,
+      "finalUrl": "https://news.ycombinator.com/",
+      "actionLabels": [
+        "scroll_down",
+        "click",
+        "click"
+      ]
+    },
+    {
+      "round": 1,
+      "engine": "new",
+      "order": "old>new",
+      "elapsedMs": 4380,
+      "steps": 4,
+      "success": true,
+      "reason": "check_passed_after_step",
+      "jevCalls": 4,
+      "finalUrl": "https://news.ycombinator.com/?p=2",
+      "actionLabels": [
+        "scroll_down",
+        "click",
+        "scroll_down",
+        "click:ref=221"
+      ]
+    },
+    {
+      "round": 2,
+      "engine": "new",
+      "order": "new>old",
+      "elapsedMs": 2953,
+      "steps": 4,
+      "success": true,
+      "reason": "check_passed_after_step",
+      "jevCalls": 4,
+      "finalUrl": "https://news.ycombinator.com/?p=2",
+      "actionLabels": [
+        "scroll_down",
+        "click",
+        "scroll_down",
+        "click:ref=221"
+      ]
+    },
+    {
+      "round": 2,
+      "engine": "old",
+      "order": "new>old",
+      "elapsedMs": 2145,
+      "steps": 3,
+      "success": false,
+      "reason": "target_missing",
+      "jevCalls": 3,
+      "finalUrl": "https://news.ycombinator.com/",
+      "actionLabels": [
+        "scroll_down",
+        "click",
+        "click"
+      ]
+    },
+    {
+      "round": 3,
+      "engine": "old",
+      "order": "old>new",
+      "elapsedMs": 2259,
+      "steps": 3,
+      "success": false,
+      "reason": "target_missing",
+      "jevCalls": 3,
+      "finalUrl": "https://news.ycombinator.com/",
+      "actionLabels": [
+        "scroll_down",
+        "click",
+        "click"
+      ]
+    },
+    {
+      "round": 3,
+      "engine": "new",
+      "order": "old>new",
+      "elapsedMs": 2602,
+      "steps": 4,
+      "success": true,
+      "reason": "check_passed_after_step",
+      "jevCalls": 4,
+      "finalUrl": "https://news.ycombinator.com/?p=2",
+      "actionLabels": [
+        "scroll_down",
+        "click",
+        "scroll_down",
+        "click:ref=221"
+      ]
+    },
+    {
+      "round": 4,
+      "engine": "new",
+      "order": "new>old",
+      "elapsedMs": 3222,
+      "steps": 4,
+      "success": true,
+      "reason": "check_passed_after_step",
+      "jevCalls": 4,
+      "finalUrl": "https://news.ycombinator.com/?p=2",
+      "actionLabels": [
+        "scroll_down",
+        "click",
+        "scroll_down",
+        "click:ref=221"
+      ]
+    },
+    {
+      "round": 4,
+      "engine": "old",
+      "order": "new>old",
+      "elapsedMs": 1544,
+      "steps": 3,
+      "success": false,
+      "reason": "target_missing",
+      "jevCalls": 3,
+      "finalUrl": "https://news.ycombinator.com/",
+      "actionLabels": [
+        "scroll_down",
+        "click",
+        "click"
+      ]
+    },
+    {
+      "round": 5,
+      "engine": "old",
+      "order": "old>new",
+      "elapsedMs": 1505,
+      "steps": 3,
+      "success": false,
+      "reason": "target_missing",
+      "jevCalls": 3,
+      "finalUrl": "https://news.ycombinator.com/",
+      "actionLabels": [
+        "scroll_down",
+        "click",
+        "click"
+      ]
+    },
+    {
+      "round": 5,
+      "engine": "new",
+      "order": "old>new",
+      "elapsedMs": 2754,
+      "steps": 4,
+      "success": true,
+      "reason": "check_passed_after_step",
+      "jevCalls": 4,
+      "finalUrl": "https://news.ycombinator.com/?p=2",
+      "actionLabels": [
+        "scroll_down",
+        "click",
+        "scroll_down",
+        "click:ref=221"
+      ]
+    },
+    {
+      "round": 6,
+      "engine": "new",
+      "order": "new>old",
+      "elapsedMs": 3355,
+      "steps": 4,
+      "success": true,
+      "reason": "check_passed_after_step",
+      "jevCalls": 4,
+      "finalUrl": "https://news.ycombinator.com/?p=2",
+      "actionLabels": [
+        "scroll_down",
+        "click",
+        "scroll_down",
+        "click:ref=221"
+      ]
+    },
+    {
+      "round": 6,
+      "engine": "old",
+      "order": "new>old",
+      "elapsedMs": 1646,
+      "steps": 3,
+      "success": false,
+      "reason": "target_missing",
+      "jevCalls": 3,
+      "finalUrl": "https://news.ycombinator.com/",
+      "actionLabels": [
+        "scroll_down",
+        "click",
+        "click"
+      ]
+    },
+    {
+      "round": 7,
+      "engine": "old",
+      "order": "old>new",
+      "elapsedMs": 2153,
+      "steps": 3,
+      "success": false,
+      "reason": "target_missing",
+      "jevCalls": 3,
+      "finalUrl": "https://news.ycombinator.com/",
+      "actionLabels": [
+        "scroll_down",
+        "click",
+        "click"
+      ]
+    },
+    {
+      "round": 7,
+      "engine": "new",
+      "order": "old>new",
+      "elapsedMs": 3501,
+      "steps": 4,
+      "success": true,
+      "reason": "check_passed_after_step",
+      "jevCalls": 4,
+      "finalUrl": "https://news.ycombinator.com/?p=2",
+      "actionLabels": [
+        "scroll_down",
+        "click",
+        "scroll_down",
+        "click:ref=221"
+      ]
+    },
+    {
+      "round": 8,
+      "engine": "new",
+      "order": "new>old",
+      "elapsedMs": 2550,
+      "steps": 4,
+      "success": true,
+      "reason": "check_passed_after_step",
+      "jevCalls": 4,
+      "finalUrl": "https://news.ycombinator.com/?p=2",
+      "actionLabels": [
+        "scroll_down",
+        "click",
+        "scroll_down",
+        "click:ref=221"
+      ]
+    },
+    {
+      "round": 8,
+      "engine": "old",
+      "order": "new>old",
+      "elapsedMs": 2924,
+      "steps": 3,
+      "success": false,
+      "reason": "target_missing",
+      "jevCalls": 3,
+      "finalUrl": "https://news.ycombinator.com/",
+      "actionLabels": [
+        "scroll_down",
+        "click",
+        "click"
+      ]
+    },
+    {
+      "round": 9,
+      "engine": "old",
+      "order": "old>new",
+      "elapsedMs": 1573,
+      "steps": 3,
+      "success": false,
+      "reason": "target_missing",
+      "jevCalls": 3,
+      "finalUrl": "https://news.ycombinator.com/",
+      "actionLabels": [
+        "scroll_down",
+        "click",
+        "click"
+      ]
+    },
+    {
+      "round": 9,
+      "engine": "new",
+      "order": "old>new",
+      "elapsedMs": 2605,
+      "steps": 4,
+      "success": true,
+      "reason": "check_passed_after_step",
+      "jevCalls": 4,
+      "finalUrl": "https://news.ycombinator.com/?p=2",
+      "actionLabels": [
+        "scroll_down",
+        "click",
+        "scroll_down",
+        "click:ref=221"
+      ]
+    },
+    {
+      "round": 10,
+      "engine": "new",
+      "order": "new>old",
+      "elapsedMs": 2592,
+      "steps": 4,
+      "success": true,
+      "reason": "check_passed_after_step",
+      "jevCalls": 4,
+      "finalUrl": "https://news.ycombinator.com/?p=2",
+      "actionLabels": [
+        "scroll_down",
+        "click",
+        "scroll_down",
+        "click:ref=221"
+      ]
+    },
+    {
+      "round": 10,
+      "engine": "old",
+      "order": "new>old",
+      "elapsedMs": 2006,
+      "steps": 3,
+      "success": false,
+      "reason": "target_missing",
+      "jevCalls": 3,
+      "finalUrl": "https://news.ycombinator.com/",
+      "actionLabels": [
+        "scroll_down",
+        "click",
+        "click"
+      ]
+    }
+  ]
+}
