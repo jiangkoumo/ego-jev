@@ -1,5 +1,7 @@
 # ego-jev
 
+[![skills.sh](https://skills.sh/b/jiangkoumo/ego-jev)](https://skills.sh/jiangkoumo/ego-jev)
+
 **用 Jev（TypeSafe System One）驱动 ego lite 浏览器，把「下一步点哪里」的决策放进单个进程内闭环。**
 
 > English summary: `ego-jev` replaces the per-step LLM round trip in browser automation with

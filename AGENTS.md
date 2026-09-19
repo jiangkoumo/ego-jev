@@ -1,106 +1,73 @@
 # AGENTS.md
 
-Instructions for AI agents that are asked to install, verify, or work on this repository.
+给安装、验证、或修改本仓库的 AI Agent 看的说明。
 
-## What this is
+## 这是什么
 
-`ego-jev` makes browser automation faster by replacing the per-step large-model round trip with
-[TypeSafe](https://docs.typesafe.ai)'s System One model **Jev**. One *indexed element table* goes in;
-one **operation + target** comes out, in a single request. Code owns observation, execution,
-verification and exit conditions.
+`ego-jev` 用 [TypeSafe](https://docs.typesafe.ai) 的 System One 模型 **Jev** 替代浏览器自动化里
+「每步回到大模型思考」的往返：输入一张**索引化元素表**，一次请求返回**操作 + 目标元素**，
+观察/执行/校验/退出条件都由代码负责。
 
-It builds on [ego lite](https://github.com/citrolabs/ego-lite) (`ego-browser`). It is an **add-on**:
-it never modifies the ego lite application bundle.
+它建立在 [ego lite](https://github.com/citrolabs/ego-lite)（`ego-browser`）之上，是**外挂**，
+**从不修改 ego lite 应用包**。
 
-## Install
-
-### Option 1 — skills CLI (recommended, works across 40+ agents)
+## 安装
 
 ```bash
-npx skills add jiangkoumo/ego-jev
+npx skills add jiangkoumo/ego-jev      # 推荐，一行装进 Agent 技能目录（含引擎与 CLI）
+# 或：git clone https://github.com/jiangkoumo/ego-jev.git && cd ego-jev && ./install.sh --test
 ```
 
-This places the skill (including `scripts/ego-jev.mjs` and `scripts/ego-jev`) in the agent's skills
-directory, e.g. `~/.agents/skills/ego-jev/`.
-
-### Option 2 — clone and run the installer
+## 装完必须验证（别只看代码，跑起来）
 
 ```bash
-git clone https://github.com/jiangkoumo/ego-jev.git
-cd ego-jev
-./install.sh          # links scripts/ego-jev into ~/.local/bin, prepares the credential file
-./install.sh --test   # additionally runs an end-to-end smoke test
-```
-
-### Option 3 — prompt to paste into any agent
-
-> Install `ego-jev` from https://github.com/jiangkoumo/ego-jev for me:
-> 1. run `npx skills add jiangkoumo/ego-jev` (fall back to cloning the repo and running
->    `./install.sh` if the skills CLI is unavailable);
-> 2. confirm `ego-browser --version` works, and if ego lite is missing tell me to install it first;
-> 3. make sure a Jev API key exists at `~/.config/typesafe/api_key` (mode 600). If it is missing,
->    ask me for the key — do **not** invent one and do **not** put it in your prompt history;
-> 4. run the verification below and report the actual command output.
-
-## Verify the install — run these, do not assume
-
-```bash
-# 1. prerequisites
-ego-browser --version                       # expect: ego-browser <version> + chromium + node
-test -f ~/.config/typesafe/api_key && echo "key file present"
-
-# 2. end-to-end (deterministic exit condition; expect exit 0 and "success": true)
-~/.agents/skills/ego-jev/scripts/ego-jev \
+ego-browser --version                                   # 前置条件
+test -f ~/.config/typesafe/api_key && echo "key ok"     # 凭证存在
+"<技能目录>/scripts/ego-jev" \
   --url "https://en.wikipedia.org/wiki/Main_Page" \
   --text "Jev" --until "/wiki/JEV" --steps 5 \
   "type Jev into the search box and submit"
 ```
 
-Exit codes: `0` goal reached (`check_passed` / `jev_done`), `1` not reached (the TaskSpace is kept for
-inspection), `2` bad arguments, `3` missing Jev credential.
+期望：**exit 0** 且输出含 `"success": true`。退出码：`0` 达成 / `1` 未达成（space 保留供排查）
+/ `2` 参数错误 / `3` 缺凭证。
 
-## Hard constraints
+## 硬约束
 
-- **Never write into the ego lite application bundle.** `/Applications/ego lite.app/...` is
-  vendor-signed; every ego lite upgrade replaces its versioned `Resources/ego-skills/` directory, so
-  edits there are lost. Extensions belong outside the bundle (`~/.agents/skills/`, `~/.agents/lib/`).
-- **Credentials must live in a file.** The embedded runtime of `ego-browser nodejs` inherits only a
-  minimal login environment. Custom environment variables — including `TYPESAFE_API_KEY` — are **not**
-  passed through, so exported variables never reach the script. Write the key to
-  `~/.config/typesafe/api_key` (or point `TYPESAFE_API_KEY_FILE` at it).
-- Do not commit credentials. `~/.config/typesafe/text_model.json` may reference an existing secret
-  file by path (`apiKeyJson`) instead of copying the key.
-- Keep the skill installable: `SKILL.md` must stay at the repository root and must reference bundled
-  files by relative path (`scripts/...`).
+- **不要写 ego lite 应用包**（`/Applications/ego lite.app/…`）：供应商受签名，升级会替换
+  `Resources/ego-skills/`，改动必然丢失。扩展只放包外。
+- **凭证必须落盘成文件**：`ego-browser nodejs` 内嵌运行时只继承最小化登录环境，
+  `TYPESAFE_API_KEY` 之类的**自定义环境变量不会传进去**。写到 `~/.config/typesafe/api_key`（600）。
+- 不要提交任何密钥；文本模型配置可用 `apiKeyJson` 按路径引用已有凭证，不要复制。
+- 保持可被 `npx skills add` 安装：`SKILL.md` 必须在仓库根，且只用相对路径引用 `scripts/…`。
 
-## Runtime facts measured in this repo (they will save you debugging time)
+## 运行时事实（实测踩过的坑，能省你很多时间）
 
-| Behaviour | Detail |
+| 行为 | 详情 |
 | --- | --- |
-| Static `import` of a built-in silently kills the script | `import { x } from "node:http"` → no output, exit 0. Always `await import("node:...")`. |
-| No server, no loopback | `server.listen()` never fires its callback; `fetch("http://127.0.0.1:…")` hangs then exits 0. External HTTPS `fetch()` works. |
-| `process.cwd()` is `/` | Never rely on relative paths inside an `ego-browser nodejs` script. |
-| Custom env vars are stripped | Pass configuration by substituting values into the script text from the parent process. |
-| `loc` values may contain `]` | Parse the attribute list from the first `[` to the **last** `]`, or CSS selectors like `input[name="a"]` get truncated. |
-| Checkbox/radio state is not in the snapshot | Read it with one batched `page.evaluate()`; if DOM and snapshot counts disagree, report "state unknown" instead of guessing. |
-| Browser auto-translation is on | Element and option names may be translated. Never compare UI strings in `--until`; compare URL paths or DOM state. |
+| 静态 import 内置模块会静默杀死脚本 | `import { x } from "node:http"` → 无输出、exit 0。必须 `await import("node:…")` |
+| 不能起服务、不能访问 loopback | `server.listen()` 回调不触发；`fetch("http://127.0.0.1:…")` 挂起后 exit 0；外部 HTTPS 正常 |
+| `process.cwd()` 是 `/` | 脚本里不要依赖相对路径 |
+| 自定义环境变量被剥离 | 传配置要在父进程把值替换进脚本文本 |
+| `loc` 里可能含 `]` | 属性要从第一个 `[` 解析到**最后一个** `]`，否则 `input[name="a"]` 会被截断 |
+| 勾选态不在快照里 | 用一次批量 `page.evaluate()` 读；DOM 与快照数量不一致时报告「未知」，不许猜 |
+| 浏览器开着自动翻译 | 元素名/选项名可能被翻译；`--until` 不许比较 UI 字符串，比 URL 路径或 DOM 状态 |
 
-## Repository layout
+## 仓库结构
 
 ```
-SKILL.md                 the agent skill (root on purpose — this is what `npx skills add` installs)
-scripts/ego-jev.mjs      engine
-scripts/ego-jev          CLI (finds the engine in the same dir, the repo root, or ~/.agents/lib)
-examples/bench/          A/B benchmark harness (Jev loop vs per-step large-model loop)
-install.sh               manual installer (non-skills-CLI path)
+SKILL.md                 技能本体（刻意放根目录，`npx skills add` 就是找它）
+scripts/ego-jev.mjs      引擎
+scripts/ego-jev          CLI（自动在 同目录 / 仓库根 / ~/.agents/lib 里找引擎）
+examples/bench/          A/B 对照基准（Jev 闭环 vs 每步大模型循环）
+install.sh               手工安装（接 CLI 进 PATH + 准备凭证）
 ```
 
-## Development conventions
+## 开发约定
 
-- Engine changes belong in `scripts/ego-jev.mjs` and must keep the exported API stable:
-  `askJev`, `parseActionTargets`, `enrichTargets`, `buildQuestions`, `runJevStep`,
-  `runJevAutonomousLoop`, `generateText`, `loadTextModelConfig`, `resolveTextApiKey`, `loadApiKey`.
-- After changing the engine, re-run the smoke tests above **and** `./examples/bench/run-pair.sh A`.
-- Only claim completion with real command output and exit codes. Verify exit 0 and
-  `"success": true`, or say exactly which step failed.
-- Never report a benchmark number without the harness that produced it.
+- 引擎改动在 `scripts/ego-jev.mjs`，保持导出稳定：`askJev`、`parseActionTargets`、`enrichTargets`、
+  `buildQuestions`、`runJevStep`、`runJevAutonomousLoop`、`generateText`、`loadTextModelConfig`、
+  `resolveTextApiKey`、`loadApiKey`。
+- 改完引擎要重跑上面的冒烟测试**和** `./examples/bench/run-pair.sh A`。
+- 只用真实命令输出和退出码宣称完成；不确定就明说哪一步失败。
+- 报基准数字必须带上产生它的脚本。
