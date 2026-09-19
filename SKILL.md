@@ -50,8 +50,10 @@ grok-4.6 端点 503 不可用）。进程启动实测只占约 250–350ms/次�
 （`run-pair.sh` + `arm-a.js` / `arm-b-step.js`）。
 
 **Jev 快在哪里、不快在哪里**：省的是**决策往返**（Jev 1.0–1.5s/次 vs 大模型 1.6–4.5s/次）
-和**每步退出浏览器上下文**的开销；浏览器动作本身、快照、协议调用两边基本一样
-（Jev 每步仍是 1 次 snapshot + 1 次批量 evaluate）。目标能用选择器写死时，直接写代码比两者都快。
+和**每步退出浏览器上下文**的开销。引擎自身也已重构（详见仓库 `PORT-REPORT.md`）：观测改成一次
+`page.evaluate` 自建 DOM 元素表（约 2ms，替代 110–130ms 的 `page.snapshot()`），动作改成**裸 CDP
+`Input.dispatchMouseEvent`**（13–16ms，替代 788–1005ms 的 `page.click`），等待改成可观察条件。
+HN 两步导航端到端因此从 4569ms 降到 1675ms。目标能用选择器写死时，直接写代码仍比两者都快。
 
 **凭证**：`ego-browser nodejs` 内嵌运行时只继承最小化登录环境（HOME/PATH 等），shell 里
 export 的变量不会传进去。所以 API Key 必须落盘到 `~/.config/typesafe/api_key`
