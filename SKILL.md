@@ -137,24 +137,33 @@ console.log(result); // { success, reason, steps, history }
 配套导出：`askJev(state, questions, options)` 做单次判断、`parseActionTargets(snapshot)`
 把快照解析成元素表（含 kind/当前值）、`enrichTargets(page, targets)` 一次批量调用补齐下拉选项与
 勾选态、`buildQuestions(targets, { texts, hasTextSource })` 组装操作/目标问题、
+`buildActionMenu()` / `extractCandidateRefs()` 构建动作菜单与提取候选目标、
+`validateChoice(response, questions)` 响应校验（拒收非 argmax 或概率和不一致的响应）、
 `generateText(input, options)` / `loadTextModelConfig()` 文本生成、`runJevStep(page, goal, options)` 走一步。
 
 ### 边界（实测）
 
 - Jev 只发一次并行判断、**无跨请求记忆**：复合目标（A 然后 B）依赖引擎回填的「已完成步骤」，
   已内置并已验证（两步导航、已填字段改写、下拉改选、勾选均通过）。更长链路未做专项评估。
-- 元素每次快照都会重新编号；只取视口内 40 个可交互元素，并做**陈旧校验**：只执行与本次元素表
-  一致的 `ref`，不一致记为 `staleTarget` 跳过。
+- 元素表由**一次 `page.evaluate` 在页面内自建**（默认 `maxTargets` 60 项、可见文本 `maxText` 2500
+  字符），元素每次观测都会**重新编号**。定位不交给选择器：引擎掌握节点身份，动作走裸 CDP
+  （`Input.dispatchMouseEvent`）。两层陈旧防护：① **陈旧校验**：只执行与本次元素表一致的 `ref`，
+  不一致记为 `staleTarget` 跳过；② **执行前守卫**：命中测试 + 可见/可用性检查，失败记为
+  `guardRejected`（原因有 `node_gone`/`disconnected`/`disabled`/`invisible`/`readonly`/
+  `offscreen`/`covered`/`not_select`/`option_unavailable`）。
 - **文本来源**三选一：`--text` 候选（Jev 从中选，优先）→ `~/.config/typesafe/text_model.json`
-  的模型（**当前已配置为 opencode-go / deepseek-v4.1-flash**；严格只接受恰好一个非空 `text`
+  的模型（**当前已配置为 opencode zen / `minimax-m3`**；严格只接受恰好一个非空 `text`
   字段的 JSON，不合格则判 `text_model_failed` 而不是猜值）→ 都没有时不提供输入操作。
   可用 `textModel: null` 显式禁用，或传自定义 `async (input) => string` 函数接入其他模型。
 - 由模型生成的文本会让落地 URL 不可预测（中文搜索词会被编码），这类任务不要指望 `--until`，
   靠 `jev_done` 或 `check` 判成功。
-- 退出条件：`no_progress`（连续 5 次变更类动作页面无变化）、`stuck`（同一动作连续 3 次无变化，
-  含反复滚动）、`target_missing`（选了需目标的动作却没解析出目标，连续 2 次）、`no_targets`
-  （连续 3 次空快照）、`blocked`、`text_model_failed`、`no_text_source`、`action_failed`。
-  失败时先看 `result.reason` 再决定是否重试。
+- 退出条件。成功：`check_passed` / `check_passed_after_step`（`check` 通过，推荐）或 `jev_done`
+  （Jev 判定完成）。失败：`no_progress`（连续 5 次变更类动作页面无变化）、`stuck`（同一动作连续
+  3 次无变化，含反复滚动）、`target_missing`（选了需目标的动作却没解析出目标，连续 2 次）、
+  `no_targets`（连续 3 次元素表为空）、`guard_rejected`（执行前守卫拒绝，决策已陈旧或元素不可用，
+  该步未执行）、`invalid_response`（Jev 响应校验不通过，未执行）、`blocked`、`text_model_failed`、
+  `no_text_source`、`action_failed`、`max_steps_reached`。
+  失败时先看 `result.reason` 再决定是否重试；`guard_rejected` 与 `target_missing` 表示**什么都没执行**，重试前需要重新观测。
 - `blocked` 由 Jev 判断（验证码/登录墙/无可用推进手段/反复无进展）。合成拦截页已验证：
   纯拦截页首步即判 `blocked`，登录墙试一次后判 `blocked`。**真实**验证码站未测。
 - 比较「页面是否变化」时忽略 URL 的 `#hash`：点锚点链接不算有进展。
