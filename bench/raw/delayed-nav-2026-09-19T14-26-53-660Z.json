@@ -1,0 +1,368 @@
+{
+  "goal": "把语言下拉框改选为 Dansk，然后点击确认按钮完成跳转",
+  "start": "http://127.0.0.1:8099/a.html",
+  "arms": {
+    "orig-legacy": {
+      "opts": {},
+      "records": [
+        {
+          "run": 1,
+          "elapsedMs": 3737,
+          "success": false,
+          "reason": "stuck",
+          "steps": 4,
+          "url": "http://127.0.0.1:8099/a.html",
+          "metrics": {
+            "page.snapshot": 4,
+            "page.url": 8,
+            "jev.request": 4,
+            "page.title": 4,
+            "page.evaluate": 4
+          },
+          "perStep": [
+            {
+              "action": "scroll_down",
+              "target": null,
+              "ms": 1652,
+              "changed": false,
+              "urlAfter": "http://127.0.0.1:8099/a.html"
+            },
+            {
+              "action": "scroll_down",
+              "target": null,
+              "ms": 693,
+              "changed": false,
+              "urlAfter": "http://127.0.0.1:8099/a.html"
+            },
+            {
+              "action": "scroll_down",
+              "target": null,
+              "ms": 621,
+              "changed": false,
+              "urlAfter": "http://127.0.0.1:8099/a.html"
+            },
+            {
+              "action": "scroll_down",
+              "target": null,
+              "ms": 754,
+              "changed": false,
+              "urlAfter": "http://127.0.0.1:8099/a.html"
+            }
+          ]
+        },
+        {
+          "run": 2,
+          "elapsedMs": 2795,
+          "success": false,
+          "reason": "stuck",
+          "steps": 4,
+          "url": "http://127.0.0.1:8099/a.html",
+          "metrics": {
+            "page.snapshot": 4,
+            "page.url": 8,
+            "jev.request": 4,
+            "page.title": 4,
+            "page.evaluate": 4
+          },
+          "perStep": [
+            {
+              "action": "scroll_down",
+              "target": null,
+              "ms": 665,
+              "changed": false,
+              "urlAfter": "http://127.0.0.1:8099/a.html"
+            },
+            {
+              "action": "scroll_down",
+              "target": null,
+              "ms": 620,
+              "changed": false,
+              "urlAfter": "http://127.0.0.1:8099/a.html"
+            },
+            {
+              "action": "scroll_down",
+              "target": null,
+              "ms": 738,
+              "changed": false,
+              "urlAfter": "http://127.0.0.1:8099/a.html"
+            },
+            {
+              "action": "scroll_down",
+              "target": null,
+              "ms": 768,
+              "changed": false,
+              "urlAfter": "http://127.0.0.1:8099/a.html"
+            }
+          ]
+        },
+        {
+          "run": 3,
+          "elapsedMs": 2747,
+          "success": false,
+          "reason": "stuck",
+          "steps": 4,
+          "url": "http://127.0.0.1:8099/a.html",
+          "metrics": {
+            "page.snapshot": 4,
+            "page.url": 8,
+            "jev.request": 4,
+            "page.title": 4,
+            "page.evaluate": 4
+          },
+          "perStep": [
+            {
+              "action": "scroll_down",
+              "target": null,
+              "ms": 830,
+              "changed": false,
+              "urlAfter": "http://127.0.0.1:8099/a.html"
+            },
+            {
+              "action": "scroll_down",
+              "target": null,
+              "ms": 625,
+              "changed": false,
+              "urlAfter": "http://127.0.0.1:8099/a.html"
+            },
+            {
+              "action": "scroll_down",
+              "target": null,
+              "ms": 617,
+              "changed": false,
+              "urlAfter": "http://127.0.0.1:8099/a.html"
+            },
+            {
+              "action": "scroll_down",
+              "target": null,
+              "ms": 666,
+              "changed": false,
+              "urlAfter": "http://127.0.0.1:8099/a.html"
+            }
+          ]
+        }
+      ],
+      "successRate": "0/3"
+    },
+    "new-legacy": {
+      "opts": {
+        "settleMode": "legacy"
+      },
+      "records": [
+        {
+          "run": 1,
+          "elapsedMs": 1971,
+          "success": true,
+          "reason": "check_passed",
+          "steps": 3,
+          "url": "http://127.0.0.1:8099/b.html",
+          "metrics": {
+            "page.evaluate": 7,
+            "jev.request": 3,
+            "page.url": 2,
+            "page.cdp": 2
+          },
+          "perStep": [
+            {
+              "action": "select",
+              "target": "ref=1#2",
+              "ms": 821,
+              "changed": false,
+              "urlAfter": "http://127.0.0.1:8099/a.html"
+            },
+            {
+              "action": "click",
+              "target": "ref=2",
+              "ms": 722,
+              "changed": false,
+              "urlAfter": "http://127.0.0.1:8099/a.html"
+            },
+            {
+              "action": "click",
+              "target": "ref=2",
+              "ms": 400,
+              "changed": false,
+              "urlAfter": "http://127.0.0.1:8099/a.html"
+            }
+          ]
+        },
+        {
+          "run": 2,
+          "elapsedMs": 1866,
+          "success": true,
+          "reason": "check_passed",
+          "steps": 3,
+          "url": "http://127.0.0.1:8099/b.html",
+          "metrics": {
+            "page.evaluate": 7,
+            "jev.request": 3,
+            "page.url": 2,
+            "page.cdp": 2
+          },
+          "perStep": [
+            {
+              "action": "select",
+              "target": "ref=1#2",
+              "ms": 695,
+              "changed": false,
+              "urlAfter": "http://127.0.0.1:8099/a.html"
+            },
+            {
+              "action": "click",
+              "target": "ref=2",
+              "ms": 816,
+              "changed": false,
+              "urlAfter": "http://127.0.0.1:8099/a.html"
+            },
+            {
+              "action": "click",
+              "target": "ref=2",
+              "ms": 349,
+              "changed": false,
+              "urlAfter": "http://127.0.0.1:8099/a.html"
+            }
+          ]
+        },
+        {
+          "run": 3,
+          "elapsedMs": 1727,
+          "success": true,
+          "reason": "check_passed",
+          "steps": 3,
+          "url": "http://127.0.0.1:8099/b.html",
+          "metrics": {
+            "page.evaluate": 7,
+            "jev.request": 3,
+            "page.url": 2,
+            "page.cdp": 2
+          },
+          "perStep": [
+            {
+              "action": "select",
+              "target": "ref=1#2",
+              "ms": 650,
+              "changed": false,
+              "urlAfter": "http://127.0.0.1:8099/a.html"
+            },
+            {
+              "action": "click",
+              "target": "ref=2",
+              "ms": 756,
+              "changed": false,
+              "urlAfter": "http://127.0.0.1:8099/a.html"
+            },
+            {
+              "action": "click",
+              "target": "ref=2",
+              "ms": 317,
+              "changed": false,
+              "urlAfter": "http://127.0.0.1:8099/a.html"
+            }
+          ]
+        }
+      ],
+      "successRate": "3/3"
+    },
+    "new-observable": {
+      "opts": {},
+      "records": [
+        {
+          "run": 1,
+          "elapsedMs": 3163,
+          "success": true,
+          "reason": "check_passed",
+          "steps": 2,
+          "url": "http://127.0.0.1:8099/b.html",
+          "metrics": {
+            "page.evaluate": 7,
+            "jev.request": 2,
+            "page.events": 1,
+            "page.waitForLoadState": 1,
+            "page.url": 2,
+            "page.cdp": 2
+          },
+          "perStep": [
+            {
+              "action": "select",
+              "target": "ref=1#2",
+              "ms": 2263,
+              "changed": false,
+              "urlAfter": "http://127.0.0.1:8099/a.html"
+            },
+            {
+              "action": "click",
+              "target": "ref=2",
+              "ms": 885,
+              "changed": true,
+              "urlAfter": "http://127.0.0.1:8099/b.html"
+            }
+          ]
+        },
+        {
+          "run": 2,
+          "elapsedMs": 2340,
+          "success": true,
+          "reason": "check_passed",
+          "steps": 2,
+          "url": "http://127.0.0.1:8099/b.html",
+          "metrics": {
+            "page.evaluate": 7,
+            "jev.request": 2,
+            "page.events": 1,
+            "page.waitForLoadState": 1,
+            "page.url": 2,
+            "page.cdp": 2
+          },
+          "perStep": [
+            {
+              "action": "select",
+              "target": "ref=1#2",
+              "ms": 1424,
+              "changed": false,
+              "urlAfter": "http://127.0.0.1:8099/a.html"
+            },
+            {
+              "action": "click",
+              "target": "ref=2",
+              "ms": 907,
+              "changed": true,
+              "urlAfter": "http://127.0.0.1:8099/b.html"
+            }
+          ]
+        },
+        {
+          "run": 3,
+          "elapsedMs": 3344,
+          "success": true,
+          "reason": "check_passed",
+          "steps": 2,
+          "url": "http://127.0.0.1:8099/b.html",
+          "metrics": {
+            "page.evaluate": 7,
+            "jev.request": 2,
+            "page.events": 1,
+            "page.waitForLoadState": 1,
+            "page.url": 2,
+            "page.cdp": 2
+          },
+          "perStep": [
+            {
+              "action": "select",
+              "target": "ref=1#2",
+              "ms": 2378,
+              "changed": false,
+              "urlAfter": "http://127.0.0.1:8099/a.html"
+            },
+            {
+              "action": "click",
+              "target": "ref=2",
+              "ms": 948,
+              "changed": true,
+              "urlAfter": "http://127.0.0.1:8099/b.html"
+            }
+          ]
+        }
+      ],
+      "successRate": "3/3"
+    }
+  }
+}

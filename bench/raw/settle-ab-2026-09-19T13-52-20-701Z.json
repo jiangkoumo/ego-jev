@@ -1,0 +1,249 @@
+{
+  "goal": "先打开 new 页面，再打开 comments 页面",
+  "url": "https://news.ycombinator.com",
+  "runs": 3,
+  "engine": "ego-jev baseline",
+  "arms": {
+    "long": {
+      "opts": {},
+      "records": [
+        {
+          "run": 1,
+          "elapsedMs": 3835,
+          "success": true,
+          "reason": "check_passed",
+          "steps": 2,
+          "url": "https://news.ycombinator.com/newcomments",
+          "metrics": {
+            "page.snapshot": 2,
+            "page.url": 4,
+            "jev.request": 2,
+            "page.title": 2,
+            "page.click": 2
+          },
+          "perStep": [
+            {
+              "action": "click",
+              "target": "ref=3",
+              "ms": 2460,
+              "changed": true,
+              "urlAfter": "https://news.ycombinator.com/newest",
+              "stale": null,
+              "error": null
+            },
+            {
+              "action": "click",
+              "target": "ref=141",
+              "ms": 1370,
+              "changed": true,
+              "urlAfter": "https://news.ycombinator.com/newcomments",
+              "stale": null,
+              "error": null
+            }
+          ]
+        },
+        {
+          "run": 2,
+          "elapsedMs": 4845,
+          "success": true,
+          "reason": "check_passed",
+          "steps": 2,
+          "url": "https://news.ycombinator.com/newcomments",
+          "metrics": {
+            "page.snapshot": 2,
+            "page.url": 4,
+            "jev.request": 2,
+            "page.title": 2,
+            "page.click": 2
+          },
+          "perStep": [
+            {
+              "action": "click",
+              "target": "ref=3",
+              "ms": 3189,
+              "changed": true,
+              "urlAfter": "https://news.ycombinator.com/newest",
+              "stale": null,
+              "error": null
+            },
+            {
+              "action": "click",
+              "target": "ref=141",
+              "ms": 1652,
+              "changed": true,
+              "urlAfter": "https://news.ycombinator.com/newcomments",
+              "stale": null,
+              "error": null
+            }
+          ]
+        },
+        {
+          "run": 3,
+          "elapsedMs": 3923,
+          "success": true,
+          "reason": "check_passed",
+          "steps": 2,
+          "url": "https://news.ycombinator.com/newcomments",
+          "metrics": {
+            "page.snapshot": 2,
+            "page.url": 4,
+            "jev.request": 2,
+            "page.title": 2,
+            "page.click": 2
+          },
+          "perStep": [
+            {
+              "action": "click",
+              "target": "ref=3",
+              "ms": 2487,
+              "changed": true,
+              "urlAfter": "https://news.ycombinator.com/newest",
+              "stale": null,
+              "error": null
+            },
+            {
+              "action": "click",
+              "target": "ref=141",
+              "ms": 1432,
+              "changed": true,
+              "urlAfter": "https://news.ycombinator.com/newcomments",
+              "stale": null,
+              "error": null
+            }
+          ]
+        }
+      ],
+      "medianAllMs": 3923,
+      "medianSuccessMs": 3923,
+      "perStepMedianMs": 2460,
+      "successRate": "3/3",
+      "protocolCalls": [
+        12,
+        12,
+        12
+      ]
+    },
+    "short": {
+      "opts": {
+        "stepDelay": 50,
+        "navWaitMs": 250
+      },
+      "records": [
+        {
+          "run": 1,
+          "elapsedMs": 3600,
+          "success": true,
+          "reason": "check_passed",
+          "steps": 2,
+          "url": "https://news.ycombinator.com/newcomments",
+          "metrics": {
+            "page.snapshot": 2,
+            "page.url": 4,
+            "jev.request": 2,
+            "page.title": 2,
+            "page.click": 2
+          },
+          "perStep": [
+            {
+              "action": "click",
+              "target": "ref=3",
+              "ms": 2339,
+              "changed": true,
+              "urlAfter": "https://news.ycombinator.com/newest",
+              "stale": null,
+              "error": null
+            },
+            {
+              "action": "click",
+              "target": "ref=141",
+              "ms": 1257,
+              "changed": true,
+              "urlAfter": "https://news.ycombinator.com/newcomments",
+              "stale": null,
+              "error": null
+            }
+          ]
+        },
+        {
+          "run": 2,
+          "elapsedMs": 3394,
+          "success": true,
+          "reason": "check_passed",
+          "steps": 2,
+          "url": "https://news.ycombinator.com/newcomments",
+          "metrics": {
+            "page.snapshot": 2,
+            "page.url": 4,
+            "jev.request": 2,
+            "page.title": 2,
+            "page.click": 2
+          },
+          "perStep": [
+            {
+              "action": "click",
+              "target": "ref=3",
+              "ms": 2221,
+              "changed": true,
+              "urlAfter": "https://news.ycombinator.com/newest",
+              "stale": null,
+              "error": null
+            },
+            {
+              "action": "click",
+              "target": "ref=141",
+              "ms": 1170,
+              "changed": true,
+              "urlAfter": "https://news.ycombinator.com/newcomments",
+              "stale": null,
+              "error": null
+            }
+          ]
+        },
+        {
+          "run": 3,
+          "elapsedMs": 2790,
+          "success": true,
+          "reason": "check_passed",
+          "steps": 2,
+          "url": "https://news.ycombinator.com/newcomments",
+          "metrics": {
+            "page.snapshot": 2,
+            "page.url": 4,
+            "jev.request": 2,
+            "page.title": 2,
+            "page.click": 2
+          },
+          "perStep": [
+            {
+              "action": "click",
+              "target": "ref=3",
+              "ms": 1616,
+              "changed": true,
+              "urlAfter": "https://news.ycombinator.com/newest",
+              "stale": null,
+              "error": null
+            },
+            {
+              "action": "click",
+              "target": "ref=141",
+              "ms": 1171,
+              "changed": true,
+              "urlAfter": "https://news.ycombinator.com/newcomments",
+              "stale": null,
+              "error": null
+            }
+          ]
+        }
+      ],
+      "medianAllMs": 3394,
+      "medianSuccessMs": 3394,
+      "perStepMedianMs": 1616,
+      "successRate": "3/3",
+      "protocolCalls": [
+        12,
+        12,
+        12
+      ]
+    }
+  }
+}

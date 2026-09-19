@@ -1,0 +1,1137 @@
+{
+  "generatedFrom": [
+    "vs-bstack-2026-09-19T14-51-12.jsonl",
+    "vs-bstack-2026-09-19T14-54-32.jsonl",
+    "vs-bstack-2026-09-19T14-57-26.jsonl"
+  ],
+  "predicates": {
+    "narrow": "(u) => /\\/wiki\\/JEV|\\/w\\/index\\.php\\?search=|Special:Search/i.test(u)",
+    "wide": "(u) => /\\/(wiki\\/(JEV|Japanese_encephalitis)|w\\/index\\.php\\?search=|wiki\\/Special:Search)/i.test(u)"
+  },
+  "perBatch": {
+    "vs-bstack-2026-09-19T14-51-12.jsonl": {
+      "engine": "rev1",
+      "note": "判据=旧窄",
+      "tasks": {
+        "A|hn-nav": {
+          "narrow": {
+            "n": 3,
+            "ok": 3,
+            "medianMs": 2357,
+            "minMs": 2245,
+            "maxMs": 2668,
+            "medianSteps": 2,
+            "medianJevCalls": 2,
+            "samplesMs": [
+              2357,
+              2245,
+              2668
+            ],
+            "samplesSteps": [
+              2,
+              2,
+              2
+            ]
+          },
+          "wide": {
+            "n": 3,
+            "ok": 3,
+            "medianMs": 2357,
+            "minMs": 2245,
+            "maxMs": 2668,
+            "medianSteps": 2,
+            "medianJevCalls": 2,
+            "samplesMs": [
+              2357,
+              2245,
+              2668
+            ],
+            "samplesSteps": [
+              2,
+              2,
+              2
+            ]
+          }
+        },
+        "B|hn-nav": {
+          "narrow": {
+            "n": 3,
+            "ok": 3,
+            "medianMs": 2477,
+            "minMs": 2414,
+            "maxMs": 2546,
+            "medianSteps": 2,
+            "medianJevCalls": 2,
+            "samplesMs": [
+              2414,
+              2477,
+              2546
+            ],
+            "samplesSteps": [
+              2,
+              2,
+              2
+            ]
+          },
+          "wide": {
+            "n": 3,
+            "ok": 3,
+            "medianMs": 2477,
+            "minMs": 2414,
+            "maxMs": 2546,
+            "medianSteps": 2,
+            "medianJevCalls": 2,
+            "samplesMs": [
+              2414,
+              2477,
+              2546
+            ],
+            "samplesSteps": [
+              2,
+              2,
+              2
+            ]
+          }
+        },
+        "A|wiki-search": {
+          "narrow": {
+            "n": 3,
+            "ok": 0,
+            "medianMs": null,
+            "minMs": null,
+            "maxMs": null,
+            "medianSteps": null,
+            "medianJevCalls": null,
+            "samplesMs": [
+              4616,
+              4556,
+              4191
+            ],
+            "samplesSteps": [
+              2,
+              2,
+              2
+            ]
+          },
+          "wide": {
+            "n": 3,
+            "ok": 3,
+            "medianMs": 4556,
+            "minMs": 4191,
+            "maxMs": 4616,
+            "medianSteps": 2,
+            "medianJevCalls": 2,
+            "samplesMs": [
+              4616,
+              4556,
+              4191
+            ],
+            "samplesSteps": [
+              2,
+              2,
+              2
+            ]
+          }
+        },
+        "B|wiki-search": {
+          "narrow": {
+            "n": 3,
+            "ok": 3,
+            "medianMs": 4806,
+            "minMs": 4625,
+            "maxMs": 5933,
+            "medianSteps": 3,
+            "medianJevCalls": 3,
+            "samplesMs": [
+              5933,
+              4625,
+              4806
+            ],
+            "samplesSteps": [
+              3,
+              3,
+              3
+            ]
+          },
+          "wide": {
+            "n": 3,
+            "ok": 3,
+            "medianMs": 4806,
+            "minMs": 4625,
+            "maxMs": 5933,
+            "medianSteps": 3,
+            "medianJevCalls": 3,
+            "samplesMs": [
+              5933,
+              4625,
+              4806
+            ],
+            "samplesSteps": [
+              3,
+              3,
+              3
+            ]
+          }
+        },
+        "A|httpbin-form": {
+          "narrow": {
+            "n": 3,
+            "ok": 3,
+            "medianMs": 4484,
+            "minMs": 4454,
+            "maxMs": 9303,
+            "medianSteps": 3,
+            "medianJevCalls": 3,
+            "samplesMs": [
+              9303,
+              4454,
+              4484
+            ],
+            "samplesSteps": [
+              3,
+              3,
+              3
+            ]
+          },
+          "wide": {
+            "n": 3,
+            "ok": 3,
+            "medianMs": 4484,
+            "minMs": 4454,
+            "maxMs": 9303,
+            "medianSteps": 3,
+            "medianJevCalls": 3,
+            "samplesMs": [
+              9303,
+              4454,
+              4484
+            ],
+            "samplesSteps": [
+              3,
+              3,
+              3
+            ]
+          }
+        },
+        "B|httpbin-form": {
+          "narrow": {
+            "n": 3,
+            "ok": 3,
+            "medianMs": 4264,
+            "minMs": 3707,
+            "maxMs": 5040,
+            "medianSteps": 3,
+            "medianJevCalls": 3,
+            "samplesMs": [
+              4264,
+              3707,
+              5040
+            ],
+            "samplesSteps": [
+              3,
+              3,
+              3
+            ]
+          },
+          "wide": {
+            "n": 3,
+            "ok": 3,
+            "medianMs": 4264,
+            "minMs": 3707,
+            "maxMs": 5040,
+            "medianSteps": 3,
+            "medianJevCalls": 3,
+            "samplesMs": [
+              4264,
+              3707,
+              5040
+            ],
+            "samplesSteps": [
+              3,
+              3,
+              3
+            ]
+          }
+        }
+      }
+    },
+    "vs-bstack-2026-09-19T14-54-32.jsonl": {
+      "engine": "rev1",
+      "note": "判据=新宽",
+      "tasks": {
+        "A|hn-nav": {
+          "narrow": {
+            "n": 3,
+            "ok": 3,
+            "medianMs": 2446,
+            "minMs": 2405,
+            "maxMs": 2533,
+            "medianSteps": 2,
+            "medianJevCalls": 2,
+            "samplesMs": [
+              2533,
+              2405,
+              2446
+            ],
+            "samplesSteps": [
+              2,
+              2,
+              2
+            ]
+          },
+          "wide": {
+            "n": 3,
+            "ok": 3,
+            "medianMs": 2446,
+            "minMs": 2405,
+            "maxMs": 2533,
+            "medianSteps": 2,
+            "medianJevCalls": 2,
+            "samplesMs": [
+              2533,
+              2405,
+              2446
+            ],
+            "samplesSteps": [
+              2,
+              2,
+              2
+            ]
+          }
+        },
+        "B|hn-nav": {
+          "narrow": {
+            "n": 3,
+            "ok": 3,
+            "medianMs": 2974,
+            "minMs": 2508,
+            "maxMs": 3103,
+            "medianSteps": 2,
+            "medianJevCalls": 2,
+            "samplesMs": [
+              2974,
+              3103,
+              2508
+            ],
+            "samplesSteps": [
+              2,
+              2,
+              2
+            ]
+          },
+          "wide": {
+            "n": 3,
+            "ok": 3,
+            "medianMs": 2974,
+            "minMs": 2508,
+            "maxMs": 3103,
+            "medianSteps": 2,
+            "medianJevCalls": 2,
+            "samplesMs": [
+              2974,
+              3103,
+              2508
+            ],
+            "samplesSteps": [
+              2,
+              2,
+              2
+            ]
+          }
+        },
+        "A|wiki-search": {
+          "narrow": {
+            "n": 3,
+            "ok": 0,
+            "medianMs": null,
+            "minMs": null,
+            "maxMs": null,
+            "medianSteps": null,
+            "medianJevCalls": null,
+            "samplesMs": [
+              4114,
+              4102,
+              3911
+            ],
+            "samplesSteps": [
+              1,
+              1,
+              1
+            ]
+          },
+          "wide": {
+            "n": 3,
+            "ok": 3,
+            "medianMs": 4102,
+            "minMs": 3911,
+            "maxMs": 4114,
+            "medianSteps": 1,
+            "medianJevCalls": 1,
+            "samplesMs": [
+              4114,
+              4102,
+              3911
+            ],
+            "samplesSteps": [
+              1,
+              1,
+              1
+            ]
+          }
+        },
+        "B|wiki-search": {
+          "narrow": {
+            "n": 3,
+            "ok": 3,
+            "medianMs": 4693,
+            "minMs": 4169,
+            "maxMs": 6193,
+            "medianSteps": 3,
+            "medianJevCalls": 3,
+            "samplesMs": [
+              4693,
+              6193,
+              4169
+            ],
+            "samplesSteps": [
+              3,
+              3,
+              3
+            ]
+          },
+          "wide": {
+            "n": 3,
+            "ok": 3,
+            "medianMs": 4693,
+            "minMs": 4169,
+            "maxMs": 6193,
+            "medianSteps": 3,
+            "medianJevCalls": 3,
+            "samplesMs": [
+              4693,
+              6193,
+              4169
+            ],
+            "samplesSteps": [
+              3,
+              3,
+              3
+            ]
+          }
+        },
+        "A|httpbin-form": {
+          "narrow": {
+            "n": 3,
+            "ok": 3,
+            "medianMs": 5151,
+            "minMs": 4606,
+            "maxMs": 6717,
+            "medianSteps": 3,
+            "medianJevCalls": 3,
+            "samplesMs": [
+              6717,
+              5151,
+              4606
+            ],
+            "samplesSteps": [
+              3,
+              3,
+              3
+            ]
+          },
+          "wide": {
+            "n": 3,
+            "ok": 3,
+            "medianMs": 5151,
+            "minMs": 4606,
+            "maxMs": 6717,
+            "medianSteps": 3,
+            "medianJevCalls": 3,
+            "samplesMs": [
+              6717,
+              5151,
+              4606
+            ],
+            "samplesSteps": [
+              3,
+              3,
+              3
+            ]
+          }
+        },
+        "B|httpbin-form": {
+          "narrow": {
+            "n": 3,
+            "ok": 3,
+            "medianMs": 3867,
+            "minMs": 3670,
+            "maxMs": 4370,
+            "medianSteps": 3,
+            "medianJevCalls": 3,
+            "samplesMs": [
+              3670,
+              4370,
+              3867
+            ],
+            "samplesSteps": [
+              3,
+              3,
+              3
+            ]
+          },
+          "wide": {
+            "n": 3,
+            "ok": 3,
+            "medianMs": 3867,
+            "minMs": 3670,
+            "maxMs": 4370,
+            "medianSteps": 3,
+            "medianJevCalls": 3,
+            "samplesMs": [
+              3670,
+              4370,
+              3867
+            ],
+            "samplesSteps": [
+              3,
+              3,
+              3
+            ]
+          }
+        }
+      }
+    },
+    "vs-bstack-2026-09-19T14-57-26.jsonl": {
+      "engine": "rev2",
+      "note": "判据=新宽（引擎已改为 domcontentloaded 等待）",
+      "tasks": {
+        "A|hn-nav": {
+          "narrow": {
+            "n": 3,
+            "ok": 3,
+            "medianMs": 2485,
+            "minMs": 2101,
+            "maxMs": 5126,
+            "medianSteps": 2,
+            "medianJevCalls": 2,
+            "samplesMs": [
+              2101,
+              5126,
+              2485
+            ],
+            "samplesSteps": [
+              2,
+              2,
+              2
+            ]
+          },
+          "wide": {
+            "n": 3,
+            "ok": 3,
+            "medianMs": 2485,
+            "minMs": 2101,
+            "maxMs": 5126,
+            "medianSteps": 2,
+            "medianJevCalls": 2,
+            "samplesMs": [
+              2101,
+              5126,
+              2485
+            ],
+            "samplesSteps": [
+              2,
+              2,
+              2
+            ]
+          }
+        },
+        "B|hn-nav": {
+          "narrow": {
+            "n": 3,
+            "ok": 3,
+            "medianMs": 3052,
+            "minMs": 2429,
+            "maxMs": 4119,
+            "medianSteps": 2,
+            "medianJevCalls": 2,
+            "samplesMs": [
+              2429,
+              4119,
+              3052
+            ],
+            "samplesSteps": [
+              2,
+              2,
+              2
+            ]
+          },
+          "wide": {
+            "n": 3,
+            "ok": 3,
+            "medianMs": 3052,
+            "minMs": 2429,
+            "maxMs": 4119,
+            "medianSteps": 2,
+            "medianJevCalls": 2,
+            "samplesMs": [
+              2429,
+              4119,
+              3052
+            ],
+            "samplesSteps": [
+              2,
+              2,
+              2
+            ]
+          }
+        },
+        "A|wiki-search": {
+          "narrow": {
+            "n": 3,
+            "ok": 2,
+            "medianMs": 4256,
+            "minMs": 3843,
+            "maxMs": 4256,
+            "medianSteps": 1,
+            "medianJevCalls": 1,
+            "samplesMs": [
+              3863,
+              4256,
+              3843
+            ],
+            "samplesSteps": [
+              1,
+              1,
+              1
+            ]
+          },
+          "wide": {
+            "n": 3,
+            "ok": 3,
+            "medianMs": 3863,
+            "minMs": 3843,
+            "maxMs": 4256,
+            "medianSteps": 1,
+            "medianJevCalls": 1,
+            "samplesMs": [
+              3863,
+              4256,
+              3843
+            ],
+            "samplesSteps": [
+              1,
+              1,
+              1
+            ]
+          }
+        },
+        "B|wiki-search": {
+          "narrow": {
+            "n": 3,
+            "ok": 3,
+            "medianMs": 4710,
+            "minMs": 4640,
+            "maxMs": 10104,
+            "medianSteps": 3,
+            "medianJevCalls": 3,
+            "samplesMs": [
+              4710,
+              4640,
+              10104
+            ],
+            "samplesSteps": [
+              3,
+              3,
+              3
+            ]
+          },
+          "wide": {
+            "n": 3,
+            "ok": 3,
+            "medianMs": 4710,
+            "minMs": 4640,
+            "maxMs": 10104,
+            "medianSteps": 3,
+            "medianJevCalls": 3,
+            "samplesMs": [
+              4710,
+              4640,
+              10104
+            ],
+            "samplesSteps": [
+              3,
+              3,
+              3
+            ]
+          }
+        },
+        "A|httpbin-form": {
+          "narrow": {
+            "n": 3,
+            "ok": 3,
+            "medianMs": 4210,
+            "minMs": 4160,
+            "maxMs": 5206,
+            "medianSteps": 3,
+            "medianJevCalls": 3,
+            "samplesMs": [
+              5206,
+              4210,
+              4160
+            ],
+            "samplesSteps": [
+              3,
+              3,
+              3
+            ]
+          },
+          "wide": {
+            "n": 3,
+            "ok": 3,
+            "medianMs": 4210,
+            "minMs": 4160,
+            "maxMs": 5206,
+            "medianSteps": 3,
+            "medianJevCalls": 3,
+            "samplesMs": [
+              5206,
+              4210,
+              4160
+            ],
+            "samplesSteps": [
+              3,
+              3,
+              3
+            ]
+          }
+        },
+        "B|httpbin-form": {
+          "narrow": {
+            "n": 3,
+            "ok": 3,
+            "medianMs": 5147,
+            "minMs": 4583,
+            "maxMs": 9052,
+            "medianSteps": 3,
+            "medianJevCalls": 3,
+            "samplesMs": [
+              9052,
+              5147,
+              4583
+            ],
+            "samplesSteps": [
+              3,
+              3,
+              3
+            ]
+          },
+          "wide": {
+            "n": 3,
+            "ok": 3,
+            "medianMs": 5147,
+            "minMs": 4583,
+            "maxMs": 9052,
+            "medianSteps": 3,
+            "medianJevCalls": 3,
+            "samplesMs": [
+              9052,
+              5147,
+              4583
+            ],
+            "samplesSteps": [
+              3,
+              3,
+              3
+            ]
+          }
+        }
+      }
+    }
+  },
+  "merged": {
+    "A|hn-nav": {
+      "narrow": {
+        "n": 9,
+        "ok": 9,
+        "medianMs": 2446,
+        "minMs": 2101,
+        "maxMs": 5126,
+        "medianSteps": 2,
+        "medianJevCalls": 2,
+        "samplesMs": [
+          2357,
+          2245,
+          2668,
+          2533,
+          2405,
+          2446,
+          2101,
+          5126,
+          2485
+        ],
+        "samplesSteps": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2
+        ]
+      },
+      "wide": {
+        "n": 9,
+        "ok": 9,
+        "medianMs": 2446,
+        "minMs": 2101,
+        "maxMs": 5126,
+        "medianSteps": 2,
+        "medianJevCalls": 2,
+        "samplesMs": [
+          2357,
+          2245,
+          2668,
+          2533,
+          2405,
+          2446,
+          2101,
+          5126,
+          2485
+        ],
+        "samplesSteps": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2
+        ]
+      }
+    },
+    "B|hn-nav": {
+      "narrow": {
+        "n": 9,
+        "ok": 9,
+        "medianMs": 2546,
+        "minMs": 2414,
+        "maxMs": 4119,
+        "medianSteps": 2,
+        "medianJevCalls": 2,
+        "samplesMs": [
+          2414,
+          2477,
+          2546,
+          2974,
+          3103,
+          2508,
+          2429,
+          4119,
+          3052
+        ],
+        "samplesSteps": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2
+        ]
+      },
+      "wide": {
+        "n": 9,
+        "ok": 9,
+        "medianMs": 2546,
+        "minMs": 2414,
+        "maxMs": 4119,
+        "medianSteps": 2,
+        "medianJevCalls": 2,
+        "samplesMs": [
+          2414,
+          2477,
+          2546,
+          2974,
+          3103,
+          2508,
+          2429,
+          4119,
+          3052
+        ],
+        "samplesSteps": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2
+        ]
+      }
+    },
+    "A|wiki-search": {
+      "narrow": {
+        "n": 9,
+        "ok": 2,
+        "medianMs": 4256,
+        "minMs": 3843,
+        "maxMs": 4256,
+        "medianSteps": 1,
+        "medianJevCalls": 1,
+        "samplesMs": [
+          4616,
+          4556,
+          4191,
+          4114,
+          4102,
+          3911,
+          3863,
+          4256,
+          3843
+        ],
+        "samplesSteps": [
+          2,
+          2,
+          2,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ]
+      },
+      "wide": {
+        "n": 9,
+        "ok": 9,
+        "medianMs": 4114,
+        "minMs": 3843,
+        "maxMs": 4616,
+        "medianSteps": 1,
+        "medianJevCalls": 1,
+        "samplesMs": [
+          4616,
+          4556,
+          4191,
+          4114,
+          4102,
+          3911,
+          3863,
+          4256,
+          3843
+        ],
+        "samplesSteps": [
+          2,
+          2,
+          2,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ]
+      }
+    },
+    "B|wiki-search": {
+      "narrow": {
+        "n": 9,
+        "ok": 9,
+        "medianMs": 4710,
+        "minMs": 4169,
+        "maxMs": 10104,
+        "medianSteps": 3,
+        "medianJevCalls": 3,
+        "samplesMs": [
+          5933,
+          4625,
+          4806,
+          4693,
+          6193,
+          4169,
+          4710,
+          4640,
+          10104
+        ],
+        "samplesSteps": [
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3
+        ]
+      },
+      "wide": {
+        "n": 9,
+        "ok": 9,
+        "medianMs": 4710,
+        "minMs": 4169,
+        "maxMs": 10104,
+        "medianSteps": 3,
+        "medianJevCalls": 3,
+        "samplesMs": [
+          5933,
+          4625,
+          4806,
+          4693,
+          6193,
+          4169,
+          4710,
+          4640,
+          10104
+        ],
+        "samplesSteps": [
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3
+        ]
+      }
+    },
+    "A|httpbin-form": {
+      "narrow": {
+        "n": 9,
+        "ok": 9,
+        "medianMs": 4606,
+        "minMs": 4160,
+        "maxMs": 9303,
+        "medianSteps": 3,
+        "medianJevCalls": 3,
+        "samplesMs": [
+          9303,
+          4454,
+          4484,
+          6717,
+          5151,
+          4606,
+          5206,
+          4210,
+          4160
+        ],
+        "samplesSteps": [
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3
+        ]
+      },
+      "wide": {
+        "n": 9,
+        "ok": 9,
+        "medianMs": 4606,
+        "minMs": 4160,
+        "maxMs": 9303,
+        "medianSteps": 3,
+        "medianJevCalls": 3,
+        "samplesMs": [
+          9303,
+          4454,
+          4484,
+          6717,
+          5151,
+          4606,
+          5206,
+          4210,
+          4160
+        ],
+        "samplesSteps": [
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3
+        ]
+      }
+    },
+    "B|httpbin-form": {
+      "narrow": {
+        "n": 9,
+        "ok": 9,
+        "medianMs": 4370,
+        "minMs": 3670,
+        "maxMs": 9052,
+        "medianSteps": 3,
+        "medianJevCalls": 3,
+        "samplesMs": [
+          4264,
+          3707,
+          5040,
+          3670,
+          4370,
+          3867,
+          9052,
+          5147,
+          4583
+        ],
+        "samplesSteps": [
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3
+        ]
+      },
+      "wide": {
+        "n": 9,
+        "ok": 9,
+        "medianMs": 4370,
+        "minMs": 3670,
+        "maxMs": 9052,
+        "medianSteps": 3,
+        "medianJevCalls": 3,
+        "samplesMs": [
+          4264,
+          3707,
+          5040,
+          3670,
+          4370,
+          3867,
+          9052,
+          5147,
+          4583
+        ],
+        "samplesSteps": [
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3
+        ]
+      }
+    }
+  }
+}

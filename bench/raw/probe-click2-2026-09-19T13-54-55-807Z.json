@@ -1,0 +1,123 @@
+{
+  "nav": [
+    {
+      "mode": "ref",
+      "run": 1,
+      "clickMs": 1005,
+      "loadMs": 14,
+      "totalMs": 1019,
+      "url": "https://news.ycombinator.com/newest",
+      "err": null
+    },
+    {
+      "mode": "ref",
+      "run": 2,
+      "clickMs": 891,
+      "loadMs": 8,
+      "totalMs": 899,
+      "url": "https://news.ycombinator.com/newest",
+      "err": null
+    },
+    {
+      "mode": "ref",
+      "run": 3,
+      "clickMs": 788,
+      "loadMs": 6,
+      "totalMs": 794,
+      "url": "https://news.ycombinator.com/newest",
+      "err": null
+    },
+    {
+      "mode": "mouse",
+      "run": 1,
+      "clickMs": 872,
+      "loadMs": 130,
+      "totalMs": 1002,
+      "url": "https://news.ycombinator.com/newest",
+      "err": null
+    },
+    {
+      "mode": "mouse",
+      "run": 2,
+      "clickMs": 881,
+      "loadMs": 126,
+      "totalMs": 1007,
+      "url": "https://news.ycombinator.com/newest",
+      "err": null
+    },
+    {
+      "mode": "mouse",
+      "run": 3,
+      "clickMs": 912,
+      "loadMs": 124,
+      "totalMs": 1036,
+      "url": "https://news.ycombinator.com/newest",
+      "err": null
+    },
+    {
+      "mode": "cdp",
+      "run": 1,
+      "clickMs": 13,
+      "loadMs": 485,
+      "totalMs": 498,
+      "url": "https://news.ycombinator.com/newest",
+      "err": null
+    },
+    {
+      "mode": "cdp",
+      "run": 2,
+      "clickMs": 15,
+      "loadMs": 498,
+      "totalMs": 513,
+      "url": "https://news.ycombinator.com/newest",
+      "err": null
+    },
+    {
+      "mode": "cdp",
+      "run": 3,
+      "clickMs": 16,
+      "loadMs": 449,
+      "totalMs": 465,
+      "url": "https://news.ycombinator.com/newest",
+      "err": null
+    }
+  ],
+  "nonav": [
+    {
+      "mode": "mouse",
+      "run": 1,
+      "clickMs": 91,
+      "err": null
+    },
+    {
+      "mode": "mouse",
+      "run": 2,
+      "clickMs": 1041,
+      "err": null
+    },
+    {
+      "mode": "mouse",
+      "run": 3,
+      "clickMs": 92,
+      "err": null
+    },
+    {
+      "mode": "cdp",
+      "run": 1,
+      "clickMs": 5,
+      "err": null
+    },
+    {
+      "mode": "cdp",
+      "run": 2,
+      "clickMs": 14,
+      "err": null
+    },
+    {
+      "mode": "cdp",
+      "run": 3,
+      "clickMs": 11,
+      "err": null
+    }
+  ]
+}

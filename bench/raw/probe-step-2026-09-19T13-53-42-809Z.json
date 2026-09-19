@@ -1,0 +1,66 @@
+{
+  "steps": [
+    {
+      "label": "hn",
+      "run": 1,
+      "total": 2635,
+      "action": "click",
+      "target": "ref=3",
+      "urlAfter": "https://news.ycombinator.com/newest",
+      "stage": {
+        "snapshot": 140,
+        "url": 2,
+        "title": 1,
+        "click(ref=3)": 847,
+        "waitForLoadState": 10
+      }
+    },
+    {
+      "label": "hn",
+      "run": 2,
+      "total": 2602,
+      "action": "click",
+      "target": "ref=3",
+      "urlAfter": "https://news.ycombinator.com/newest",
+      "stage": {
+        "snapshot": 131,
+        "url": 3,
+        "title": 1,
+        "click(ref=3)": 1706,
+        "waitForLoadState": 8
+      }
+    },
+    {
+      "label": "wiki",
+      "run": 1,
+      "total": 5930,
+      "action": "click",
+      "target": "ref=6",
+      "urlAfter": "https://auth.wikimedia.org/enwiki/wiki/Special:CreateAccount?useformat=desktop&usesul3=1&returnto=Main+Page&centralauthLoginToken=e16ad5ec868a1c56c5b852738de03d3f",
+      "stage": {
+        "snapshot": 128,
+        "evaluate((list) => {\n)": 1,
+        "url": 0,
+        "title": 0,
+        "click(ref=6)": 4202,
+        "waitForLoadState": 254
+      }
+    },
+    {
+      "label": "wiki",
+      "run": 2,
+      "total": 4179,
+      "action": "click",
+      "target": "ref=6",
+      "urlAfter": "https://auth.wikimedia.org/enwiki/wiki/Special:CreateAccount?useformat=desktop&usesul3=1&returnto=Main+Page&centralauthLoginToken=77c22b0f3cb78d44713d9577f5b75d14",
+      "stage": {
+        "snapshot": 105,
+        "evaluate((list) => {\n)": 1,
+        "url": 2,
+        "title": 0,
+        "click(ref=6)": 2207,
+        "waitForLoadState": 252
+      }
+    }
+  ]
+}

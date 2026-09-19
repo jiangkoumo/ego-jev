@@ -1,0 +1,287 @@
+{
+  "goal": "把语言下拉框改选为 Dansk，然后点击确认按钮完成跳转",
+  "start": "file:///tmp/ego-jev-nav/a.html",
+  "arms": {
+    "orig-legacy": {
+      "opts": {},
+      "records": [
+        {
+          "run": 1,
+          "elapsedMs": 4090,
+          "success": false,
+          "reason": "stuck",
+          "steps": 4,
+          "url": "file:///tmp/ego-jev-nav/a.html",
+          "metrics": {
+            "page.snapshot": 4,
+            "page.url": 8,
+            "jev.request": 4,
+            "page.title": 4,
+            "page.evaluate": 4
+          },
+          "perStep": [
+            {
+              "action": "scroll_down",
+              "target": null,
+              "ms": 1479,
+              "changed": false,
+              "urlAfter": "file:///tmp/ego-jev-nav/a.html"
+            },
+            {
+              "action": "scroll_down",
+              "target": null,
+              "ms": 938,
+              "changed": false,
+              "urlAfter": "file:///tmp/ego-jev-nav/a.html"
+            },
+            {
+              "action": "scroll_down",
+              "target": null,
+              "ms": 729,
+              "changed": false,
+              "urlAfter": "file:///tmp/ego-jev-nav/a.html"
+            },
+            {
+              "action": "scroll_down",
+              "target": null,
+              "ms": 937,
+              "changed": false,
+              "urlAfter": "file:///tmp/ego-jev-nav/a.html"
+            }
+          ]
+        },
+        {
+          "run": 2,
+          "elapsedMs": 3134,
+          "success": false,
+          "reason": "stuck",
+          "steps": 4,
+          "url": "file:///tmp/ego-jev-nav/a.html",
+          "metrics": {
+            "page.snapshot": 4,
+            "page.url": 8,
+            "jev.request": 4,
+            "page.title": 4,
+            "page.evaluate": 4
+          },
+          "perStep": [
+            {
+              "action": "scroll_down",
+              "target": null,
+              "ms": 766,
+              "changed": false,
+              "urlAfter": "file:///tmp/ego-jev-nav/a.html"
+            },
+            {
+              "action": "scroll_down",
+              "target": null,
+              "ms": 807,
+              "changed": false,
+              "urlAfter": "file:///tmp/ego-jev-nav/a.html"
+            },
+            {
+              "action": "scroll_down",
+              "target": null,
+              "ms": 829,
+              "changed": false,
+              "urlAfter": "file:///tmp/ego-jev-nav/a.html"
+            },
+            {
+              "action": "scroll_down",
+              "target": null,
+              "ms": 728,
+              "changed": false,
+              "urlAfter": "file:///tmp/ego-jev-nav/a.html"
+            }
+          ]
+        },
+        {
+          "run": 3,
+          "elapsedMs": 3148,
+          "success": false,
+          "reason": "stuck",
+          "steps": 4,
+          "url": "file:///tmp/ego-jev-nav/a.html",
+          "metrics": {
+            "page.snapshot": 4,
+            "page.url": 8,
+            "jev.request": 4,
+            "page.title": 4,
+            "page.evaluate": 4
+          },
+          "perStep": [
+            {
+              "action": "scroll_down",
+              "target": null,
+              "ms": 859,
+              "changed": false,
+              "urlAfter": "file:///tmp/ego-jev-nav/a.html"
+            },
+            {
+              "action": "scroll_down",
+              "target": null,
+              "ms": 728,
+              "changed": false,
+              "urlAfter": "file:///tmp/ego-jev-nav/a.html"
+            },
+            {
+              "action": "scroll_down",
+              "target": null,
+              "ms": 719,
+              "changed": false,
+              "urlAfter": "file:///tmp/ego-jev-nav/a.html"
+            },
+            {
+              "action": "scroll_down",
+              "target": null,
+              "ms": 836,
+              "changed": false,
+              "urlAfter": "file:///tmp/ego-jev-nav/a.html"
+            }
+          ]
+        }
+      ],
+      "successRate": "0/3"
+    },
+    "new-legacy": {
+      "opts": {
+        "settleMode": "legacy"
+      },
+      "records": [
+        {
+          "run": 1,
+          "elapsedMs": 878,
+          "success": false,
+          "reason": "action_failed",
+          "steps": 1,
+          "url": "file:///tmp/ego-jev-nav/a.html",
+          "metrics": {
+            "page.evaluate": 3,
+            "jev.request": 1
+          },
+          "perStep": [
+            {
+              "action": "select",
+              "target": "ref=1#2",
+              "ms": 875,
+              "changed": false,
+              "urlAfter": "file:///tmp/ego-jev-nav/a.html"
+            }
+          ]
+        },
+        {
+          "run": 2,
+          "elapsedMs": 470,
+          "success": false,
+          "reason": "action_failed",
+          "steps": 1,
+          "url": "file:///tmp/ego-jev-nav/a.html",
+          "metrics": {
+            "page.evaluate": 3,
+            "jev.request": 1
+          },
+          "perStep": [
+            {
+              "action": "select",
+              "target": "ref=1#2",
+              "ms": 468,
+              "changed": false,
+              "urlAfter": "file:///tmp/ego-jev-nav/a.html"
+            }
+          ]
+        },
+        {
+          "run": 3,
+          "elapsedMs": 480,
+          "success": false,
+          "reason": "action_failed",
+          "steps": 1,
+          "url": "file:///tmp/ego-jev-nav/a.html",
+          "metrics": {
+            "page.evaluate": 3,
+            "jev.request": 1
+          },
+          "perStep": [
+            {
+              "action": "select",
+              "target": "ref=1#2",
+              "ms": 478,
+              "changed": false,
+              "urlAfter": "file:///tmp/ego-jev-nav/a.html"
+            }
+          ]
+        }
+      ],
+      "successRate": "0/3"
+    },
+    "new-observable": {
+      "opts": {},
+      "records": [
+        {
+          "run": 1,
+          "elapsedMs": 653,
+          "success": false,
+          "reason": "action_failed",
+          "steps": 1,
+          "url": "file:///tmp/ego-jev-nav/a.html",
+          "metrics": {
+            "page.evaluate": 3,
+            "jev.request": 1
+          },
+          "perStep": [
+            {
+              "action": "select",
+              "target": "ref=1#2",
+              "ms": 650,
+              "changed": false,
+              "urlAfter": "file:///tmp/ego-jev-nav/a.html"
+            }
+          ]
+        },
+        {
+          "run": 2,
+          "elapsedMs": 796,
+          "success": false,
+          "reason": "action_failed",
+          "steps": 1,
+          "url": "file:///tmp/ego-jev-nav/a.html",
+          "metrics": {
+            "page.evaluate": 3,
+            "jev.request": 1
+          },
+          "perStep": [
+            {
+              "action": "select",
+              "target": "ref=1#2",
+              "ms": 793,
+              "changed": false,
+              "urlAfter": "file:///tmp/ego-jev-nav/a.html"
+            }
+          ]
+        },
+        {
+          "run": 3,
+          "elapsedMs": 491,
+          "success": false,
+          "reason": "action_failed",
+          "steps": 1,
+          "url": "file:///tmp/ego-jev-nav/a.html",
+          "metrics": {
+            "page.evaluate": 3,
+            "jev.request": 1
+          },
+          "perStep": [
+            {
+              "action": "select",
+              "target": "ref=1#2",
+              "ms": 488,
+              "changed": false,
+              "urlAfter": "file:///tmp/ego-jev-nav/a.html"
+            }
+          ]
+        }
+      ],
+      "successRate": "0/3"
+    }
+  }
+}

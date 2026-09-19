@@ -1,0 +1,6 @@
+round=1 {"stack":"A","task":"hn-nav","success":false,"reason":"no_output"}
+round=1 {"stack": "B", "task": "hn-nav", "url": "https://news.ycombinator.com", "elapsedMs": 2789, "steps": 2, "success": true, "status": "ready", "finalUrl": "https://news.ycombinator.com/newcomments", "jevCalls": 2, "textCalls": 0, "perStepMs": [1219, 580], "actionLabels": ["new", "comments"], "elapsedPerAction": [1545, 2788], "jevLatencyMs": [1219, 580], "textLatencyMs": []}
+round=1 {"stack":"A","task":"wiki-search","success":false,"reason":"no_output"}
+round=1 {"stack":"B","task":"wiki-search","success":false,"reason":"no_output"}
+round=1 {"stack":"A","task":"httpbin-form","success":false,"reason":"no_output"}
+round=1 {"stack":"B","task":"httpbin-form","success":false,"reason":"no_output"}

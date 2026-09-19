@@ -1,0 +1,35 @@
+
+[1] validateChoice 单元用例
+  ok   validateChoice → null
+  ok   validateChoice → choice_not_offered
+  ok   validateChoice → criteria_key_mismatch
+  ok   validateChoice → probabilities_not_normalized
+  ok   validateChoice → choice_not_argmax
+  ok   validateChoice → probability_out_of_range
+  ok   validateChoice → probability_out_of_range
+  ok   validateChoice → no_probabilities
+  ok   validateChoice → no_answer
+
+[2] 响应校验不合格时不得执行动作
+  ok   概率和≠1 → invalidResponse=probabilities_not_normalized
+  ok   不合格时没有执行任何点击
+  ok   choice 不在候选集合内 → choice_not_offered
+  ok   不合格时没有执行任何点击（目标头）
+  ok   choice 不是 argmax → choice_not_argmax
+  ok   不合格时没有执行任何点击（argmax）
+
+[3] 执行前守卫（陈旧检测）
+  ok   节点消失 → guardRejected=node_gone
+  ok   守卫拒绝时没有派发鼠标事件
+  ok   结构指纹变化 → guardRejected=stale_guard
+  ok   陈旧决策不执行
+
+[4] 连续 3 次动作页面无变化 → 停止
+  ok   无进展 3 次后停止
+  ok   停止前恰好执行 3 次动作
+
+[5] 不合格响应重试上限
+  ok   连续不合格 → reason=invalid_response
+  ok   始终没有执行动作
+
+结果: 23 通过 / 0 失败

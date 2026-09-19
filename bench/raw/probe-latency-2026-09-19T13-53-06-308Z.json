@@ -1,0 +1,96 @@
+{
+  "https://news.ycombinator.com": {
+    "url": "https://news.ycombinator.com",
+    "samples": [
+      {
+        "snapMs": 104,
+        "snapshotChars": 27514,
+        "parseMs": 1,
+        "enrichMs": 0,
+        "domMs": 2,
+        "domCount": 60,
+        "menuChars": 2272,
+        "menuDomChars": 1831,
+        "jevBigMs": 1344,
+        "jevSmallMs": 2036,
+        "bigOk": true,
+        "smallOk": true
+      },
+      {
+        "snapMs": 122,
+        "snapshotChars": 27356,
+        "parseMs": 0,
+        "enrichMs": 0,
+        "domMs": 2,
+        "domCount": 60,
+        "menuChars": 2195,
+        "menuDomChars": 1728,
+        "jevBigMs": 497,
+        "jevSmallMs": 707,
+        "bigOk": true,
+        "smallOk": true
+      },
+      {
+        "snapMs": 112,
+        "snapshotChars": 27356,
+        "parseMs": 0,
+        "enrichMs": 0,
+        "domMs": 2,
+        "domCount": 60,
+        "menuChars": 2195,
+        "menuDomChars": 1728,
+        "jevBigMs": 605,
+        "jevSmallMs": 509,
+        "bigOk": true,
+        "smallOk": true
+      }
+    ]
+  },
+  "https://en.wikipedia.org/wiki/Main_Page": {
+    "url": "https://en.wikipedia.org/wiki/Main_Page",
+    "samples": [
+      {
+        "snapMs": 116,
+        "snapshotChars": 10837,
+        "parseMs": 0,
+        "enrichMs": 1,
+        "domMs": 2,
+        "domCount": 43,
+        "menuChars": 2381,
+        "menuDomChars": 1835,
+        "jevBigMs": 567,
+        "jevSmallMs": 451,
+        "bigOk": true,
+        "smallOk": true
+      },
+      {
+        "snapMs": 130,
+        "snapshotChars": 11175,
+        "parseMs": 0,
+        "enrichMs": 1,
+        "domMs": 5,
+        "domCount": 45,
+        "menuChars": 2203,
+        "menuDomChars": 1938,
+        "jevBigMs": 707,
+        "jevSmallMs": 480,
+        "bigOk": true,
+        "smallOk": true
+      },
+      {
+        "snapMs": 117,
+        "snapshotChars": 11165,
+        "parseMs": 1,
+        "enrichMs": 0,
+        "domMs": 2,
+        "domCount": 45,
+        "menuChars": 2198,
+        "menuDomChars": 1938,
+        "jevBigMs": 506,
+        "jevSmallMs": 1762,
+        "bigOk": true,
+        "smallOk": true
+      }
+    ]
+  }
+}

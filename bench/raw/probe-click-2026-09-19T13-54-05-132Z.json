@@ -1,0 +1,76 @@
+{
+  "rows": [
+    {
+      "mode": "ref",
+      "run": 1,
+      "ms": 53,
+      "point": {
+        "x": 239,
+        "y": 20
+      },
+      "url": "https://news.ycombinator.com/",
+      "err": "TypeError: Page actions require a non-empty selector string",
+      "ok": false
+    },
+    {
+      "mode": "ref",
+      "run": 2,
+      "ms": 54,
+      "point": {
+        "x": 239,
+        "y": 20
+      },
+      "url": "https://news.ycombinator.com/",
+      "err": "TypeError: Page actions require a non-empty selector string",
+      "ok": false
+    },
+    {
+      "mode": "ref",
+      "run": 3,
+      "ms": 52,
+      "point": {
+        "x": 239,
+        "y": 20
+      },
+      "url": "https://news.ycombinator.com/",
+      "err": "TypeError: Page actions require a non-empty selector string",
+      "ok": false
+    },
+    {
+      "mode": "mouse",
+      "run": 1,
+      "ms": 886,
+      "point": {
+        "x": 239,
+        "y": 20
+      },
+      "url": "https://news.ycombinator.com/newest",
+      "err": null,
+      "ok": true
+    },
+    {
+      "mode": "mouse",
+      "run": 2,
+      "ms": 848,
+      "point": {
+        "x": 239,
+        "y": 20
+      },
+      "url": "https://news.ycombinator.com/newest",
+      "err": null,
+      "ok": true
+    },
+    {
+      "mode": "mouse",
+      "run": 3,
+      "ms": 924,
+      "point": {
+        "x": 239,
+        "y": 20
+      },
+      "url": "https://news.ycombinator.com/newest",
+      "err": null,
+      "ok": true
+    }
+  ]
+}

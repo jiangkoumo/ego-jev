@@ -1,0 +1,86 @@
+{
+  "rawResponse": {
+    "model": "jev-1.13.0",
+    "answers": {
+      "operation": {
+        "type": "choice",
+        "choice": "click",
+        "confidence": 0.98,
+        "probabilities": {
+          "scroll_up": 0.02,
+          "wait": 0,
+          "scroll_down": 0,
+          "click": 0.98,
+          "done": 0,
+          "blocked": 0
+        }
+      },
+      "click_target": {
+        "type": "choice",
+        "choice": "ref=3",
+        "confidence": 0.97,
+        "probabilities": {
+          "ref=42": 0,
+          "ref=41": 0,
+          "ref=14": 0,
+          "ref=2": 0,
+          "ref=29": 0,
+          "ref=43": 0,
+          "ref=8": 0,
+          "ref=20": 0,
+          "ref=38": 0,
+          "ref=45": 0,
+          "ref=31": 0,
+          "ref=27": 0,
+          "ref=30": 0,
+          "ref=12": 0,
+          "ref=37": 0,
+          "ref=26": 0,
+          "ref=47": 0,
+          "ref=34": 0,
+          "ref=22": 0,
+          "none": 0.01,
+          "ref=7": 0,
+          "ref=44": 0,
+          "ref=5": 0.02,
+          "ref=24": 0,
+          "ref=4": 0,
+          "ref=28": 0,
+          "ref=6": 0,
+          "ref=35": 0,
+          "ref=13": 0,
+          "ref=21": 0,
+          "ref=23": 0,
+          "ref=10": 0,
+          "ref=36": 0,
+          "ref=15": 0,
+          "ref=33": 0,
+          "ref=17": 0,
+          "ref=40": 0,
+          "ref=16": 0,
+          "ref=19": 0,
+          "ref=3": 0.97,
+          "ref=9": 0
+        }
+      }
+    },
+    "usage": {
+      "input_tokens": 3209,
+      "output_tokens": 477
+    }
+  },
+  "questionHeads": {
+    "operation": 6,
+    "click_target": 41
+  },
+  "inputs": [
+    {
+      "fillMs": 163,
+      "clickMs": 44,
+      "selAllMs": 3,
+      "insertMs": 2,
+      "value": "Jev",
+      "hasSelect": false
+    }
+  ]
+}

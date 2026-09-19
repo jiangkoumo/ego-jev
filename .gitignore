@@ -6,3 +6,6 @@ examples/bench/*-measurement.json
 
 # 本地待提交的上游 PR 草稿
 .contrib/
+
+# seedmux 的会话记录（本地工具产物，不属仓库内容）
+.agent-tape/

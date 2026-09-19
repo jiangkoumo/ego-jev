@@ -1,0 +1,1698 @@
+{
+  "startedAt": "2026-09-19T14:26:58.953Z",
+  "runs": 3,
+  "tasks": [
+    "hn-nav",
+    "wiki-search",
+    "httpbin-form"
+  ],
+  "arms": {
+    "A0-base": {
+      "opts": {},
+      "tasks": {
+        "hn-nav": {
+          "records": [
+            {
+              "run": 1,
+              "elapsedMs": 4003,
+              "success": true,
+              "reason": "check_passed",
+              "steps": 2,
+              "url": "https://news.ycombinator.com/newcomments",
+              "protocolCalls": 12,
+              "metrics": {
+                "page.snapshot": 2,
+                "page.url": 4,
+                "jev.request": 2,
+                "page.title": 2,
+                "page.click": 2
+              },
+              "perStepMs": [
+                2743,
+                1251
+              ],
+              "stepActions": [
+                "click",
+                "click"
+              ],
+              "observeModes": [
+                null,
+                null
+              ],
+              "invalid": 0,
+              "guardRejected": 0
+            },
+            {
+              "run": 2,
+              "elapsedMs": 4434,
+              "success": true,
+              "reason": "check_passed",
+              "steps": 2,
+              "url": "https://news.ycombinator.com/newcomments",
+              "protocolCalls": 12,
+              "metrics": {
+                "page.snapshot": 2,
+                "page.url": 4,
+                "jev.request": 2,
+                "page.title": 2,
+                "page.click": 2
+              },
+              "perStepMs": [
+                2495,
+                1935
+              ],
+              "stepActions": [
+                "click",
+                "click"
+              ],
+              "observeModes": [
+                null,
+                null
+              ],
+              "invalid": 0,
+              "guardRejected": 0
+            },
+            {
+              "run": 3,
+              "elapsedMs": 3157,
+              "success": true,
+              "reason": "check_passed",
+              "steps": 2,
+              "url": "https://news.ycombinator.com/newcomments",
+              "protocolCalls": 12,
+              "metrics": {
+                "page.snapshot": 2,
+                "page.url": 4,
+                "jev.request": 2,
+                "page.title": 2,
+                "page.click": 2
+              },
+              "perStepMs": [
+                1940,
+                1211
+              ],
+              "stepActions": [
+                "click",
+                "click"
+              ],
+              "observeModes": [
+                null,
+                null
+              ],
+              "invalid": 0,
+              "guardRejected": 0
+            }
+          ],
+          "successRate": "3/3",
+          "medianAllMs": 4003,
+          "medianSuccessMs": 4003,
+          "minSuccessMs": 3157,
+          "maxSuccessMs": 4434,
+          "medianSteps": 2,
+          "medianProtocolCalls": 12,
+          "medianPerStepMs": 1940
+        },
+        "wiki-search": {
+          "records": [
+            {
+              "run": 1,
+              "elapsedMs": 3348,
+              "success": true,
+              "reason": "check_passed",
+              "steps": 1,
+              "url": "https://en.wikipedia.org/wiki/JEV",
+              "protocolCalls": 8,
+              "metrics": {
+                "page.snapshot": 1,
+                "page.evaluate": 1,
+                "page.url": 2,
+                "jev.request": 1,
+                "page.title": 1,
+                "page.fill": 1,
+                "page.press": 1
+              },
+              "perStepMs": [
+                3342
+              ],
+              "stepActions": [
+                "type_text_submit:Jev"
+              ],
+              "observeModes": [
+                null
+              ],
+              "invalid": 0,
+              "guardRejected": 0
+            },
+            {
+              "run": 2,
+              "elapsedMs": 4232,
+              "success": true,
+              "reason": "jev_done",
+              "steps": 2,
+              "url": "https://en.wikipedia.org/wiki/Japanese_encephalitis",
+              "protocolCalls": 13,
+              "metrics": {
+                "page.snapshot": 2,
+                "page.evaluate": 2,
+                "page.url": 3,
+                "jev.request": 2,
+                "page.title": 2,
+                "page.fill": 1,
+                "page.press": 1
+              },
+              "perStepMs": [
+                3520,
+                646
+              ],
+              "stepActions": [
+                "type_text_submit:Jev",
+                "done"
+              ],
+              "observeModes": [
+                null,
+                null
+              ],
+              "invalid": 0,
+              "guardRejected": 0
+            },
+            {
+              "run": 3,
+              "elapsedMs": 3374,
+              "success": true,
+              "reason": "check_passed",
+              "steps": 1,
+              "url": "https://en.wikipedia.org/wiki/JEV",
+              "protocolCalls": 8,
+              "metrics": {
+                "page.snapshot": 1,
+                "page.evaluate": 1,
+                "page.url": 2,
+                "jev.request": 1,
+                "page.title": 1,
+                "page.fill": 1,
+                "page.press": 1
+              },
+              "perStepMs": [
+                3372
+              ],
+              "stepActions": [
+                "type_text_submit:Jev"
+              ],
+              "observeModes": [
+                null
+              ],
+              "invalid": 0,
+              "guardRejected": 0
+            }
+          ],
+          "successRate": "3/3",
+          "medianAllMs": 3374,
+          "medianSuccessMs": 3374,
+          "minSuccessMs": 3348,
+          "maxSuccessMs": 4232,
+          "medianSteps": 1,
+          "medianProtocolCalls": 8,
+          "medianPerStepMs": 3372
+        },
+        "httpbin-form": {
+          "records": [
+            {
+              "run": 1,
+              "elapsedMs": 4838,
+              "success": true,
+              "reason": "check_passed",
+              "steps": 3,
+              "url": "https://httpbin.org/post",
+              "protocolCalls": 24,
+              "metrics": {
+                "page.snapshot": 3,
+                "page.evaluate": 6,
+                "page.url": 6,
+                "jev.request": 3,
+                "page.title": 3,
+                "page.fill": 1,
+                "page.click": 2
+              },
+              "perStepMs": [
+                2618,
+                1002,
+                1205
+              ],
+              "stepActions": [
+                "type_text:Jev",
+                "click",
+                "click"
+              ],
+              "observeModes": [
+                null,
+                null,
+                null
+              ],
+              "invalid": 0,
+              "guardRejected": 0
+            },
+            {
+              "run": 2,
+              "elapsedMs": 4644,
+              "success": true,
+              "reason": "check_passed",
+              "steps": 3,
+              "url": "https://httpbin.org/post",
+              "protocolCalls": 24,
+              "metrics": {
+                "page.snapshot": 3,
+                "page.evaluate": 6,
+                "page.url": 6,
+                "jev.request": 3,
+                "page.title": 3,
+                "page.fill": 1,
+                "page.click": 2
+              },
+              "perStepMs": [
+                2342,
+                1087,
+                1209
+              ],
+              "stepActions": [
+                "type_text:Jev",
+                "click",
+                "click"
+              ],
+              "observeModes": [
+                null,
+                null,
+                null
+              ],
+              "invalid": 0,
+              "guardRejected": 0
+            },
+            {
+              "run": 3,
+              "elapsedMs": 5734,
+              "success": true,
+              "reason": "check_passed",
+              "steps": 3,
+              "url": "https://httpbin.org/post",
+              "protocolCalls": 24,
+              "metrics": {
+                "page.snapshot": 3,
+                "page.evaluate": 6,
+                "page.url": 6,
+                "jev.request": 3,
+                "page.title": 3,
+                "page.fill": 1,
+                "page.click": 2
+              },
+              "perStepMs": [
+                2489,
+                930,
+                2300
+              ],
+              "stepActions": [
+                "type_text:Jev",
+                "click",
+                "click"
+              ],
+              "observeModes": [
+                null,
+                null,
+                null
+              ],
+              "invalid": 0,
+              "guardRejected": 0
+            }
+          ],
+          "successRate": "3/3",
+          "medianAllMs": 4838,
+          "medianSuccessMs": 4838,
+          "minSuccessMs": 4644,
+          "maxSuccessMs": 5734,
+          "medianSteps": 3,
+          "medianProtocolCalls": 24,
+          "medianPerStepMs": 1209
+        }
+      }
+    },
+    "A1-legacy": {
+      "opts": {
+        "observe": "snapshot",
+        "settleMode": "legacy",
+        "validate": false,
+        "rules": false
+      },
+      "tasks": {
+        "hn-nav": {
+          "records": [
+            {
+              "run": 1,
+              "elapsedMs": 2939,
+              "success": true,
+              "reason": "check_passed",
+              "steps": 2,
+              "url": "https://news.ycombinator.com/newcomments",
+              "protocolCalls": 12,
+              "metrics": {
+                "page.snapshot": 2,
+                "page.url": 4,
+                "page.title": 2,
+                "jev.request": 2,
+                "page.click": 2
+              },
+              "perStepMs": [
+                1776,
+                1151
+              ],
+              "stepActions": [
+                "click",
+                "click"
+              ],
+              "observeModes": [
+                "snapshot",
+                "snapshot"
+              ],
+              "invalid": 0,
+              "guardRejected": 0
+            },
+            {
+              "run": 2,
+              "elapsedMs": 4355,
+              "success": true,
+              "reason": "check_passed",
+              "steps": 2,
+              "url": "https://news.ycombinator.com/newcomments",
+              "protocolCalls": 12,
+              "metrics": {
+                "page.snapshot": 2,
+                "page.url": 4,
+                "page.title": 2,
+                "jev.request": 2,
+                "page.click": 2
+              },
+              "perStepMs": [
+                2373,
+                1978
+              ],
+              "stepActions": [
+                "click",
+                "click"
+              ],
+              "observeModes": [
+                "snapshot",
+                "snapshot"
+              ],
+              "invalid": 0,
+              "guardRejected": 0
+            },
+            {
+              "run": 3,
+              "elapsedMs": 4348,
+              "success": true,
+              "reason": "check_passed",
+              "steps": 2,
+              "url": "https://news.ycombinator.com/newcomments",
+              "protocolCalls": 12,
+              "metrics": {
+                "page.snapshot": 2,
+                "page.url": 4,
+                "page.title": 2,
+                "jev.request": 2,
+                "page.click": 2
+              },
+              "perStepMs": [
+                2336,
+                1999
+              ],
+              "stepActions": [
+                "click",
+                "click"
+              ],
+              "observeModes": [
+                "snapshot",
+                "snapshot"
+              ],
+              "invalid": 0,
+              "guardRejected": 0
+            }
+          ],
+          "successRate": "3/3",
+          "medianAllMs": 4348,
+          "medianSuccessMs": 4348,
+          "minSuccessMs": 2939,
+          "maxSuccessMs": 4355,
+          "medianSteps": 2,
+          "medianProtocolCalls": 12,
+          "medianPerStepMs": 1999
+        },
+        "wiki-search": {
+          "records": [
+            {
+              "run": 1,
+              "elapsedMs": 3321,
+              "success": true,
+              "reason": "check_passed",
+              "steps": 1,
+              "url": "https://en.wikipedia.org/wiki/JEV",
+              "protocolCalls": 8,
+              "metrics": {
+                "page.snapshot": 1,
+                "page.evaluate": 1,
+                "page.url": 2,
+                "page.title": 1,
+                "jev.request": 1,
+                "page.fill": 1,
+                "page.press": 1
+              },
+              "perStepMs": [
+                3308
+              ],
+              "stepActions": [
+                "type_text_submit:Jev"
+              ],
+              "observeModes": [
+                "snapshot"
+              ],
+              "invalid": 0,
+              "guardRejected": 0
+            },
+            {
+              "run": 2,
+              "elapsedMs": 3260,
+              "success": true,
+              "reason": "check_passed",
+              "steps": 1,
+              "url": "https://en.wikipedia.org/wiki/JEV",
+              "protocolCalls": 8,
+              "metrics": {
+                "page.snapshot": 1,
+                "page.evaluate": 1,
+                "page.url": 2,
+                "page.title": 1,
+                "jev.request": 1,
+                "page.fill": 1,
+                "page.press": 1
+              },
+              "perStepMs": [
+                3254
+              ],
+              "stepActions": [
+                "type_text_submit:Jev"
+              ],
+              "observeModes": [
+                "snapshot"
+              ],
+              "invalid": 0,
+              "guardRejected": 0
+            },
+            {
+              "run": 3,
+              "elapsedMs": 5334,
+              "success": true,
+              "reason": "jev_done",
+              "steps": 2,
+              "url": "https://en.wikipedia.org/wiki/Japanese_encephalitis",
+              "protocolCalls": 13,
+              "metrics": {
+                "page.snapshot": 2,
+                "page.evaluate": 2,
+                "page.url": 3,
+                "page.title": 2,
+                "jev.request": 2,
+                "page.fill": 1,
+                "page.press": 1
+              },
+              "perStepMs": [
+                4647,
+                567
+              ],
+              "stepActions": [
+                "type_text_submit:Jev",
+                "done"
+              ],
+              "observeModes": [
+                "snapshot",
+                "snapshot"
+              ],
+              "invalid": 0,
+              "guardRejected": 0
+            }
+          ],
+          "successRate": "3/3",
+          "medianAllMs": 3321,
+          "medianSuccessMs": 3321,
+          "minSuccessMs": 3260,
+          "maxSuccessMs": 5334,
+          "medianSteps": 1,
+          "medianProtocolCalls": 8,
+          "medianPerStepMs": 3308
+        },
+        "httpbin-form": {
+          "records": [
+            {
+              "run": 1,
+              "elapsedMs": 4568,
+              "success": true,
+              "reason": "check_passed",
+              "steps": 3,
+              "url": "https://httpbin.org/post",
+              "protocolCalls": 24,
+              "metrics": {
+                "page.snapshot": 3,
+                "page.evaluate": 6,
+                "page.url": 6,
+                "page.title": 3,
+                "jev.request": 3,
+                "page.fill": 1,
+                "page.click": 2
+              },
+              "perStepMs": [
+                1995,
+                1397,
+                1163
+              ],
+              "stepActions": [
+                "type_text:Jev",
+                "click",
+                "click"
+              ],
+              "observeModes": [
+                "snapshot",
+                "snapshot",
+                "snapshot"
+              ],
+              "invalid": 0,
+              "guardRejected": 0
+            },
+            {
+              "run": 2,
+              "elapsedMs": 4612,
+              "success": true,
+              "reason": "check_passed",
+              "steps": 3,
+              "url": "https://httpbin.org/post",
+              "protocolCalls": 24,
+              "metrics": {
+                "page.snapshot": 3,
+                "page.evaluate": 6,
+                "page.url": 6,
+                "page.title": 3,
+                "jev.request": 3,
+                "page.fill": 1,
+                "page.click": 2
+              },
+              "perStepMs": [
+                2187,
+                1251,
+                1161
+              ],
+              "stepActions": [
+                "type_text:Jev",
+                "click",
+                "click"
+              ],
+              "observeModes": [
+                "snapshot",
+                "snapshot",
+                "snapshot"
+              ],
+              "invalid": 0,
+              "guardRejected": 0
+            },
+            {
+              "run": 3,
+              "elapsedMs": 4596,
+              "success": true,
+              "reason": "check_passed",
+              "steps": 3,
+              "url": "https://httpbin.org/post",
+              "protocolCalls": 24,
+              "metrics": {
+                "page.snapshot": 3,
+                "page.evaluate": 6,
+                "page.url": 6,
+                "page.title": 3,
+                "jev.request": 3,
+                "page.fill": 1,
+                "page.click": 2
+              },
+              "perStepMs": [
+                2280,
+                1163,
+                1146
+              ],
+              "stepActions": [
+                "type_text:Jev",
+                "click",
+                "click"
+              ],
+              "observeModes": [
+                "snapshot",
+                "snapshot",
+                "snapshot"
+              ],
+              "invalid": 0,
+              "guardRejected": 0
+            }
+          ],
+          "successRate": "3/3",
+          "medianAllMs": 4596,
+          "medianSuccessMs": 4596,
+          "minSuccessMs": 4568,
+          "maxSuccessMs": 4612,
+          "medianSteps": 3,
+          "medianProtocolCalls": 24,
+          "medianPerStepMs": 1251
+        }
+      }
+    },
+    "A2-wait": {
+      "opts": {
+        "observe": "snapshot",
+        "validate": false,
+        "rules": false
+      },
+      "tasks": {
+        "hn-nav": {
+          "records": [
+            {
+              "run": 1,
+              "elapsedMs": 3483,
+              "success": true,
+              "reason": "check_passed",
+              "steps": 2,
+              "url": "https://news.ycombinator.com/newcomments",
+              "protocolCalls": 18,
+              "metrics": {
+                "page.snapshot": 2,
+                "page.url": 4,
+                "page.title": 2,
+                "jev.request": 2,
+                "page.click": 2,
+                "page.evaluate": 2,
+                "page.events": 2,
+                "page.waitForLoadState": 2
+              },
+              "perStepMs": [
+                1484,
+                1986
+              ],
+              "stepActions": [
+                "click",
+                "click"
+              ],
+              "observeModes": [
+                "snapshot",
+                "snapshot"
+              ],
+              "invalid": 0,
+              "guardRejected": 0
+            },
+            {
+              "run": 2,
+              "elapsedMs": 4042,
+              "success": true,
+              "reason": "check_passed",
+              "steps": 2,
+              "url": "https://news.ycombinator.com/newcomments",
+              "protocolCalls": 18,
+              "metrics": {
+                "page.snapshot": 2,
+                "page.url": 4,
+                "page.title": 2,
+                "jev.request": 2,
+                "page.click": 2,
+                "page.evaluate": 2,
+                "page.events": 2,
+                "page.waitForLoadState": 2
+              },
+              "perStepMs": [
+                2141,
+                1890
+              ],
+              "stepActions": [
+                "click",
+                "click"
+              ],
+              "observeModes": [
+                "snapshot",
+                "snapshot"
+              ],
+              "invalid": 0,
+              "guardRejected": 0
+            },
+            {
+              "run": 3,
+              "elapsedMs": 2570,
+              "success": true,
+              "reason": "check_passed",
+              "steps": 2,
+              "url": "https://news.ycombinator.com/newcomments",
+              "protocolCalls": 18,
+              "metrics": {
+                "page.snapshot": 2,
+                "page.url": 4,
+                "page.title": 2,
+                "jev.request": 2,
+                "page.click": 2,
+                "page.evaluate": 2,
+                "page.events": 2,
+                "page.waitForLoadState": 2
+              },
+              "perStepMs": [
+                1524,
+                1037
+              ],
+              "stepActions": [
+                "click",
+                "click"
+              ],
+              "observeModes": [
+                "snapshot",
+                "snapshot"
+              ],
+              "invalid": 0,
+              "guardRejected": 0
+            }
+          ],
+          "successRate": "3/3",
+          "medianAllMs": 3483,
+          "medianSuccessMs": 3483,
+          "minSuccessMs": 2570,
+          "maxSuccessMs": 4042,
+          "medianSteps": 2,
+          "medianProtocolCalls": 18,
+          "medianPerStepMs": 1890
+        },
+        "wiki-search": {
+          "records": [
+            {
+              "run": 1,
+              "elapsedMs": 10110,
+              "success": true,
+              "reason": "jev_done",
+              "steps": 2,
+              "url": "https://en.wikipedia.org/wiki/Japanese_encephalitis",
+              "protocolCalls": 16,
+              "metrics": {
+                "page.snapshot": 2,
+                "page.evaluate": 3,
+                "page.url": 3,
+                "page.title": 2,
+                "jev.request": 2,
+                "page.fill": 1,
+                "page.press": 1,
+                "page.events": 1,
+                "page.waitForLoadState": 1
+              },
+              "perStepMs": [
+                9180,
+                924
+              ],
+              "stepActions": [
+                "type_text_submit:Jev",
+                "done"
+              ],
+              "observeModes": [
+                "snapshot",
+                "snapshot"
+              ],
+              "invalid": 0,
+              "guardRejected": 0
+            },
+            {
+              "run": 2,
+              "elapsedMs": 3809,
+              "success": true,
+              "reason": "jev_done",
+              "steps": 2,
+              "url": "https://en.wikipedia.org/wiki/Japanese_encephalitis",
+              "protocolCalls": 16,
+              "metrics": {
+                "page.snapshot": 2,
+                "page.evaluate": 3,
+                "page.url": 3,
+                "page.title": 2,
+                "jev.request": 2,
+                "page.fill": 1,
+                "page.press": 1,
+                "page.events": 1,
+                "page.waitForLoadState": 1
+              },
+              "perStepMs": [
+                3206,
+                559
+              ],
+              "stepActions": [
+                "type_text_submit:Jev",
+                "done"
+              ],
+              "observeModes": [
+                "snapshot",
+                "snapshot"
+              ],
+              "invalid": 0,
+              "guardRejected": 0
+            },
+            {
+              "run": 3,
+              "elapsedMs": 3532,
+              "success": true,
+              "reason": "jev_done",
+              "steps": 2,
+              "url": "https://en.wikipedia.org/wiki/Japanese_encephalitis",
+              "protocolCalls": 16,
+              "metrics": {
+                "page.snapshot": 2,
+                "page.evaluate": 3,
+                "page.url": 3,
+                "page.title": 2,
+                "jev.request": 2,
+                "page.fill": 1,
+                "page.press": 1,
+                "page.events": 1,
+                "page.waitForLoadState": 1
+              },
+              "perStepMs": [
+                3036,
+                491
+              ],
+              "stepActions": [
+                "type_text_submit:Jev",
+                "done"
+              ],
+              "observeModes": [
+                "snapshot",
+                "snapshot"
+              ],
+              "invalid": 0,
+              "guardRejected": 0
+            }
+          ],
+          "successRate": "3/3",
+          "medianAllMs": 3809,
+          "medianSuccessMs": 3809,
+          "minSuccessMs": 3532,
+          "maxSuccessMs": 10110,
+          "medianSteps": 2,
+          "medianProtocolCalls": 16,
+          "medianPerStepMs": 3036
+        },
+        "httpbin-form": {
+          "records": [
+            {
+              "run": 1,
+              "elapsedMs": 9554,
+              "success": true,
+              "reason": "check_passed",
+              "steps": 3,
+              "url": "https://httpbin.org/post",
+              "protocolCalls": 35,
+              "metrics": {
+                "page.snapshot": 3,
+                "page.evaluate": 9,
+                "page.url": 6,
+                "page.title": 3,
+                "jev.request": 3,
+                "page.fill": 1,
+                "page.events": 6,
+                "page.waitForLoadState": 2,
+                "page.click": 2
+              },
+              "perStepMs": [
+                4082,
+                4141,
+                1326
+              ],
+              "stepActions": [
+                "type_text:Jev",
+                "click",
+                "click"
+              ],
+              "observeModes": [
+                "snapshot",
+                "snapshot",
+                "snapshot"
+              ],
+              "invalid": 0,
+              "guardRejected": 0
+            },
+            {
+              "run": 2,
+              "elapsedMs": 8803,
+              "success": true,
+              "reason": "check_passed",
+              "steps": 3,
+              "url": "https://httpbin.org/post",
+              "protocolCalls": 35,
+              "metrics": {
+                "page.snapshot": 3,
+                "page.evaluate": 9,
+                "page.url": 6,
+                "page.title": 3,
+                "jev.request": 3,
+                "page.fill": 1,
+                "page.events": 6,
+                "page.waitForLoadState": 2,
+                "page.click": 2
+              },
+              "perStepMs": [
+                4177,
+                3133,
+                1486
+              ],
+              "stepActions": [
+                "type_text:Jev",
+                "click",
+                "click"
+              ],
+              "observeModes": [
+                "snapshot",
+                "snapshot",
+                "snapshot"
+              ],
+              "invalid": 0,
+              "guardRejected": 0
+            },
+            {
+              "run": 3,
+              "elapsedMs": 7596,
+              "success": true,
+              "reason": "check_passed",
+              "steps": 3,
+              "url": "https://httpbin.org/post",
+              "protocolCalls": 35,
+              "metrics": {
+                "page.snapshot": 3,
+                "page.evaluate": 9,
+                "page.url": 6,
+                "page.title": 3,
+                "jev.request": 3,
+                "page.fill": 1,
+                "page.events": 6,
+                "page.waitForLoadState": 2,
+                "page.click": 2
+              },
+              "perStepMs": [
+                3049,
+                3148,
+                1394
+              ],
+              "stepActions": [
+                "type_text:Jev",
+                "click",
+                "click"
+              ],
+              "observeModes": [
+                "snapshot",
+                "snapshot",
+                "snapshot"
+              ],
+              "invalid": 0,
+              "guardRejected": 0
+            }
+          ],
+          "successRate": "3/3",
+          "medianAllMs": 8803,
+          "medianSuccessMs": 8803,
+          "minSuccessMs": 7596,
+          "maxSuccessMs": 9554,
+          "medianSteps": 3,
+          "medianProtocolCalls": 35,
+          "medianPerStepMs": 3133
+        }
+      }
+    },
+    "A3-obs": {
+      "opts": {
+        "validate": false,
+        "rules": false
+      },
+      "tasks": {
+        "hn-nav": {
+          "records": [
+            {
+              "run": 1,
+              "elapsedMs": 1786,
+              "success": true,
+              "reason": "check_passed",
+              "steps": 2,
+              "url": "https://news.ycombinator.com/newcomments",
+              "protocolCalls": 18,
+              "metrics": {
+                "page.evaluate": 6,
+                "jev.request": 2,
+                "page.cdp": 4,
+                "page.events": 2,
+                "page.waitForLoadState": 2,
+                "page.url": 2
+              },
+              "perStepMs": [
+                902,
+                880
+              ],
+              "stepActions": [
+                "click",
+                "click"
+              ],
+              "observeModes": [
+                "dom",
+                "dom"
+              ],
+              "invalid": 0,
+              "guardRejected": 0
+            },
+            {
+              "run": 2,
+              "elapsedMs": 2149,
+              "success": true,
+              "reason": "check_passed",
+              "steps": 2,
+              "url": "https://news.ycombinator.com/newcomments",
+              "protocolCalls": 18,
+              "metrics": {
+                "page.evaluate": 6,
+                "jev.request": 2,
+                "page.cdp": 4,
+                "page.events": 2,
+                "page.waitForLoadState": 2,
+                "page.url": 2
+              },
+              "perStepMs": [
+                835,
+                1304
+              ],
+              "stepActions": [
+                "click",
+                "click"
+              ],
+              "observeModes": [
+                "dom",
+                "dom"
+              ],
+              "invalid": 0,
+              "guardRejected": 0
+            },
+            {
+              "run": 3,
+              "elapsedMs": 1791,
+              "success": true,
+              "reason": "check_passed",
+              "steps": 2,
+              "url": "https://news.ycombinator.com/newcomments",
+              "protocolCalls": 18,
+              "metrics": {
+                "page.evaluate": 6,
+                "jev.request": 2,
+                "page.cdp": 4,
+                "page.events": 2,
+                "page.waitForLoadState": 2,
+                "page.url": 2
+              },
+              "perStepMs": [
+                873,
+                916
+              ],
+              "stepActions": [
+                "click",
+                "click"
+              ],
+              "observeModes": [
+                "dom",
+                "dom"
+              ],
+              "invalid": 0,
+              "guardRejected": 0
+            }
+          ],
+          "successRate": "3/3",
+          "medianAllMs": 1791,
+          "medianSuccessMs": 1791,
+          "minSuccessMs": 1786,
+          "maxSuccessMs": 2149,
+          "medianSteps": 2,
+          "medianProtocolCalls": 18,
+          "medianPerStepMs": 902
+        },
+        "wiki-search": {
+          "records": [
+            {
+              "run": 1,
+              "elapsedMs": 4202,
+              "success": true,
+              "reason": "jev_done",
+              "steps": 2,
+              "url": "https://en.wikipedia.org/wiki/Japanese_encephalitis",
+              "protocolCalls": 13,
+              "metrics": {
+                "page.evaluate": 4,
+                "jev.request": 2,
+                "page.cdp": 3,
+                "page.keyboard.press": 1,
+                "page.events": 1,
+                "page.waitForLoadState": 1,
+                "page.url": 1
+              },
+              "perStepMs": [
+                3804,
+                364
+              ],
+              "stepActions": [
+                "type_text_submit:Jev",
+                "done"
+              ],
+              "observeModes": [
+                "dom",
+                "dom"
+              ],
+              "invalid": 0,
+              "guardRejected": 0
+            },
+            {
+              "run": 2,
+              "elapsedMs": 4624,
+              "success": true,
+              "reason": "jev_done",
+              "steps": 2,
+              "url": "https://en.wikipedia.org/wiki/Japanese_encephalitis",
+              "protocolCalls": 13,
+              "metrics": {
+                "page.evaluate": 4,
+                "jev.request": 2,
+                "page.cdp": 3,
+                "page.keyboard.press": 1,
+                "page.events": 1,
+                "page.waitForLoadState": 1,
+                "page.url": 1
+              },
+              "perStepMs": [
+                4093,
+                527
+              ],
+              "stepActions": [
+                "type_text_submit:Jev",
+                "done"
+              ],
+              "observeModes": [
+                "dom",
+                "dom"
+              ],
+              "invalid": 0,
+              "guardRejected": 0
+            },
+            {
+              "run": 3,
+              "elapsedMs": 4408,
+              "success": true,
+              "reason": "jev_done",
+              "steps": 2,
+              "url": "https://en.wikipedia.org/wiki/Japanese_encephalitis",
+              "protocolCalls": 13,
+              "metrics": {
+                "page.evaluate": 4,
+                "jev.request": 2,
+                "page.cdp": 3,
+                "page.keyboard.press": 1,
+                "page.events": 1,
+                "page.waitForLoadState": 1,
+                "page.url": 1
+              },
+              "perStepMs": [
+                3952,
+                452
+              ],
+              "stepActions": [
+                "type_text_submit:Jev",
+                "done"
+              ],
+              "observeModes": [
+                "dom",
+                "dom"
+              ],
+              "invalid": 0,
+              "guardRejected": 0
+            }
+          ],
+          "successRate": "3/3",
+          "medianAllMs": 4408,
+          "medianSuccessMs": 4408,
+          "minSuccessMs": 4202,
+          "maxSuccessMs": 4624,
+          "medianSteps": 2,
+          "medianProtocolCalls": 13,
+          "medianPerStepMs": 3804
+        },
+        "httpbin-form": {
+          "records": [
+            {
+              "run": 1,
+              "elapsedMs": 6937,
+              "success": true,
+              "reason": "check_passed",
+              "steps": 3,
+              "url": "https://httpbin.org/post",
+              "protocolCalls": 31,
+              "metrics": {
+                "page.evaluate": 9,
+                "page.title": 3,
+                "jev.request": 3,
+                "page.cdp": 7,
+                "page.events": 5,
+                "page.waitForLoadState": 1,
+                "page.url": 3
+              },
+              "perStepMs": [
+                3041,
+                2150,
+                1724
+              ],
+              "stepActions": [
+                "type_text:Jev",
+                "click",
+                "click"
+              ],
+              "observeModes": [
+                "dom",
+                "dom",
+                "dom"
+              ],
+              "invalid": 0,
+              "guardRejected": 0
+            },
+            {
+              "run": 2,
+              "elapsedMs": 14857,
+              "success": true,
+              "reason": "check_passed",
+              "steps": 3,
+              "url": "https://httpbin.org/post",
+              "protocolCalls": 32,
+              "metrics": {
+                "page.evaluate": 9,
+                "page.title": 3,
+                "jev.request": 3,
+                "page.cdp": 7,
+                "page.events": 6,
+                "page.waitForLoadState": 1,
+                "page.url": 3
+              },
+              "perStepMs": [
+                3099,
+                2119,
+                9617
+              ],
+              "stepActions": [
+                "type_text:Jev",
+                "click",
+                "click"
+              ],
+              "observeModes": [
+                "dom",
+                "dom",
+                "dom"
+              ],
+              "invalid": 0,
+              "guardRejected": 0
+            },
+            {
+              "run": 3,
+              "elapsedMs": 7925,
+              "success": true,
+              "reason": "check_passed",
+              "steps": 3,
+              "url": "https://httpbin.org/post",
+              "protocolCalls": 31,
+              "metrics": {
+                "page.evaluate": 9,
+                "page.title": 3,
+                "jev.request": 3,
+                "page.cdp": 7,
+                "page.events": 5,
+                "page.waitForLoadState": 1,
+                "page.url": 3
+              },
+              "perStepMs": [
+                4052,
+                2146,
+                1703
+              ],
+              "stepActions": [
+                "type_text:Jev",
+                "click",
+                "click"
+              ],
+              "observeModes": [
+                "dom",
+                "dom",
+                "dom"
+              ],
+              "invalid": 0,
+              "guardRejected": 0
+            }
+          ],
+          "successRate": "3/3",
+          "medianAllMs": 7925,
+          "medianSuccessMs": 7925,
+          "minSuccessMs": 6937,
+          "maxSuccessMs": 14857,
+          "medianSteps": 3,
+          "medianProtocolCalls": 31,
+          "medianPerStepMs": 2150
+        }
+      }
+    },
+    "A4-full": {
+      "opts": {},
+      "tasks": {
+        "hn-nav": {
+          "records": [
+            {
+              "run": 1,
+              "elapsedMs": 1765,
+              "success": true,
+              "reason": "check_passed",
+              "steps": 2,
+              "url": "https://news.ycombinator.com/newcomments",
+              "protocolCalls": 18,
+              "metrics": {
+                "page.evaluate": 6,
+                "jev.request": 2,
+                "page.cdp": 4,
+                "page.events": 2,
+                "page.waitForLoadState": 2,
+                "page.url": 2
+              },
+              "perStepMs": [
+                759,
+                990
+              ],
+              "stepActions": [
+                "click",
+                "click"
+              ],
+              "observeModes": [
+                "dom",
+                "dom"
+              ],
+              "invalid": 0,
+              "guardRejected": 0
+            },
+            {
+              "run": 2,
+              "elapsedMs": 2360,
+              "success": true,
+              "reason": "check_passed",
+              "steps": 2,
+              "url": "https://news.ycombinator.com/newcomments",
+              "protocolCalls": 18,
+              "metrics": {
+                "page.evaluate": 6,
+                "jev.request": 2,
+                "page.cdp": 4,
+                "page.events": 2,
+                "page.waitForLoadState": 2,
+                "page.url": 2
+              },
+              "perStepMs": [
+                1167,
+                1180
+              ],
+              "stepActions": [
+                "click",
+                "click"
+              ],
+              "observeModes": [
+                "dom",
+                "dom"
+              ],
+              "invalid": 0,
+              "guardRejected": 0
+            },
+            {
+              "run": 3,
+              "elapsedMs": 1726,
+              "success": true,
+              "reason": "check_passed",
+              "steps": 2,
+              "url": "https://news.ycombinator.com/newcomments",
+              "protocolCalls": 18,
+              "metrics": {
+                "page.evaluate": 6,
+                "jev.request": 2,
+                "page.cdp": 4,
+                "page.events": 2,
+                "page.waitForLoadState": 2,
+                "page.url": 2
+              },
+              "perStepMs": [
+                793,
+                924
+              ],
+              "stepActions": [
+                "click",
+                "click"
+              ],
+              "observeModes": [
+                "dom",
+                "dom"
+              ],
+              "invalid": 0,
+              "guardRejected": 0
+            }
+          ],
+          "successRate": "3/3",
+          "medianAllMs": 1765,
+          "medianSuccessMs": 1765,
+          "minSuccessMs": 1726,
+          "maxSuccessMs": 2360,
+          "medianSteps": 2,
+          "medianProtocolCalls": 18,
+          "medianPerStepMs": 990
+        },
+        "wiki-search": {
+          "records": [
+            {
+              "run": 1,
+              "elapsedMs": 3766,
+              "success": true,
+              "reason": "jev_done",
+              "steps": 2,
+              "url": "https://en.wikipedia.org/wiki/Japanese_encephalitis",
+              "protocolCalls": 13,
+              "metrics": {
+                "page.evaluate": 4,
+                "jev.request": 2,
+                "page.cdp": 3,
+                "page.keyboard.press": 1,
+                "page.events": 1,
+                "page.waitForLoadState": 1,
+                "page.url": 1
+              },
+              "perStepMs": [
+                3184,
+                579
+              ],
+              "stepActions": [
+                "type_text_submit:Jev",
+                "done"
+              ],
+              "observeModes": [
+                "dom",
+                "dom"
+              ],
+              "invalid": 0,
+              "guardRejected": 0
+            },
+            {
+              "run": 2,
+              "elapsedMs": 3167,
+              "success": true,
+              "reason": "jev_done",
+              "steps": 2,
+              "url": "https://en.wikipedia.org/wiki/Japanese_encephalitis",
+              "protocolCalls": 13,
+              "metrics": {
+                "page.evaluate": 4,
+                "jev.request": 2,
+                "page.cdp": 3,
+                "page.keyboard.press": 1,
+                "page.events": 1,
+                "page.waitForLoadState": 1,
+                "page.url": 1
+              },
+              "perStepMs": [
+                2709,
+                392
+              ],
+              "stepActions": [
+                "type_text_submit:Jev",
+                "done"
+              ],
+              "observeModes": [
+                "dom",
+                "dom"
+              ],
+              "invalid": 0,
+              "guardRejected": 0
+            },
+            {
+              "run": 3,
+              "elapsedMs": 3584,
+              "success": true,
+              "reason": "jev_done",
+              "steps": 2,
+              "url": "https://en.wikipedia.org/wiki/Japanese_encephalitis",
+              "protocolCalls": 13,
+              "metrics": {
+                "page.evaluate": 4,
+                "jev.request": 2,
+                "page.cdp": 3,
+                "page.keyboard.press": 1,
+                "page.events": 1,
+                "page.waitForLoadState": 1,
+                "page.url": 1
+              },
+              "perStepMs": [
+                3010,
+                570
+              ],
+              "stepActions": [
+                "type_text_submit:Jev",
+                "done"
+              ],
+              "observeModes": [
+                "dom",
+                "dom"
+              ],
+              "invalid": 0,
+              "guardRejected": 0
+            }
+          ],
+          "successRate": "3/3",
+          "medianAllMs": 3584,
+          "medianSuccessMs": 3584,
+          "minSuccessMs": 3167,
+          "maxSuccessMs": 3766,
+          "medianSteps": 2,
+          "medianProtocolCalls": 13,
+          "medianPerStepMs": 2709
+        },
+        "httpbin-form": {
+          "records": [
+            {
+              "run": 1,
+              "elapsedMs": 7859,
+              "success": true,
+              "reason": "check_passed",
+              "steps": 3,
+              "url": "https://httpbin.org/post",
+              "protocolCalls": 31,
+              "metrics": {
+                "page.evaluate": 9,
+                "page.title": 3,
+                "jev.request": 3,
+                "page.cdp": 7,
+                "page.events": 5,
+                "page.waitForLoadState": 1,
+                "page.url": 3
+              },
+              "perStepMs": [
+                3989,
+                2146,
+                1702
+              ],
+              "stepActions": [
+                "type_text:Jev",
+                "click",
+                "click"
+              ],
+              "observeModes": [
+                "dom",
+                "dom",
+                "dom"
+              ],
+              "invalid": 0,
+              "guardRejected": 0
+            },
+            {
+              "run": 2,
+              "elapsedMs": 7089,
+              "success": true,
+              "reason": "check_passed",
+              "steps": 3,
+              "url": "https://httpbin.org/post",
+              "protocolCalls": 31,
+              "metrics": {
+                "page.evaluate": 9,
+                "page.title": 3,
+                "jev.request": 3,
+                "page.cdp": 7,
+                "page.events": 5,
+                "page.waitForLoadState": 1,
+                "page.url": 3
+              },
+              "perStepMs": [
+                4094,
+                2115,
+                860
+              ],
+              "stepActions": [
+                "type_text:Jev",
+                "click",
+                "click"
+              ],
+              "observeModes": [
+                "dom",
+                "dom",
+                "dom"
+              ],
+              "invalid": 0,
+              "guardRejected": 0
+            },
+            {
+              "run": 3,
+              "elapsedMs": 9339,
+              "success": true,
+              "reason": "check_passed",
+              "steps": 3,
+              "url": "https://httpbin.org/post",
+              "protocolCalls": 32,
+              "metrics": {
+                "page.evaluate": 9,
+                "page.title": 3,
+                "jev.request": 3,
+                "page.cdp": 7,
+                "page.events": 6,
+                "page.waitForLoadState": 1,
+                "page.url": 3
+              },
+              "perStepMs": [
+                4091,
+                2117,
+                3122
+              ],
+              "stepActions": [
+                "type_text:Jev",
+                "click",
+                "click"
+              ],
+              "observeModes": [
+                "dom",
+                "dom",
+                "dom"
+              ],
+              "invalid": 0,
+              "guardRejected": 0
+            }
+          ],
+          "successRate": "3/3",
+          "medianAllMs": 7859,
+          "medianSuccessMs": 7859,
+          "minSuccessMs": 7089,
+          "maxSuccessMs": 9339,
+          "medianSteps": 3,
+          "medianProtocolCalls": 31,
+          "medianPerStepMs": 2146
+        }
+      }
+    }
+  }
+}
