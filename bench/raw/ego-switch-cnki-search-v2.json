@@ -1,0 +1,1107 @@
+{
+  "startedAt": "2026-09-22T10:39:24.085Z",
+  "query": "大语言模型",
+  "steps": [
+    {
+      "k": "captchaBefore",
+      "v": null
+    },
+    {
+      "k": "filledValue",
+      "v": "大语言模型"
+    },
+    {
+      "k": "resultsArrivedMs",
+      "v": 556
+    },
+    {
+      "k": "captchaAfter",
+      "v": null
+    },
+    {
+      "k": "headers",
+      "v": [
+        {
+          "cls": "",
+          "text": ""
+        },
+        {
+          "cls": "",
+          "text": "题名"
+        },
+        {
+          "cls": "",
+          "text": "作者"
+        },
+        {
+          "cls": "",
+          "text": "来源"
+        },
+        {
+          "cls": "",
+          "text": "发表时间"
+        },
+        {
+          "cls": "",
+          "text": "数据库"
+        },
+        {
+          "cls": "",
+          "text": "被引"
+        },
+        {
+          "cls": "",
+          "text": "下载"
+        },
+        {
+          "cls": "",
+          "text": "操作"
+        }
+      ]
+    },
+    {
+      "k": "firstRowCells",
+      "v": [
+        {
+          "cls": "seq",
+          "text": "1"
+        },
+        {
+          "cls": "name",
+          "text": "“问题驱动+大语言模型”融合教学在多模态心脏数据数字化教学中的应用网络首发"
+        },
+        {
+          "cls": "author",
+          "text": "宫成荣;常小红;罗翔;李改霞;张国鹏"
+        },
+        {
+          "cls": "source",
+          "text": "心脏杂志"
+        },
+        {
+          "cls": "date",
+          "text": "2026-09-22 17:40"
+        },
+        {
+          "cls": "data",
+          "text": "期刊"
+        },
+        {
+          "cls": "quote",
+          "text": ""
+        },
+        {
+          "cls": "download",
+          "text": ""
+        },
+        {
+          "cls": "operat",
+          "text": "下载\n原版阅读\nCNKI AI阅读"
+        }
+      ]
+    },
+    {
+      "k": "resultCount",
+      "v": "14,073"
+    },
+    {
+      "k": "rowCount",
+      "v": 20
+    },
+    {
+      "k": "rowsWithCitations",
+      "v": 0
+    },
+    {
+      "k": "rowsWithTitle",
+      "v": 20
+    }
+  ],
+  "result": {
+    "count": "14,073",
+    "rowCount": 20,
+    "list": [
+      {
+        "n": 1,
+        "title": "“问题驱动+大语言模型”融合教学在多模态心脏数据数字化教学中的应用",
+        "href": "https://kns.cnki.net/kcms2/article/abstract?v=qrQFgNyM9UmKvmGXYA5tlHVwwr3EIwUwscWVIIjU-Lv3bS2GpYWKZ6Zc0RCP_Uhp_MTqjhB1vi9GssKg41RFcKxYvcR6-xoIy8q8ZFkjKFgltMn3EJ4e_w7y0VoRY52BEc2UqtNyXnZkuANI98JrUePx6y2V38O40UZMgcetpk9zMnKqPmM7YQ==",
+        "exportId": "kd9kqNkOM8Xyu_MccKCQ5AM1UHjV0uMR_icN4IXwgifKf3TuzLR1rrx5J2yZWqSLr7Bl59yK09oAQQr0Yptb0QaBrY7S9XkpoIwjfAktEnKX8H-zThafoXFu3hRPWoVX",
+        "authors": "宫成荣; 常小红; 罗翔; 李改霞; 张国鹏",
+        "journal": "心脏杂志",
+        "date": "2026-09-22 17:40",
+        "citations": "",
+        "downloads": "",
+        "allCells": [
+          {
+            "cls": "seq",
+            "text": "1"
+          },
+          {
+            "cls": "name",
+            "text": "“问题驱动+大语言模型”融合教学在多模态心脏数据"
+          },
+          {
+            "cls": "author",
+            "text": "宫成荣;常小红;罗翔;李改霞;张国鹏"
+          },
+          {
+            "cls": "source",
+            "text": "心脏杂志"
+          },
+          {
+            "cls": "date",
+            "text": "2026-09-22 17:40"
+          },
+          {
+            "cls": "data",
+            "text": "期刊"
+          },
+          {
+            "cls": "quote",
+            "text": ""
+          },
+          {
+            "cls": "download",
+            "text": ""
+          },
+          {
+            "cls": "operat",
+            "text": "下载\n原版阅读\nCNKI AI阅读"
+          }
+        ]
+      },
+      {
+        "n": 2,
+        "title": "基于时序基础模型知识迁移与多元特征融合的负荷预测方法",
+        "href": "https://kns.cnki.net/kcms2/article/abstract?v=qrQFgNyM9Unr-JTzfqNrREj-1Q57bFDcC_4t7Z_uX_9Cb8rA8fY0ZBPHCdMbopDQVNBUhf6ovF5enuebXcOE8W2FdhvYFP2npVoqnhr0j7BTV4-fv_JonWJcG4FKEqgqedVoBVY-g0_4rr4-QhUUi-3AJqflVy6iDRyl48COAd1Riz41XE9WFw==",
+        "exportId": "kd9kqNkOM8Xyu_MccKCQ5AM1UHjV0uMR_icN4IXwgidhW29fWO9Vsf9fUuabbDMvST9-E9SvDfGu-xh_3p_llgaBrY7S9XkpoIwjfAktEnKX8H-zThafoXFu3hRPWoVX",
+        "authors": "何蕾; 耿闯; 包铁; 肖望; 侯嘉璐",
+        "journal": "电力系统自动化",
+        "date": "2026-09-22 16:42",
+        "citations": "",
+        "downloads": "",
+        "allCells": [
+          {
+            "cls": "seq",
+            "text": "2"
+          },
+          {
+            "cls": "name",
+            "text": "基于时序基础模型知识迁移与多元特征融合的负荷预测"
+          },
+          {
+            "cls": "author",
+            "text": "何蕾;耿闯;包铁;肖望;侯嘉璐"
+          },
+          {
+            "cls": "source",
+            "text": "电力系统自动化"
+          },
+          {
+            "cls": "date",
+            "text": "2026-09-22 16:42"
+          },
+          {
+            "cls": "data",
+            "text": "期刊"
+          },
+          {
+            "cls": "quote",
+            "text": ""
+          },
+          {
+            "cls": "download",
+            "text": ""
+          },
+          {
+            "cls": "operat",
+            "text": "下载\n原版阅读\nCNKI AI阅读"
+          }
+        ]
+      },
+      {
+        "n": 3,
+        "title": "强化学习驱动的有害信息智能检测方法",
+        "href": "https://kns.cnki.net/kcms2/article/abstract?v=qrQFgNyM9UnMNHE92kI4HJGjALAF3WXBf7bkVahIDIdulDK6qv2EIDkWskTVfzBLFnn-ipoRRWQqZKrz3jdNQI5r3oInpWE9eGb3pCfTaPZbKJv6wvYvriB-7ecJ-RIPin7wB4pPvuoaJxRqGhuhGDBK9_tF3uyqcEuUZr6aU-EcGbMR-2hkMA==",
+        "exportId": "kd9kqNkOM8Xyu_MccKCQ5AM1UHjV0uMR_icN4IXwgied6AHu0whaQlkASKdKhB9Wf83VtmOpDDjfg-DVdN1tkAaBrY7S9XkpoIwjfAktEnKX8H-zThafoXFu3hRPWoVX",
+        "authors": "闫硕; 张兴伟; 张淳杰; 郑晓龙",
+        "journal": "中国科学:信息科学",
+        "date": "2026-09-22 15:52",
+        "citations": "",
+        "downloads": "",
+        "allCells": [
+          {
+            "cls": "seq",
+            "text": "3"
+          },
+          {
+            "cls": "name",
+            "text": "强化学习驱动的有害信息智能检测方法网络首发"
+          },
+          {
+            "cls": "author",
+            "text": "闫硕;张兴伟;张淳杰;郑晓龙"
+          },
+          {
+            "cls": "source",
+            "text": "中国科学:信息科学"
+          },
+          {
+            "cls": "date",
+            "text": "2026-09-22 15:52"
+          },
+          {
+            "cls": "data",
+            "text": "期刊"
+          },
+          {
+            "cls": "quote",
+            "text": ""
+          },
+          {
+            "cls": "download",
+            "text": ""
+          },
+          {
+            "cls": "operat",
+            "text": "下载\n原版阅读\nCNKI AI阅读"
+          }
+        ]
+      },
+      {
+        "n": 4,
+        "title": "基于大语言模型的固体推进剂配方设计的初步实践",
+        "href": "https://kns.cnki.net/kcms2/article/abstract?v=qrQFgNyM9UlJhnSlf7CywT1XLQS4pHN14lwBoo43PfpKJ_pB92n9UGDIJEwuwKJ6XiFoz92tIVfukx-vgdezRdjaUw5kX4Caw5MMXAiGq6BznsOCVMjY74q8F0MuRbA2p7y10-0X6wuGM9OQ9X55q9m4Tyu26eKcRYdVfWk1G2wwP8du3pwMCw==",
+        "exportId": "kd9kqNkOM8Xyu_MccKCQ5AM1UHjV0uMR_icN4IXwgicdnAwuXnLzoyyyZxo5QfW7S0qIg1rKvVORV4iVRNbVQwaBrY7S9XkpoIwjfAktEnKX8H-zThafoXFu3hRPWoVX",
+        "authors": "马思瑜; 涂金英; 毛成立; 曾哲妮; 张惠坤; 黄洪勇",
+        "journal": "推进技术",
+        "date": "2026-09-22 14:14",
+        "citations": "",
+        "downloads": "",
+        "allCells": [
+          {
+            "cls": "seq",
+            "text": "4"
+          },
+          {
+            "cls": "name",
+            "text": "基于大语言模型的固体推进剂配方设计的初步实践网络"
+          },
+          {
+            "cls": "author",
+            "text": "马思瑜;涂金英;毛成立;曾哲妮;张惠坤"
+          },
+          {
+            "cls": "source",
+            "text": "推进技术"
+          },
+          {
+            "cls": "date",
+            "text": "2026-09-22 14:14"
+          },
+          {
+            "cls": "data",
+            "text": "期刊"
+          },
+          {
+            "cls": "quote",
+            "text": ""
+          },
+          {
+            "cls": "download",
+            "text": ""
+          },
+          {
+            "cls": "operat",
+            "text": "下载\nHTML阅读\nCNKI AI阅读"
+          }
+        ]
+      },
+      {
+        "n": 5,
+        "title": "基于LLM闭环反馈的兵棋推演方案优化仿真实验方法研究",
+        "href": "https://kns.cnki.net/kcms2/article/abstract?v=qrQFgNyM9Uk-Qfp16PR_el3oGM539zFtZ_7uxs5OYuA37LgFb8obRKy0kfkXOhitTBvtnfHH-yGFGwiIZo8zVTfOLadIfnaobPzICsYT4Y56tGfElMSXzc56qs8FsSwMQVpjUh6UD8R6zL4dThLwXJ53U_0wFtyJ_tyFQxIgWbwbG9KAaNxyCw==",
+        "exportId": "kd9kqNkOM8Xyu_MccKCQ5AM1UHjV0uMR_icN4IXwgif_068FpsZgRb4h5IPUBfVwEEyaHjgT9jtXhuKWKc5o9AaBrY7S9XkpoIwjfAktEnKX8H-zThafoXFu3hRPWoVX",
+        "authors": "李辰宇; 陶九阳; 叶林发; 钟琪; 刘静",
+        "journal": "指挥控制与仿真",
+        "date": "2026-09-22 12:57",
+        "citations": "",
+        "downloads": "",
+        "allCells": [
+          {
+            "cls": "seq",
+            "text": "5"
+          },
+          {
+            "cls": "name",
+            "text": "基于LLM闭环反馈的兵棋推演方案优化仿真实验方法"
+          },
+          {
+            "cls": "author",
+            "text": "李辰宇;陶九阳;叶林发;钟琪;刘静"
+          },
+          {
+            "cls": "source",
+            "text": "指挥控制与仿真"
+          },
+          {
+            "cls": "date",
+            "text": "2026-09-22 12:57"
+          },
+          {
+            "cls": "data",
+            "text": "期刊"
+          },
+          {
+            "cls": "quote",
+            "text": ""
+          },
+          {
+            "cls": "download",
+            "text": ""
+          },
+          {
+            "cls": "operat",
+            "text": "下载\nHTML阅读\nCNKI AI阅读"
+          }
+        ]
+      },
+      {
+        "n": 6,
+        "title": "面向Web应用的大语言模型中精准组件风险评估方法",
+        "href": "https://kns.cnki.net/kcms2/article/abstract?v=qrQFgNyM9UnynxqRd5BKQ84cXQNB1l4_xw49uRfrEIDwMwEbrVNB-zraDj1IpMTVywx4GnZCLT9MDS7YmWxV9gfpzBIuezpTqlKJ-BoHHFxPADqB09OQvDoCJ1gTr7SXWFkJNIBwaAgoAB7Me0U0kWEy1bKbllSRWFXAQApIlkjId1CimA3vvA==",
+        "exportId": "kd9kqNkOM8Xyu_MccKCQ5AM1UHjV0uMR_icN4IXwgieEJm9sbpW-_7_URKftxUIFL6BrTdkBqmPuh02hJIpzIgaBrY7S9XkpoIwjfAktEnKX8H-zThafoXFu3hRPWoVX",
+        "authors": "郭锐; 扈娜巾莎; 苏静芳; 孟洁; 黄子涵; 文光俊",
+        "journal": "计算机应用",
+        "date": "2026-09-22 12:34",
+        "citations": "",
+        "downloads": "",
+        "allCells": [
+          {
+            "cls": "seq",
+            "text": "6"
+          },
+          {
+            "cls": "name",
+            "text": "面向Web应用的大语言模型中精准组件风险评估方法"
+          },
+          {
+            "cls": "author",
+            "text": "郭锐;扈娜巾莎;苏静芳;孟洁;黄子涵"
+          },
+          {
+            "cls": "source",
+            "text": "计算机应用"
+          },
+          {
+            "cls": "date",
+            "text": "2026-09-22 12:34"
+          },
+          {
+            "cls": "data",
+            "text": "期刊"
+          },
+          {
+            "cls": "quote",
+            "text": ""
+          },
+          {
+            "cls": "download",
+            "text": ""
+          },
+          {
+            "cls": "operat",
+            "text": "下载\n原版阅读\nCNKI AI阅读"
+          }
+        ]
+      },
+      {
+        "n": 7,
+        "title": "基于知识图谱与大语言模型协同的可解释推荐研究",
+        "href": "https://kns.cnki.net/kcms2/article/abstract?v=qrQFgNyM9UmjmsGjTJqZZmjAT71JAFo6xr4aoIAMQ5B_tuE_v_m2wHbezd5oRbj8ezs-iFaq_hWaWT5xQwx2kv2BHy6zOsdcGRVNPYxsgxZKvAXQWqiiqmmQ2A5j6fySwy4lcKFs0TPpfoW8lS9n-BwGZLQRw5WC_kVfunTN_nPd55ja99BbWg==",
+        "exportId": "kd9kqNkOM8Xyu_MccKCQ5AM1UHjV0uMR_icN4IXwgidhW29fWO9Vsf9fUuabbDMvoK17VJ5XxS_3LXphx9nGBAaBrY7S9XkpoIwjfAktEnKX8H-zThafoXFu3hRPWoVX",
+        "authors": "冯玉侠",
+        "journal": "智能计算机与应用",
+        "date": "2026-09-22 12:01",
+        "citations": "",
+        "downloads": "",
+        "allCells": [
+          {
+            "cls": "seq",
+            "text": "7"
+          },
+          {
+            "cls": "name",
+            "text": "基于知识图谱与大语言模型协同的可解释推荐研究网络"
+          },
+          {
+            "cls": "author",
+            "text": "冯玉侠"
+          },
+          {
+            "cls": "source",
+            "text": "智能计算机与应用"
+          },
+          {
+            "cls": "date",
+            "text": "2026-09-22 12:01"
+          },
+          {
+            "cls": "data",
+            "text": "期刊"
+          },
+          {
+            "cls": "quote",
+            "text": ""
+          },
+          {
+            "cls": "download",
+            "text": ""
+          },
+          {
+            "cls": "operat",
+            "text": "下载\nHTML阅读\nCNKI AI阅读"
+          }
+        ]
+      },
+      {
+        "n": 8,
+        "title": "生成式人工智能在眼科影像与临床应用中的研究进展",
+        "href": "https://kns.cnki.net/kcms2/article/abstract?v=qrQFgNyM9UkudHfUofedo6u4XenkIW9HJxNR_Q6cHrrfgKohrO9z6ZVCgZ6JK3QScZFiqZj92dRLPY4L00xY5HTUuyKS_i9rSK6rJJhDumJXgY0XCzD4PPHEn9pPOj61UD1jfHFW3UnTAaSoTRhPQWqjv-j3WqkhR-ByM4NnuIoS6GpZi_aFrQ==",
+        "exportId": "kd9kqNkOM8Xyu_MccKCQ5AM1UHjV0uMR_icN4IXwgidwwCQWDG1DgG2HCXRTztimaJXR-HQYlqIWIdM2gLdyMQaBrY7S9XkpoIwjfAktEnKX8H-zThafoXFu3hRPWoVX",
+        "authors": "黄卓; 杜雅莉",
+        "journal": "国际眼科杂志",
+        "date": "2026-09-22 09:21",
+        "citations": "",
+        "downloads": "",
+        "allCells": [
+          {
+            "cls": "seq",
+            "text": "8"
+          },
+          {
+            "cls": "name",
+            "text": "生成式人工智能在眼科影像与临床应用中的研究进展网"
+          },
+          {
+            "cls": "author",
+            "text": "黄卓;杜雅莉"
+          },
+          {
+            "cls": "source",
+            "text": "国际眼科杂志"
+          },
+          {
+            "cls": "date",
+            "text": "2026-09-22 09:21"
+          },
+          {
+            "cls": "data",
+            "text": "期刊"
+          },
+          {
+            "cls": "quote",
+            "text": ""
+          },
+          {
+            "cls": "download",
+            "text": ""
+          },
+          {
+            "cls": "operat",
+            "text": "下载\n原版阅读\nCNKI AI阅读"
+          }
+        ]
+      },
+      {
+        "n": 9,
+        "title": "面向对地观测科学数据的知识图谱增强语义检索方法",
+        "href": "https://kns.cnki.net/kcms2/article/abstract?v=qrQFgNyM9UkRr1QwOBQ2p7dWrgONcgpgo7lEzuJH-5ciI5Y8_NhKG2cQcuVwidS6zSl5Q27ukvgejXEWQeyH7S9aDy_VUMRYU-pewMXiuGb8ifPbarDtx7CJyMTKSMcSQ3a8mMoSj-gxl0EdaRIGi0UuU-tS5AiH6xVHEUkQ65szYKsJIrCcuQ==",
+        "exportId": "kd9kqNkOM8Xyu_MccKCQ5AM1UHjV0uMR_icN4IXwgif7Rxhbgenv1tR-auElu1EduCh63iZQUsMIckFMqn3a9QaBrY7S9XkpoIwjfAktEnKX8H-zThafoXFu3hRPWoVX",
+        "authors": "席培奇; 李国庆; 武新乾; 赵龙; 伍炜杰; 谢海龙",
+        "journal": "大数据",
+        "date": "2026-09-22 09:03",
+        "citations": "",
+        "downloads": "",
+        "allCells": [
+          {
+            "cls": "seq",
+            "text": "9"
+          },
+          {
+            "cls": "name",
+            "text": "面向对地观测科学数据的知识图谱增强语义检索方法网"
+          },
+          {
+            "cls": "author",
+            "text": "席培奇;李国庆;武新乾;赵龙;伍炜杰"
+          },
+          {
+            "cls": "source",
+            "text": "大数据"
+          },
+          {
+            "cls": "date",
+            "text": "2026-09-22 09:03"
+          },
+          {
+            "cls": "data",
+            "text": "期刊"
+          },
+          {
+            "cls": "quote",
+            "text": ""
+          },
+          {
+            "cls": "download",
+            "text": ""
+          },
+          {
+            "cls": "operat",
+            "text": "下载\nHTML阅读\nCNKI AI阅读"
+          }
+        ]
+      },
+      {
+        "n": 10,
+        "title": "大语言模型下叙事驱动的生态感知耦合绿色空间生成设计",
+        "href": "https://kns.cnki.net/kcms2/article/abstract?v=qrQFgNyM9Un7hOHi4xz6IvRSt00txCLHqIYKDi8pD8BgjgZv62zTNN9amGCqV1_hqgTt5F-DNXV5VPRP7LRQCSZND5UI-wunKKPBmUvHnjJcSr8sjoQqLSwlHhLO-_0iIe3DreII-YGyllAkMag3F4vH8ASI8zpwgPeo_MhRDP1Lz7oJTYQwkQ==",
+        "exportId": "Pe2nFq1PBOM11SpCErZ-LwM1UHjV0uMR_icN4IXwgidJ_dZ3p-2WBvAQ0hl1Eaa-1dxqO9WMgUs8gF2ydwuwCXFSFBP7cYuyza3ng3f-z2s!",
+        "authors": "李海清",
+        "journal": "低碳世界",
+        "date": "2026-09-22",
+        "citations": "",
+        "downloads": "",
+        "allCells": [
+          {
+            "cls": "seq",
+            "text": "10"
+          },
+          {
+            "cls": "name",
+            "text": "大语言模型下叙事驱动的生态感知耦合绿色空间生成设"
+          },
+          {
+            "cls": "author",
+            "text": "李海清"
+          },
+          {
+            "cls": "source",
+            "text": "低碳世界"
+          },
+          {
+            "cls": "date",
+            "text": "2026-09-22"
+          },
+          {
+            "cls": "data",
+            "text": "期刊"
+          },
+          {
+            "cls": "quote",
+            "text": ""
+          },
+          {
+            "cls": "download",
+            "text": ""
+          },
+          {
+            "cls": "operat",
+            "text": "下载\nHTML阅读\nCNKI AI阅读"
+          }
+        ]
+      },
+      {
+        "n": 11,
+        "title": "基于感知-认知解耦的可解释人工智能运动康复评估系统设计与验证",
+        "href": "https://kns.cnki.net/kcms2/article/abstract?v=qrQFgNyM9UkT9ekhtzT3_DNMCLsb2T6xY-xnm_7Z_ZRlQWMk2siUJryLbF3s-BejToQ7szBhCY0nDZuOlPILaywwjVpds6i29hb4DVuxwAQPk4e1c5OAx920IM-1kD6nk6Lk0j3ySsCqt1Yjg3-kVQ-O-FkMA5SSP1xMT056cz8LHRZWa8lT6A==",
+        "exportId": "Pe2nFq1PBOM11SpCErZ-LwM1UHjV0uMR_icN4IXwgicsxlg5ysqyIAYPjmATP4ThFCTXDdFm70CEbUwNRZvQ5XFSFBP7cYuyza3ng3f-z2s!",
+        "authors": "郭旭霞; 虞恒睿; 卢宇澄; 杨思创; 龙雨; 李佳蔚; 陈琳; 农飞玉; 龙耀斌",
+        "journal": "中国康复理论与实践",
+        "date": "2026-09-22",
+        "citations": "",
+        "downloads": "",
+        "allCells": [
+          {
+            "cls": "seq",
+            "text": "11"
+          },
+          {
+            "cls": "name",
+            "text": "基于感知-认知解耦的可解释人工智能运动康复评估系"
+          },
+          {
+            "cls": "author",
+            "text": "郭旭霞;虞恒睿;卢宇澄;杨思创;龙雨"
+          },
+          {
+            "cls": "source",
+            "text": "中国康复理论与实践"
+          },
+          {
+            "cls": "date",
+            "text": "2026-09-22"
+          },
+          {
+            "cls": "data",
+            "text": "期刊"
+          },
+          {
+            "cls": "quote",
+            "text": ""
+          },
+          {
+            "cls": "download",
+            "text": ""
+          },
+          {
+            "cls": "operat",
+            "text": "下载\nHTML阅读\nCNKI AI阅读"
+          }
+        ]
+      },
+      {
+        "n": 12,
+        "title": "棉花领域专属知识大语言模型“棉芯1.0”面向全球发布",
+        "href": "https://kns.cnki.net/kcms2/article/abstract?v=qrQFgNyM9UkT9ekhtzT3_DNMCLsb2T6xpXAE-IjwSUBWvuzNKJRDBarpZlQyweAdy0bOPl-k40ZUhxy4DNgjQXZjvNnfSxVJrUK1WN_9ScQSk22gatphkbhKDoaEQdGb4bDsPtanB3sTFBlKuZdh5mXr70UVVvXxlQarK1-r1okR3s5G7HrPl4TSv_HMckj4",
+        "exportId": "EXWsbHIb5hbyktWEiiAzAlI9_06Mu517r_ox9pmWCMsLptGHnH3LxTbYghi_93EQvQUoo8vCUiFuEdCbchikB700wNcCNM0pAleta788i2_FDcikBS_2nJmTTVpjsNKE",
+        "authors": "",
+        "journal": "新疆日报(汉)",
+        "date": "2026-09-22",
+        "citations": "",
+        "downloads": "",
+        "allCells": [
+          {
+            "cls": "seq",
+            "text": "12"
+          },
+          {
+            "cls": "name",
+            "text": "棉花领域专属知识大语言模型“棉芯1.0”面向全球"
+          },
+          {
+            "cls": "author",
+            "text": "盖有军"
+          },
+          {
+            "cls": "source",
+            "text": "新疆日报(汉)"
+          },
+          {
+            "cls": "date",
+            "text": "2026-09-22"
+          },
+          {
+            "cls": "data",
+            "text": "报纸"
+          },
+          {
+            "cls": "quote",
+            "text": ""
+          },
+          {
+            "cls": "download",
+            "text": ""
+          },
+          {
+            "cls": "operat",
+            "text": "下载\nHTML阅读\nCNKI AI阅读"
+          }
+        ]
+      },
+      {
+        "n": 13,
+        "title": "人工智能驱动的催化材料逆向设计",
+        "href": "https://kns.cnki.net/kcms2/article/abstract?v=qrQFgNyM9UmWKREpcSPLnpvmXn-WeVZvLmPIadVwgU325ssl645X9bM0lSk2dFi0qklZrSzbVJnQUQfu3HC9LtdUsqoIZf4V-_ikOFALdqRW90hJ6r4yiOgYRKEop0zPHHCYJzhZUa128Ce8pIDqr7QH8BDJT6-I1yOETJ4tyLm7DZQn8KwxFg==",
+        "exportId": "kd9kqNkOM8Xyu_MccKCQ5AM1UHjV0uMR_icN4IXwgicsr3I0AFwBYQZpCnB8XpM69H6WscTNyLrd3p5B9LLUDv15U4RVk_tCm67MCfzPBes!",
+        "authors": "陈永能; 许昊翔; 程道建",
+        "journal": "中国科学:化学",
+        "date": "2026-09-21 17:51",
+        "citations": "",
+        "downloads": "",
+        "allCells": [
+          {
+            "cls": "seq",
+            "text": "13"
+          },
+          {
+            "cls": "name",
+            "text": "人工智能驱动的催化材料逆向设计网络首发"
+          },
+          {
+            "cls": "author",
+            "text": "陈永能;许昊翔;程道建"
+          },
+          {
+            "cls": "source",
+            "text": "中国科学:化学"
+          },
+          {
+            "cls": "date",
+            "text": "2026-09-21 17:51"
+          },
+          {
+            "cls": "data",
+            "text": "期刊"
+          },
+          {
+            "cls": "quote",
+            "text": ""
+          },
+          {
+            "cls": "download",
+            "text": ""
+          },
+          {
+            "cls": "operat",
+            "text": "下载\n原版阅读\nCNKI AI阅读"
+          }
+        ]
+      },
+      {
+        "n": 14,
+        "title": "LLM增强提取与网络拓扑分析的航空发动机风险评估",
+        "href": "https://kns.cnki.net/kcms2/article/abstract?v=qrQFgNyM9UnuHl3zBO1ugCzfU01TVo3qepfXxhx3vbNEyJbLP6fstg1iFvuuNHepC-pJfj8qO7zJYUUge8CTDO9BRpX7rZWT5YDHFUgDlXomgNV0ZIJJpAe1BwwG3d_qo6N98Upea6-48KtcpbzZQPbXOfiKgcqKX48tXbAnyymMyD29MNUWqg==",
+        "exportId": "kd9kqNkOM8Xyu_MccKCQ5AM1UHjV0uMR_icN4IXwgicy8CEzp2RuVVuiDpMAkIza9H6WscTNyLrd3p5B9LLUDv15U4RVk_tCm67MCfzPBes!",
+        "authors": "李琦; 王强; 崔利杰; 刘双全",
+        "journal": "北京航空航天大学学报",
+        "date": "2026-09-21 13:31",
+        "citations": "",
+        "downloads": "",
+        "allCells": [
+          {
+            "cls": "seq",
+            "text": "14"
+          },
+          {
+            "cls": "name",
+            "text": "LLM增强提取与网络拓扑分析的航空发动机风险评估"
+          },
+          {
+            "cls": "author",
+            "text": "李琦;王强;崔利杰;刘双全"
+          },
+          {
+            "cls": "source",
+            "text": "北京航空航天大学学报"
+          },
+          {
+            "cls": "date",
+            "text": "2026-09-21 13:31"
+          },
+          {
+            "cls": "data",
+            "text": "期刊"
+          },
+          {
+            "cls": "quote",
+            "text": ""
+          },
+          {
+            "cls": "download",
+            "text": ""
+          },
+          {
+            "cls": "operat",
+            "text": "下载\nHTML阅读\nCNKI AI阅读"
+          }
+        ]
+      },
+      {
+        "n": 15,
+        "title": "构造分布式协同新范式：高质量档案数据集分级一体治理框架初探",
+        "href": "https://kns.cnki.net/kcms2/article/abstract?v=qrQFgNyM9Ung5ib0rMnUzmetVyqT2IBVjAmIFCqhOrjVmePIhVv7MPHQOpvf6IxCw51-e53Ffh4kElu6lDXIIo0D9QNo64_Yzgbj3nkP9eFbILC9rVnOn7jxUDKvOVT9jNX6E3TqpHi2_uInozCIgpRKyT-rPWIYjxuaBEwdyHWZy_JCStFTUg==",
+        "exportId": "kd9kqNkOM8Xyu_MccKCQ5AM1UHjV0uMR_icN4IXwgifFQWANaMIyLvfVMAJPBERZiLqQuSIJhRwpXHbsZsmp7v15U4RVk_tCm67MCfzPBes!",
+        "authors": "赵生辉; 童刘群; 陈妍",
+        "journal": "浙江档案",
+        "date": "2026-09-21 13:27",
+        "citations": "",
+        "downloads": "",
+        "allCells": [
+          {
+            "cls": "seq",
+            "text": "15"
+          },
+          {
+            "cls": "name",
+            "text": "构造分布式协同新范式：高质量档案数据集分级一体治"
+          },
+          {
+            "cls": "author",
+            "text": "赵生辉;童刘群;陈妍"
+          },
+          {
+            "cls": "source",
+            "text": "浙江档案"
+          },
+          {
+            "cls": "date",
+            "text": "2026-09-21 13:27"
+          },
+          {
+            "cls": "data",
+            "text": "期刊"
+          },
+          {
+            "cls": "quote",
+            "text": ""
+          },
+          {
+            "cls": "download",
+            "text": ""
+          },
+          {
+            "cls": "operat",
+            "text": "下载\nHTML阅读\nCNKI AI阅读"
+          }
+        ]
+      },
+      {
+        "n": 16,
+        "title": "检索增强生成技术赋能档案数字资源利用的挑战审思与优化进路",
+        "href": "https://kns.cnki.net/kcms2/article/abstract?v=qrQFgNyM9UmLVspJ7O95JJ9ACeSxk1P51Ia5YHk6jO__7oi7gOumjuba1pUUqrDg1yvuz3EMv8-CC8rfPHGpTDnsve1FMbAblkjDYU5Iz9BIYMavKT0WBVoV5JrEMBLrpT5Tv25_gK1rtSEixNGp-krjl82WxV3pLV8dod5422QD1eezSthG-A==",
+        "exportId": "kd9kqNkOM8Xyu_MccKCQ5AM1UHjV0uMR_icN4IXwgifFQWANaMIyLvfVMAJPBERZHwqOsQu00haxNzwgTprlh_15U4RVk_tCm67MCfzPBes!",
+        "authors": "安新宇; 苏依纹",
+        "journal": "浙江档案",
+        "date": "2026-09-21 11:00",
+        "citations": "",
+        "downloads": "",
+        "allCells": [
+          {
+            "cls": "seq",
+            "text": "16"
+          },
+          {
+            "cls": "name",
+            "text": "检索增强生成技术赋能档案数字资源利用的挑战审思与"
+          },
+          {
+            "cls": "author",
+            "text": "安新宇;苏依纹"
+          },
+          {
+            "cls": "source",
+            "text": "浙江档案"
+          },
+          {
+            "cls": "date",
+            "text": "2026-09-21 11:00"
+          },
+          {
+            "cls": "data",
+            "text": "期刊"
+          },
+          {
+            "cls": "quote",
+            "text": ""
+          },
+          {
+            "cls": "download",
+            "text": ""
+          },
+          {
+            "cls": "operat",
+            "text": "下载\nHTML阅读\nCNKI AI阅读"
+          }
+        ]
+      },
+      {
+        "n": 17,
+        "title": "基于差分工具自演化与双智能体协同的服装版型JSON自动生成",
+        "href": "https://kns.cnki.net/kcms2/article/abstract?v=qrQFgNyM9UmA2WxnQj62c59a4bi8EDnyNOAaQ-0rPnSk_McOaGK6GwYXKP-V9MVE3UEZD_bclRaZ7DKHWhlU7Nob7l5mYgePfO6t26Jny-JdS7ufga6AdM-vMUCCPFeQUwesZDWSYrVtFQ1dfZVclYHHgD_5P49SnjH2qFc_z6hFegsFgB6jQQ==",
+        "exportId": "kd9kqNkOM8Xyu_MccKCQ5AM1UHjV0uMR_icN4IXwgidhW29fWO9Vsf9fUuabbDMvT9H-23PfC9YEQsTQERxQa_15U4RVk_tCm67MCfzPBes!",
+        "authors": "张庆丰; 徐德华",
+        "journal": "智能计算机与应用",
+        "date": "2026-09-21 09:56",
+        "citations": "",
+        "downloads": "",
+        "allCells": [
+          {
+            "cls": "seq",
+            "text": "17"
+          },
+          {
+            "cls": "name",
+            "text": "基于差分工具自演化与双智能体协同的服装版型JSO"
+          },
+          {
+            "cls": "author",
+            "text": "张庆丰;徐德华"
+          },
+          {
+            "cls": "source",
+            "text": "智能计算机与应用"
+          },
+          {
+            "cls": "date",
+            "text": "2026-09-21 09:56"
+          },
+          {
+            "cls": "data",
+            "text": "期刊"
+          },
+          {
+            "cls": "quote",
+            "text": ""
+          },
+          {
+            "cls": "download",
+            "text": ""
+          },
+          {
+            "cls": "operat",
+            "text": "下载\nHTML阅读\nCNKI AI阅读"
+          }
+        ]
+      },
+      {
+        "n": 18,
+        "title": "协同知识路由与智能体反思机制的猪病智能问答方法",
+        "href": "https://kns.cnki.net/kcms2/article/abstract?v=qrQFgNyM9UnFDRzIk8s65NzMvwr-hFhAjIHlxTh-Dq0WvVgKGh0q2aiBNVYo-3CIFjFRdfRjpXbBwlhFn4OeVzFPqECcI5og4Z9HpI8kzJRET8z-3Kuj2A9S16qkPF5rbo5OEK1PU8Ivrj5jw-F3jmypKqeJ2ItY-WhWr-5-HUuwPrs_bERmfw==",
+        "exportId": "kd9kqNkOM8Xyu_MccKCQ5AM1UHjV0uMR_icN4IXwgifTkDvtnaWvzs8_koOHZL3hYzr2MlPcAHTDXPW6wtJPiv15U4RVk_tCm67MCfzPBes!",
+        "authors": "蒋婷婷; 李毅; 杨帅; 刘倩; 辜丽川",
+        "journal": "农业工程学报",
+        "date": "2026-09-21 09:43",
+        "citations": "",
+        "downloads": "",
+        "allCells": [
+          {
+            "cls": "seq",
+            "text": "18"
+          },
+          {
+            "cls": "name",
+            "text": "协同知识路由与智能体反思机制的猪病智能问答方法网"
+          },
+          {
+            "cls": "author",
+            "text": "蒋婷婷;李毅;杨帅;刘倩;辜丽川"
+          },
+          {
+            "cls": "source",
+            "text": "农业工程学报"
+          },
+          {
+            "cls": "date",
+            "text": "2026-09-21 09:43"
+          },
+          {
+            "cls": "data",
+            "text": "期刊"
+          },
+          {
+            "cls": "quote",
+            "text": ""
+          },
+          {
+            "cls": "download",
+            "text": ""
+          },
+          {
+            "cls": "operat",
+            "text": "下载\n原版阅读\nCNKI AI阅读"
+          }
+        ]
+      },
+      {
+        "n": 19,
+        "title": "新工科视域下智能车辆工程专业场景项目式教学改革探索——以“机器学习及应用”课程为例",
+        "href": "https://kns.cnki.net/kcms2/article/abstract?v=qrQFgNyM9UnFDRzIk8s65NzMvwr-hFhAN3hEcxtbkiKla-YdctWosl7-TEgRLKKYI-MJZtvWSopH9LwaDPDih-CQATJVi32f3fo1FjFolH8RZDLuYvqNdBd2e2920A8iVd-S8Shg2FZ5tFyAPsvn76FZ3OPaaduAcF9E_PpMrnCSe3S08nYweA==",
+        "exportId": "Pe2nFq1PBOM11SpCErZ-LwM1UHjV0uMR_icN4IXwgifUevx6CICmKR9F6ZxdDhrgG-EBIorJ6G18b9HXNNXw-4nDa1x0Roidi_RcpyaNH-4!",
+        "authors": "黄琳森; 夏利红; 杨智宇; 张威; 张豪",
+        "journal": "时代汽车",
+        "date": "2026-09-21",
+        "citations": "",
+        "downloads": "",
+        "allCells": [
+          {
+            "cls": "seq",
+            "text": "19"
+          },
+          {
+            "cls": "name",
+            "text": "新工科视域下智能车辆工程专业场景项目式教学改革探"
+          },
+          {
+            "cls": "author",
+            "text": "黄琳森;夏利红;杨智宇;张威;张豪"
+          },
+          {
+            "cls": "source",
+            "text": "时代汽车"
+          },
+          {
+            "cls": "date",
+            "text": "2026-09-21"
+          },
+          {
+            "cls": "data",
+            "text": "期刊"
+          },
+          {
+            "cls": "quote",
+            "text": ""
+          },
+          {
+            "cls": "download",
+            "text": ""
+          },
+          {
+            "cls": "operat",
+            "text": "下载\nHTML阅读\nCNKI AI阅读"
+          }
+        ]
+      },
+      {
+        "n": 20,
+        "title": "基于特征增强与双路决策融合的多模态谣言检测",
+        "href": "https://kns.cnki.net/kcms2/article/abstract?v=qrQFgNyM9UmjubVOsmthh8qpdyac5fpP3ZcTFR8MMlyqNXeedh_fhbp5qFDRkyGx2aPwhmhf52m1SHaj-S4F_0HcKX7XFlj5WLT_Msfac7rsRbAFOkriKkEnMwfZmQ-DEc-Cq_BfVT7rgPT9zaq-uFCjj-VMVlT0GteGzPnIKr92DaiP_2hWfQ==",
+        "exportId": "kd9kqNkOM8Xyu_MccKCQ5AM1UHjV0uMR_icN4IXwgieEJm9sbpW-_7_URKftxUIFcjOqPSdjFlTBHaRCAphOMf15U4RVk_tCm67MCfzPBes!",
+        "authors": "张彬; 刘金星",
+        "journal": "计算机工程",
+        "date": "2026-09-20 17:47",
+        "citations": "",
+        "downloads": "38",
+        "allCells": [
+          {
+            "cls": "seq",
+            "text": "20"
+          },
+          {
+            "cls": "name",
+            "text": "基于特征增强与双路决策融合的多模态谣言检测网络首"
+          },
+          {
+            "cls": "author",
+            "text": "张彬;刘金星"
+          },
+          {
+            "cls": "source",
+            "text": "计算机工程"
+          },
+          {
+            "cls": "date",
+            "text": "2026-09-20 17:47"
+          },
+          {
+            "cls": "data",
+            "text": "期刊"
+          },
+          {
+            "cls": "quote",
+            "text": ""
+          },
+          {
+            "cls": "download",
+            "text": "38"
+          },
+          {
+            "cls": "operat",
+            "text": "下载\nHTML阅读\nCNKI AI阅读"
+          }
+        ]
+      }
+    ]
+  },
+  "endedAt": "2026-09-22T10:39:25.930Z"
+}

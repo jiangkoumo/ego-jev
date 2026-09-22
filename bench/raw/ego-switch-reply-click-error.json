@@ -1,0 +1,15 @@
+{
+  "startedAt": "2026-09-22T10:40:16.637Z",
+  "tweet": "https://x.com/NFT_Chen/status/2102297992179200329",
+  "visibleReplyButtons": {
+    "total": 1,
+    "visible": 1
+  },
+  "pageClick": "failed",
+  "pageClickError": "ElementResolutionError: page.click timed out after 3000ms: page.click failed: <div> intercepts pointer events",
+  "dialogAfterPageClick": 0,
+  "jsClickOpened": true,
+  "jsClickDialog": true,
+  "finalDialog": 0,
+  "url": "https://x.com/NFT_Chen/status/2102297992179200329"
+}
