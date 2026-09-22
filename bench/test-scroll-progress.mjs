@@ -61,8 +61,9 @@ const stubJev = (prefer = { operation: "click", click_target: "ref=1" }) => {
  *   newCount     —— 每次观测里「新露出」的元素数
  *   offscreenOnce—— locateForInput 第一次报 offscreen，滚入后改报 ok（A 机制）
  *   alwaysOffscreen —— locateForInput 永远报 offscreen（A 也救不回）
+ *   staleBaseline —— 观测时报 scroll.y=0，但派发滚轮前页面已自己滚到 900（基线陈旧）
  */
-const makePage = ({ scrollMoves = true, newCount = 0, offscreenOnce = false, alwaysOffscreen = false } = {}) => {
+const makePage = ({ scrollMoves = true, newCount = 0, offscreenOnce = false, alwaysOffscreen = false, staleBaseline = false } = {}) => {
   const calls = { cdp: 0, click: 0, intoView: 0, locate: 0 };
   let scrolledIntoView = false;
   const page = {
@@ -92,8 +93,8 @@ const makePage = ({ scrollMoves = true, newCount = 0, offscreenOnce = false, alw
         return { ok: true, x: 10, y: 20, url: "https://example.com/", disabled: false, ariaDisabled: null, href: "/next" };
       }
       if (src.includes("readyState")) return ["https://example.com/", "complete"]; // settle 立刻返回
-      if (src.includes("scrollInPage")) return { moved: scrollMoves, y: scrollMoves ? 600 : 0 };
-      if (src.includes("readScrollY")) return scrollMoves ? 600 : 0;
+      if (src.includes("scrollInPage")) return { moved: scrollMoves, y: staleBaseline ? 900 : scrollMoves ? 600 : 0 };
+      if (src.includes("readScrollY")) return staleBaseline ? 900 : scrollMoves ? 600 : 0;
       if (src.includes("location.href")) return "https://example.com/";
       return null;
     },
@@ -188,6 +189,17 @@ console.log("\n[6] 单步结果暴露 progressed / scrollMoved / intoViewCount")
   check("progressed=true", r.progressed === true, JSON.stringify(r.progressed));
   check("changed=false", r.changed === false, JSON.stringify(r.changed));
   check("intoViewCount=0（本步没有点元素）", r.intoViewCount === 0, JSON.stringify(r.intoViewCount));
+}
+
+// ── [7] 基线必须紧邻滚轮：观测后页面自己动了，不得算成「这次滚动有进展」 ──
+console.log("\n[7] 陈旧基线（观测时 y=0、派发滚轮前已到 900）不得被当成进展");
+{
+  stubJev({ operation: "scroll_down" });
+  const page = makePage({ scrollMoves: false, newCount: 0, staleBaseline: true });
+  const r = await runJevAutonomousLoop(page, "往下找", { apiKey: "stub", metrics: {}, maxSteps: 10, onStep: silent });
+  check("reason=stuck（没把陈旧基线当成进展）", r.reason === "stuck", JSON.stringify(r.reason));
+  check("第 4 步停下", r.steps === 4, `steps=${r.steps}`);
+  check("scrollMoved=false", r.history.every((h) => h.scrollMoved === false), JSON.stringify(r.history.map((h) => h.scrollMoved)));
 }
 
 globalThis.fetch = realFetch;

@@ -1364,7 +1364,6 @@ export async function runJevStep(page, goal, options = {}) {
       }
     } else if (action === "scroll_down" || action === "scroll_up") {
       const delta = action === "scroll_down" ? 600 : -600;
-      const yBefore = scrollInfo?.y ?? null;
       bump(metrics, "page.evaluate");
       const scrolled = await page.evaluate(scrollInPage, delta);
       if (scrolled && !scrolled.moved) {
@@ -1373,11 +1372,13 @@ export async function runJevStep(page, goal, options = {}) {
           type: "mouseWheel", x: 550, y: 400, deltaX: 0, deltaY: delta,
         });
         bump(metrics, "page.cdp");
-        // 滚轮滚的可能不是 window：再读一次真实视口位置，别把「没动」当成「动了」
+        // 滚轮滚的可能不是 window：再读一次真实视口位置。
+        // 基线必须取 scrolled.y（紧邻滚轮之前），不能用观测时的 scrollInfo.y ——
+        // 中间隔着整整一次 Jev 请求（0.5–2s），页面自己动了就会被误判成「这次滚动有进展」。
         try {
           bump(metrics, "page.evaluate");
           const yAfter = await page.evaluate(readScrollY);
-          scrollMoved = yBefore === null || typeof yAfter !== "number" ? null : yAfter !== yBefore;
+          scrollMoved = typeof yAfter !== "number" || typeof scrolled.y !== "number" ? null : yAfter !== scrolled.y;
         } catch {
           scrollMoved = null;
         }
