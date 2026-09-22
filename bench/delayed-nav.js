@@ -2,10 +2,17 @@
 // 页面 /tmp/ego-jev-nav/a.html：改选下拉框 → 250ms 后才出现确认按钮 → 点它 350ms 后才真正跳转
 // 用法: ego-browser nodejs < bench/delayed-nav.js
 const { readFile, writeFile, mkdir } = await import("node:fs/promises");
-const ENGINE = "/Users/jiangkoumo/Documents/ego-jev/scripts/ego-jev.mjs";
-const ORIG = "/Users/jiangkoumo/Documents/ego-jev/bench/baseline-engine.mjs";
-const BENCH = "/Users/jiangkoumo/Documents/ego-jev/bench";
-const KEY = (await readFile(process.env.HOME + "/.agents/lib/backups/typesafe-api-key.bak", "utf8")).trim();
+// 仓库根定位：ego 内嵌运行时拿不到 cwd、import.meta.url 是 "file:////[eval2]"、自定义 env 不传入。
+// ① 推荐（测当前工作树）：sed "s|__REPO__|$PWD|g" bench/delayed-nav.js | ego-browser nodejs
+// ② 直接 `< bench/delayed-nav.js`：走已安装技能（$HOME/.agents/skills/ego-jev）
+const REPO_INJECTED = "__REPO__";
+const ROOT = REPO_INJECTED.startsWith("/") ? REPO_INJECTED : (process.env.HOME || "") + "/.agents/skills/ego-jev";
+const { BENCH, JE, RAW, loadBenchApiKey, loadBenchTextModel } = await import(ROOT + "/bench/lib.mjs").catch(() => {
+  throw new Error(`无法定位仓库根（${ROOT}）：请用 sed "s|__REPO__|$PWD|g" bench/<script> | ego-browser nodejs 运行，或先 npx skills add jiangkoumo/ego-jev`);
+});
+const ENGINE = JE;
+const ORIG = `${BENCH}/baseline-engine.mjs`;
+const KEY = await loadBenchApiKey();
 const GOAL = "把语言下拉框改选为 Dansk，然后点击确认按钮完成跳转";
 const START = "http://127.0.0.1:8099/a.html";
 const UNTIL = "8099/b.html";

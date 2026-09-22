@@ -1,0 +1,50 @@
+{
+  "probedAt": "2026-09-22T11:44:12.063Z",
+  "iterations": [
+    {
+      "i": 1,
+      "action": "wait",
+      "observeMode": "dom",
+      "tableEntries": 60,
+      "tableEntriesWithEmoji": 0,
+      "emojiInState": 7,
+      "loneInState": 0,
+      "loneInBody": 0,
+      "utf8LosslessState": true,
+      "utf8LosslessBody": true,
+      "stateChars": 2879
+    },
+    {
+      "i": 2,
+      "action": "wait",
+      "observeMode": "dom",
+      "tableEntries": 60,
+      "tableEntriesWithEmoji": 0,
+      "emojiInState": 0,
+      "loneInState": 0,
+      "loneInBody": 0,
+      "utf8LosslessState": true,
+      "utf8LosslessBody": true,
+      "stateChars": 2577
+    },
+    {
+      "i": 3,
+      "action": "wait",
+      "observeMode": "dom",
+      "tableEntries": 60,
+      "tableEntriesWithEmoji": 0,
+      "emojiInState": 4,
+      "loneInState": 0,
+      "loneInBody": 0,
+      "utf8LosslessState": true,
+      "utf8LosslessBody": true,
+      "stateChars": 2745
+    }
+  ],
+  "summary": {
+    "probes": 3,
+    "probesWithEmojiInState": 2,
+    "loneSurrogatesTotal": 0,
+    "allUtf8Lossless": true
+  }
+}

@@ -1,6 +1,8 @@
 // 只读核实：`page.click(回复按钮)` 在 ego 上是否可用（失败则记录原始报错；若弹窗开了就立刻放弃）
 const { writeFile } = await import("node:fs/promises");
-const OUT = "/tmp/ego-switch/reply-click-error.json";
+const OUT_DIR = "/tmp/ego-switch";
+const OUT = `${OUT_DIR}/reply-click-error.json`;
+await (await import("node:fs/promises")).mkdir(OUT_DIR, { recursive: true }); // 新机器上目录不存在也不报 ENOENT
 const TWEET = "https://x.com/NFT_Chen/status/2102297992179200329";
 const REPLY_SEL = 'article[data-testid="tweet"] button[data-testid="reply"]';
 const space = await taskSpace(`ego-rce-${Date.now()}`);

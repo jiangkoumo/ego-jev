@@ -1,17 +1,22 @@
 """B 栈驱动器：browser-harness + jev-ultrafast，计时协议与 A 栈对齐。
 
 用法（BU_CDP_WS 由 bh ensure 提供）:
-  uv run --env-file .env python bench/run-b.py hn-nav
+  JEV_ULTRAFAST_DIR=<jev-ultrafast 仓库路径> uv run --env-file .env python bench/run-b.py hn-nav
 
 与 A 栈对齐的计时口径：Agent 构造完成（页面已加载）之后才 t0，随后逐步决策；
 每一步之后与下一轮开始前都检查一次成功条件。输出一行 JSON 到 stdout。
 """
 
 import json
+import os
 import sys
 import time
 
-sys.path.insert(0, "/Users/jiangkoumo/Documents/scratchpad/jev-ultrafast")
+# B 栈对照需要 jev-ultrafast 仓库；它不在本仓库里，所以用环境变量显式给出（原来写死了本机路径）
+_JEV_ULTRAFAST = os.environ.get("JEV_ULTRAFAST_DIR")
+if not _JEV_ULTRAFAST:
+    raise SystemExit("请设置 JEV_ULTRAFAST_DIR=<jev-ultrafast 仓库路径>（B 栈对照需要它）")
+sys.path.insert(0, _JEV_ULTRAFAST)
 from jev_ultrafast import Agent  # noqa: E402
 
 TASKS = {

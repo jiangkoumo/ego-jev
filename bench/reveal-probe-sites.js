@@ -2,7 +2,14 @@
 // 严格只读：只 goto + 读 DOM，不点击、不输入、不登录、不发布。
 // 用法: ego-browser nodejs < bench/reveal-probe-sites.js
 const { writeFile, mkdir } = await import("node:fs/promises");
-const BENCH = "/Users/jiangkoumo/Documents/ego-jev/bench";
+// 仓库根定位：ego 内嵌运行时拿不到 cwd、import.meta.url 是 "file:////[eval2]"、自定义 env 不传入。
+// ① 推荐（测当前工作树）：sed "s|__REPO__|$PWD|g" bench/reveal-probe-sites.js | ego-browser nodejs
+// ② 直接 `< bench/reveal-probe-sites.js`：走已安装技能（$HOME/.agents/skills/ego-jev）
+const REPO_INJECTED = "__REPO__";
+const ROOT = REPO_INJECTED.startsWith("/") ? REPO_INJECTED : (process.env.HOME || "") + "/.agents/skills/ego-jev";
+const { BENCH, JE, RAW, loadBenchApiKey, loadBenchTextModel } = await import(ROOT + "/bench/lib.mjs").catch(() => {
+  throw new Error(`无法定位仓库根（${ROOT}）：请用 sed "s|__REPO__|$PWD|g" bench/<script> | ego-browser nodejs 运行，或先 npx skills add jiangkoumo/ego-jev`);
+});
 const out = { probedAt: new Date().toISOString(), engineMd5Expected: "9b760682cebac9fdde7d4172639a928a", sites: {} };
 
 const probe = async (page, key, label, url, extract, settleMs = 3000) => {

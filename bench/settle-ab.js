@@ -2,10 +2,16 @@
 // 用法: ego-browser nodejs < bench/settle-ab.js
 // 原始数据: bench/raw/settle-ab-<ts>.json
 const { readFile, writeFile, mkdir } = await import("node:fs/promises");
-const { runJevAutonomousLoop } = await import("/Users/jiangkoumo/Documents/ego-jev/scripts/ego-jev.mjs");
-
-const BENCH = "/Users/jiangkoumo/Documents/ego-jev/bench";
-const KEY = (await readFile(process.env.HOME + "/.agents/lib/backups/typesafe-api-key.bak", "utf8")).trim();
+// 仓库根定位：ego 内嵌运行时拿不到 cwd、import.meta.url 是 "file:////[eval2]"、自定义 env 不传入。
+// ① 推荐（测当前工作树）：sed "s|__REPO__|$PWD|g" bench/settle-ab.js | ego-browser nodejs
+// ② 直接 `< bench/settle-ab.js`：走已安装技能（$HOME/.agents/skills/ego-jev）
+const REPO_INJECTED = "__REPO__";
+const ROOT = REPO_INJECTED.startsWith("/") ? REPO_INJECTED : (process.env.HOME || "") + "/.agents/skills/ego-jev";
+const { BENCH, JE, RAW, loadBenchApiKey, loadBenchTextModel } = await import(ROOT + "/bench/lib.mjs").catch(() => {
+  throw new Error(`无法定位仓库根（${ROOT}）：请用 sed "s|__REPO__|$PWD|g" bench/<script> | ego-browser nodejs 运行，或先 npx skills add jiangkoumo/ego-jev`);
+});
+const { runJevAutonomousLoop } = await import(JE);
+const KEY = await loadBenchApiKey();
 const GOAL = "先打开 new 页面，再打开 comments 页面";
 const URL = "https://news.ycombinator.com";
 const CONFIGS = [

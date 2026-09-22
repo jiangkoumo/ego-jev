@@ -2,8 +2,15 @@
 // 覆盖 hn-nav / wiki-search / select-native（判据与 verify-protocol.md 一致）。
 // 用法: ego-browser nodejs < bench/fix-noregress.js
 const { readFile, writeFile, mkdir } = await import("node:fs/promises");
-const BENCH = "/Users/jiangkoumo/Documents/ego-jev/bench";
-const NEW = "/Users/jiangkoumo/Documents/ego-jev/scripts/ego-jev.mjs";
+// 仓库根定位：ego 内嵌运行时拿不到 cwd、import.meta.url 是 "file:////[eval2]"、自定义 env 不传入。
+// ① 推荐（测当前工作树）：sed "s|__REPO__|$PWD|g" bench/fix-noregress.js | ego-browser nodejs
+// ② 直接 `< bench/fix-noregress.js`：走已安装技能（$HOME/.agents/skills/ego-jev）
+const REPO_INJECTED = "__REPO__";
+const ROOT = REPO_INJECTED.startsWith("/") ? REPO_INJECTED : (process.env.HOME || "") + "/.agents/skills/ego-jev";
+const { BENCH, JE, RAW, loadBenchApiKey, loadBenchTextModel } = await import(ROOT + "/bench/lib.mjs").catch(() => {
+  throw new Error(`无法定位仓库根（${ROOT}）：请用 sed "s|__REPO__|$PWD|g" bench/<script> | ego-browser nodejs 运行，或先 npx skills add jiangkoumo/ego-jev`);
+});
+const NEW = JE;
 const OLD = `${BENCH}/fix-baseline-engine.mjs`;
 const ROUNDS = Number(globalThis.__ROUNDS__ || 6);
 
@@ -36,18 +43,8 @@ const TASKS = {
   },
 };
 
-const envText = await readFile("/Users/jiangkoumo/Documents/scratchpad/jev-ultrafast/.env", "utf8");
-const env = Object.fromEntries(
-  envText.split("\n").filter((l) => /^[A-Z_]+=/.test(l)).map((l) => {
-    const i = l.indexOf("=");
-    return [l.slice(0, i), l.slice(i + 1).trim()];
-  })
-);
-const KEY = (await readFile(process.env.HOME + "/.agents/lib/backups/typesafe-api-key.bak", "utf8")).trim();
-const textModel = {
-  baseUrl: env.TEXT_MODEL_BASE_URL, model: env.TEXT_MODEL, apiKey: env.TEXT_MODEL_API_KEY,
-  sessionHeader: "x-opencode-session", sessionId: "ego-jev-fix",
-};
+const KEY = await loadBenchApiKey();
+const textModel = await loadBenchTextModel();
 
 const engines = { old: await import(OLD), new: await import(NEW) };
 const out = { startedAt: new Date().toISOString(), rounds: ROUNDS, records: [] };

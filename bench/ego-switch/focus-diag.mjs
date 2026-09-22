@@ -98,5 +98,6 @@ try {
   log("dialogAfterDiscard", await page.evaluate(() => [...document.querySelectorAll('[role="dialog"] [data-testid="tweetTextarea_0"]')].filter((e) => e.getBoundingClientRect().width > 0).length));
   log("url", await page.url());
 } catch (e) { out.err = String(e).slice(0, 300); console.log("ERROR " + out.err); }
+await (await import("node:fs/promises")).mkdir("/tmp/ego-switch", { recursive: true });
 await writeFile("/tmp/ego-switch/focus-diag.json", JSON.stringify(out, null, 2));
 try { await space.finish({ keep: [] }); } catch {}

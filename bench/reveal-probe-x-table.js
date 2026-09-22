@@ -1,8 +1,14 @@
 // 只读：X 时间线上引擎实际看到的元素表（决定任务设计是否可行）
 // 用法: ego-browser nodejs < bench/reveal-probe-x-table.js
 const { readFile, writeFile, mkdir } = await import("node:fs/promises");
-const BENCH = "/Users/jiangkoumo/Documents/ego-jev/bench";
-const JE = "/Users/jiangkoumo/Documents/ego-jev/scripts/ego-jev.mjs";
+// 仓库根定位：ego 内嵌运行时拿不到 cwd、import.meta.url 是 "file:////[eval2]"、自定义 env 不传入。
+// ① 推荐（测当前工作树）：sed "s|__REPO__|$PWD|g" bench/reveal-probe-x-table.js | ego-browser nodejs
+// ② 直接 `< bench/reveal-probe-x-table.js`：走已安装技能（$HOME/.agents/skills/ego-jev）
+const REPO_INJECTED = "__REPO__";
+const ROOT = REPO_INJECTED.startsWith("/") ? REPO_INJECTED : (process.env.HOME || "") + "/.agents/skills/ego-jev";
+const { BENCH, JE, RAW, loadBenchApiKey, loadBenchTextModel } = await import(ROOT + "/bench/lib.mjs").catch(() => {
+  throw new Error(`无法定位仓库根（${ROOT}）：请用 sed "s|__REPO__|$PWD|g" bench/<script> | ego-browser nodejs 运行，或先 npx skills add jiangkoumo/ego-jev`);
+});
 const src = await readFile(JE, "utf8");
 const observeDom = new Function("return " + src.slice(src.indexOf("function observeDom(payload)"), src.indexOf("/**\n * 页面内：执行前的最后一刻检查")).trim().replace(/;\s*$/, ""))();
 const { buildActionMenu } = await import(JE);

@@ -9,3 +9,7 @@ examples/bench/*-measurement.json
 
 # seedmux 的会话记录（本地工具产物，不属仓库内容）
 .agent-tape/
+
+# Python 字节码（本地跑 py_compile 会生成）
+__pycache__/
+*.pyc

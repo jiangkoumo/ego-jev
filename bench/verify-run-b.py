@@ -3,15 +3,20 @@
 判据与 A 栈逐字对应，只用终态 URL / 页面断言，不看"点了哪个按钮"。
 页面断言取 B 观测层返回的 page["text"]（视口内可见文本）与 page["title"]。
 用法（BU_CDP_WS 由 bh ensure 提供）:
-  uv run --env-file .env python bench/verify-run-b.py <task-id>
+  JEV_ULTRAFAST_DIR=<jev-ultrafast 仓库路径> uv run --env-file .env python bench/verify-run-b.py <task-id>
 """
 
 import json
+import os
 import re
 import sys
 import time
 
-sys.path.insert(0, "/Users/jiangkoumo/Documents/scratchpad/jev-ultrafast")
+# B 栈对照需要 jev-ultrafast 仓库；它不在本仓库里，所以用环境变量显式给出（原来写死了本机路径）
+_JEV_ULTRAFAST = os.environ.get("JEV_ULTRAFAST_DIR")
+if not _JEV_ULTRAFAST:
+    raise SystemExit("请设置 JEV_ULTRAFAST_DIR=<jev-ultrafast 仓库路径>（B 栈对照需要它）")
+sys.path.insert(0, _JEV_ULTRAFAST)
 from jev_ultrafast import Agent  # noqa: E402
 
 RE_WIKI_TITLE = re.compile(r"Japanese encephalitis|Search results", re.I)

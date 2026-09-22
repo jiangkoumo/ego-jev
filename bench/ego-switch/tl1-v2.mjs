@@ -1,7 +1,9 @@
 // 实测（v2，对应 SKILL.md 步骤 1 改进后的判定）：ego 上跑 TL1 抓取（只读）+ 确认 X 登录账号。
 // 相对 v1 的改进：记录筛选前年龄分布、是否曾见空列表、实际等待时长，并按帖子自报时间再过滤一遍。
 const { writeFile } = await import("node:fs/promises");
-const OUT = "/tmp/ego-switch/tl1-fetch-v2.json";
+const OUT_DIR = "/tmp/ego-switch";
+const OUT = `${OUT_DIR}/tl1-fetch-v2.json`;
+await (await import("node:fs/promises")).mkdir(OUT_DIR, { recursive: true });
 const space = await taskSpace(`ego-tl1-${Date.now()}`);
 const page = space.page("p1");
 const out = { startedAt: new Date().toISOString(), steps: [] };

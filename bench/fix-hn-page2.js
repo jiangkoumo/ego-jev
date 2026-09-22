@@ -2,14 +2,21 @@
 // 判据沿用 bench/verify-protocol.md：终态 URL 含 p=2。
 // 用法: ego-browser nodejs < bench/fix-hn-page2.js
 const { readFile, writeFile, mkdir } = await import("node:fs/promises");
-const BENCH = "/Users/jiangkoumo/Documents/ego-jev/bench";
-const NEW = "/Users/jiangkoumo/Documents/ego-jev/scripts/ego-jev.mjs";
+// 仓库根定位：ego 内嵌运行时拿不到 cwd、import.meta.url 是 "file:////[eval2]"、自定义 env 不传入。
+// ① 推荐（测当前工作树）：sed "s|__REPO__|$PWD|g" bench/fix-hn-page2.js | ego-browser nodejs
+// ② 直接 `< bench/fix-hn-page2.js`：走已安装技能（$HOME/.agents/skills/ego-jev）
+const REPO_INJECTED = "__REPO__";
+const ROOT = REPO_INJECTED.startsWith("/") ? REPO_INJECTED : (process.env.HOME || "") + "/.agents/skills/ego-jev";
+const { BENCH, JE, RAW, loadBenchApiKey, loadBenchTextModel } = await import(ROOT + "/bench/lib.mjs").catch(() => {
+  throw new Error(`无法定位仓库根（${ROOT}）：请用 sed "s|__REPO__|$PWD|g" bench/<script> | ego-browser nodejs 运行，或先 npx skills add jiangkoumo/ego-jev`);
+});
+const NEW = JE;
 const OLD = `${BENCH}/fix-baseline-engine.mjs`;
 const ROUNDS = Number(globalThis.__ROUNDS__ || 10);
 const GOAL = "翻到下一页（More）";
 const START = "https://news.ycombinator.com";
 
-const KEY = (await readFile(process.env.HOME + "/.agents/lib/backups/typesafe-api-key.bak", "utf8")).trim();
+const KEY = await loadBenchApiKey();
 const engines = { old: await import(OLD), new: await import(NEW) };
 const out = { task: "hn-page2", goal: GOAL, rounds: ROUNDS, predicate: "finalUrl 含 p=2", records: [] };
 

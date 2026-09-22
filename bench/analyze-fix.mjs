@@ -1,7 +1,10 @@
 // 修复验证的统计：功能验收（hn-page2 成功率）+ 无回归（配对 old vs new，bootstrap CI）
 // 用法: node bench/analyze-fix.mjs
+// ⚠️ 会把结果写回 bench/raw/fix-analysis-*.{json,txt}（同名文件会被覆盖）——bench/raw/ 是历史证据，
+//    只想看一眼就不要跑这个脚本，或先把 raw/ 备份出去。
 const { readdirSync, readFileSync, writeFileSync } = await import("node:fs");
-const RAW = "/Users/jiangkoumo/Documents/ego-jev/bench/raw";
+// 普通 node 运行，import.meta.url 是真实文件路径
+const { RAW } = await import(new URL("./lib.mjs", import.meta.url));
 const SEED = 20260919, BOOT = 10000;
 
 const newest = (re) => readdirSync(RAW).filter((f) => re.test(f)).sort().pop();

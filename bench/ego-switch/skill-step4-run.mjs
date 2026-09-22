@@ -131,5 +131,6 @@ try {
   }
 } catch (e) { result.err = String(e).slice(0, 300); console.log("ERROR " + result.err); }
 log("blockedClicks", blocked);
+await (await import("node:fs/promises")).mkdir("/tmp/ego-switch", { recursive: true });
 await writeFile("/tmp/ego-switch/skill-step4-run.json", JSON.stringify(result, null, 2));
 try { await space.finish({ keep: [] }); } catch {}

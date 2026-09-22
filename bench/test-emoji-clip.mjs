@@ -12,10 +12,15 @@
 //
 // 用法: ego-browser nodejs < bench/test-emoji-clip.mjs
 const { writeFile, mkdir } = await import("node:fs/promises");
-const BENCH = "/Users/jiangkoumo/Documents/ego-jev/bench";
-const { parseActionTargets, buildActionMenu, runJevStep } = await import(
-  "/Users/jiangkoumo/Documents/ego-jev/scripts/ego-jev.mjs"
-);
+// 仓库根定位：ego 内嵌运行时拿不到 cwd、import.meta.url 是 "file:////[eval2]"、自定义 env 不传入。
+// ① 推荐（测当前工作树）：sed "s|__REPO__|$PWD|g" bench/test-emoji-clip.mjs | ego-browser nodejs
+// ② 直接 `< bench/test-emoji-clip.mjs`：走已安装技能（$HOME/.agents/skills/ego-jev）
+const REPO_INJECTED = "__REPO__";
+const ROOT = REPO_INJECTED.startsWith("/") ? REPO_INJECTED : (process.env.HOME || "") + "/.agents/skills/ego-jev";
+const { BENCH, JE, RAW, loadBenchApiKey, loadBenchTextModel } = await import(ROOT + "/bench/lib.mjs").catch(() => {
+  throw new Error(`无法定位仓库根（${ROOT}）：请用 sed "s|__REPO__|$PWD|g" bench/<script> | ego-browser nodejs 运行，或先 npx skills add jiangkoumo/ego-jev`);
+});
+const { parseActionTargets, buildActionMenu, runJevStep } = await import(JE);
 
 const LONE = /[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/;
 const EMOJI = "😀"; // U+1F600：UTF-16 里是两个码元，正是 slice 会切坏的那种字符

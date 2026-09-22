@@ -1,7 +1,13 @@
 // A 栈（移植后 ego-jev）单任务运行器；计时口径与 run-b.py 对齐。
-// 模板：__TASK__ 由 vs-bstack.sh 替换。输出一行 JSON。
+// 模板：__TASK__ 与 __REPO__ 由 vs-bstack.sh 用 sed 替换。输出一行 JSON。
 const { readFile } = await import("node:fs/promises");
-const { runJevAutonomousLoop } = await import("/Users/jiangkoumo/Documents/ego-jev/scripts/ego-jev.mjs");
+// 仓库根：本文件是模板，由 vs-bstack.sh 注入 __REPO__；若直接跑则回退到已安装技能。
+const REPO_INJECTED = "__REPO__";
+const ROOT = REPO_INJECTED.startsWith("/") ? REPO_INJECTED : (process.env.HOME || "") + "/.agents/skills/ego-jev";
+const { BENCH, JE, RAW, loadBenchApiKey, loadBenchTextModel } = await import(ROOT + "/bench/lib.mjs").catch(() => {
+  throw new Error(`无法定位仓库根（${ROOT}）：请用 sed "s|__REPO__|$PWD|g" bench/<script> | ego-browser nodejs 运行，或先 npx skills add jiangkoumo/ego-jev`);
+});
+const { runJevAutonomousLoop } = await import(JE);
 
 const TASKS = {
   "hn-nav": {
@@ -28,18 +34,8 @@ const TASKS = {
 
 const taskId = "__TASK__";
 const task = TASKS[taskId];
-const envText = await readFile("/Users/jiangkoumo/Documents/scratchpad/jev-ultrafast/.env", "utf8");
-const env = Object.fromEntries(
-  envText.split("\n").filter((l) => /^[A-Z_]+=/.test(l)).map((l) => {
-    const i = l.indexOf("=");
-    return [l.slice(0, i), l.slice(i + 1).trim()];
-  })
-);
-const KEY = (await readFile(process.env.HOME + "/.agents/lib/backups/typesafe-api-key.bak", "utf8")).trim();
-const textModel = {
-  baseUrl: env.TEXT_MODEL_BASE_URL, model: env.TEXT_MODEL, apiKey: env.TEXT_MODEL_API_KEY,
-  sessionHeader: "x-opencode-session", sessionId: "ego-jev-bench",
-};
+const KEY = await loadBenchApiKey();
+const textModel = await loadBenchTextModel();
 
 const space = await taskSpace(`ego-vs-${taskId}-${Date.now()}`);
 const page = space.page("p1");

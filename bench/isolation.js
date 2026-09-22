@@ -6,27 +6,20 @@
 //   A4-full   A3 + 响应校验 + 提示词规则 + 执行前守卫 → Δ校验与提示词
 // 用法: ego-browser nodejs < bench/isolation.js
 const { readFile, writeFile, mkdir } = await import("node:fs/promises");
-const BENCH = "/Users/jiangkoumo/Documents/ego-jev/bench";
-const NEW = "/Users/jiangkoumo/Documents/ego-jev/scripts/ego-jev.mjs";
+// 仓库根定位：ego 内嵌运行时拿不到 cwd、import.meta.url 是 "file:////[eval2]"、自定义 env 不传入。
+// ① 推荐（测当前工作树）：sed "s|__REPO__|$PWD|g" bench/isolation.js | ego-browser nodejs
+// ② 直接 `< bench/isolation.js`：走已安装技能（$HOME/.agents/skills/ego-jev）
+const REPO_INJECTED = "__REPO__";
+const ROOT = REPO_INJECTED.startsWith("/") ? REPO_INJECTED : (process.env.HOME || "") + "/.agents/skills/ego-jev";
+const { BENCH, JE, RAW, loadBenchApiKey, loadBenchTextModel } = await import(ROOT + "/bench/lib.mjs").catch(() => {
+  throw new Error(`无法定位仓库根（${ROOT}）：请用 sed "s|__REPO__|$PWD|g" bench/<script> | ego-browser nodejs 运行，或先 npx skills add jiangkoumo/ego-jev`);
+});
+const NEW = JE;
 const OLD = `${BENCH}/baseline-engine.mjs`;
 const RUNS = 3;
 
-const envText = await readFile("/Users/jiangkoumo/Documents/scratchpad/jev-ultrafast/.env", "utf8");
-const env = Object.fromEntries(
-  envText.split("\n").filter((l) => /^[A-Z_]+=/.test(l)).map((l) => {
-    const i = l.indexOf("=");
-    return [l.slice(0, i), l.slice(i + 1).trim()];
-  })
-);
-const KEY = (await readFile(process.env.HOME + "/.agents/lib/backups/typesafe-api-key.bak", "utf8")).trim();
-// A 栈没有 ~/.config/typesafe/text_model.json，这里按调用方传参（引擎支持的路径）接上同一个文本模型
-const textModel = {
-  baseUrl: env.TEXT_MODEL_BASE_URL,
-  model: env.TEXT_MODEL,
-  apiKey: env.TEXT_MODEL_API_KEY,
-  sessionHeader: "x-opencode-session",
-  sessionId: "ego-jev-bench",
-};
+const KEY = await loadBenchApiKey();
+const textModel = await loadBenchTextModel();
 
 const TASKS = [
   {

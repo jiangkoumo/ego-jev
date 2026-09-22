@@ -1,7 +1,9 @@
 // 实测验收：ego 上 X Draft.js 撰写框完整路径（写入 → [data-block] 回读 → 放弃草稿 → 复查未保存）
 // 硬红线：只开撰写框写草稿；提交/保存/点赞/转发/关注在 CDP 层拦截；结束点「放弃」。
 const { writeFile } = await import("node:fs/promises");
-const OUT = "/tmp/ego-switch/draft-verify.json";
+const OUT_DIR = "/tmp/ego-switch";
+const OUT = `${OUT_DIR}/draft-verify.json`;
+await (await import("node:fs/promises")).mkdir(OUT_DIR, { recursive: true });
 const TWEET = "https://x.com/NFT_Chen/status/2102297992179200329";
 const space = await taskSpace(`ego-draftv-${Date.now()}`);
 const raw = space.page("p1");

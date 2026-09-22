@@ -1,8 +1,11 @@
 // 预登记协议 §5 的统计：描述统计 + 配对差 + bootstrap 95% CI + 符号检验
 // 判定规则（预先指定）：CI 跨 0 → "无差异"；不跨 0 → 报方向与幅度。
 // 用法: node bench/analyze-verify.mjs [verify-*.jsonl]
+// ⚠️ 会把结果写回 bench/raw/verify-analysis-*.{json,txt}（同名文件会被覆盖，含 generatedAt 时间戳）——
+//    bench/raw/ 是历史证据，只想看一眼就不要跑这个脚本，或先把 raw/ 备份出去。
 const { readdirSync, readFileSync, writeFileSync } = await import("node:fs");
-const RAW = "/Users/jiangkoumo/Documents/ego-jev/bench/raw";
+// 普通 node 运行，import.meta.url 是真实文件路径
+const { RAW } = await import(new URL("./lib.mjs", import.meta.url));
 const SEED = 20260919;      // 预登记里写死的种子
 const BOOT = 10000;         // 预登记里写死的重采样次数
 

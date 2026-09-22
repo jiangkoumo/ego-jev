@@ -71,5 +71,6 @@ try {
   out.url = await page.url();
   console.log("dialogAfter:", out.dialogAfter, "url:", out.url);
 } catch (e) { out.err = String(e).slice(0, 300); console.log("ERROR " + out.err); }
+await (await import("node:fs/promises")).mkdir("/tmp/ego-switch", { recursive: true });
 await writeFile("/tmp/ego-switch/editor-dom.json", JSON.stringify(out, null, 2));
 try { await space.finish({ keep: [] }); } catch {}

@@ -27,8 +27,8 @@ jobs:
           bash -n scripts/ego-jev
           bash -n install.sh
           bash -n update.sh
-          for f in bench/*.mjs bench/*.js; do node --check "$f"; done
-          for f in bench/*.sh; do bash -n "$f"; done
+          for f in bench/*.mjs bench/*.js bench/ego-switch/*.mjs examples/bench/*.js; do node --check "$f"; done
+          for f in bench/*.sh examples/bench/*.sh; do bash -n "$f"; done
 
       - name: 公开导出保持向后兼容
         run: |

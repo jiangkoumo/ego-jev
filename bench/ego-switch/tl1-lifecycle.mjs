@@ -1,6 +1,8 @@
 // 只读：量 TL1 点筛选后的真实重取生命周期（列表何时清空、何时重填、多久稳定）
 const { writeFile } = await import("node:fs/promises");
-const OUT = "/tmp/ego-switch/tl1-lifecycle.json";
+const OUT_DIR = "/tmp/ego-switch";
+const OUT = `${OUT_DIR}/tl1-lifecycle.json`;
+await (await import("node:fs/promises")).mkdir(OUT_DIR, { recursive: true });
 const space = await taskSpace(`ego-tl1lc-${Date.now()}`);
 const page = space.page("p1");
 const out = { startedAt: new Date().toISOString() };

@@ -1,7 +1,13 @@
 // A 栈验证运行器（预登记协议 §2/§3）。模板：__TASK__ 由 verify.sh 替换。输出一行 JSON。
 // 判据只用终态 URL / 页面断言，不看"点了哪个按钮"。
 const { readFile } = await import("node:fs/promises");
-const { runJevAutonomousLoop } = await import("/Users/jiangkoumo/Documents/ego-jev/scripts/ego-jev.mjs");
+// 仓库根：本文件是模板，由 verify.sh 用 sed 注入 __REPO__；若直接跑则回退到已安装技能。
+const REPO_INJECTED = "__REPO__";
+const ROOT = REPO_INJECTED.startsWith("/") ? REPO_INJECTED : (process.env.HOME || "") + "/.agents/skills/ego-jev";
+const { BENCH, JE, RAW, loadBenchApiKey, loadBenchTextModel } = await import(ROOT + "/bench/lib.mjs").catch(() => {
+  throw new Error(`无法定位仓库根（${ROOT}）：请用 sed "s|__REPO__|$PWD|g" bench/<script> | ego-browser nodejs 运行，或先 npx skills add jiangkoumo/ego-jev`);
+});
+const { runJevAutonomousLoop } = await import(JE);
 
 const RE_WIKI_TITLE = /Japanese encephalitis|Search results/i;
 const RE_CUSTNAME = /custname"\s*:\s*"Jev"/;
@@ -62,19 +68,8 @@ const TASKS = {
 
 const taskId = "__TASK__";
 const task = TASKS[taskId];
-const envText = await readFile("/Users/jiangkoumo/Documents/scratchpad/jev-ultrafast/.env", "utf8");
-const env = Object.fromEntries(
-  envText.split("\n").filter((l) => /^[A-Z_]+=/.test(l)).map((l) => {
-    const i = l.indexOf("=");
-    return [l.slice(0, i), l.slice(i + 1).trim()];
-  })
-);
-const KEY = (await readFile(process.env.HOME + "/.agents/lib/backups/typesafe-api-key.bak", "utf8")).trim();
-// 与 B 栈同一个文本模型（同一 baseUrl/model/key + 同一个会话头）
-const textModel = {
-  baseUrl: env.TEXT_MODEL_BASE_URL, model: env.TEXT_MODEL, apiKey: env.TEXT_MODEL_API_KEY,
-  sessionHeader: "x-opencode-session", sessionId: "ego-jev-verify",
-};
+const KEY = await loadBenchApiKey();
+const textModel = await loadBenchTextModel();
 
 const space = await taskSpace(`ego-verify-${taskId}-${Date.now()}`);
 const page = space.page("p1");

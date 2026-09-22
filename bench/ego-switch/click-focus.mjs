@@ -33,6 +33,7 @@ try {
   out.dialogAfter = await page.evaluate(() => [...document.querySelectorAll('[role="dialog"] [data-testid="tweetTextarea_0"]')].filter((e) => e.getBoundingClientRect().width > 0).length);
   out.url = await page.url();
 } catch (e) { out.err = String(e).slice(0, 300); }
+await (await import("node:fs/promises")).mkdir("/tmp/ego-switch", { recursive: true });
 await (await import("node:fs/promises")).writeFile("/tmp/ego-switch/click-focus.json", JSON.stringify(out, null, 2));
 console.log(JSON.stringify(out, null, 1));
 try { await space.finish({ keep: [] }); } catch {}

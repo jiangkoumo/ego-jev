@@ -2,8 +2,11 @@
 // 关键点：wiki 的成功判据在批次之间被改宽过，这里用各批次记录的 finalUrl
 // 在「旧窄判据」和「新宽判据」下分别重算成功与否，避免用引擎变量掩盖判据变更。
 // 用法: node bench/analyze-vs-bstack.mjs
+// ⚠️ 会把结果写回 bench/raw/vs-bstack-merged.{json,txt}（同名文件会被覆盖）——bench/raw/ 是历史证据，
+//    只想看一眼就不要跑这个脚本，或先把 raw/ 备份出去。
 const { readdirSync, readFileSync, writeFileSync } = await import("node:fs");
-const RAW = "/Users/jiangkoumo/Documents/ego-jev/bench/raw";
+// 普通 node 运行，import.meta.url 是真实文件路径
+const { RAW } = await import(new URL("./lib.mjs", import.meta.url));
 
 const BATCHES = [
   { file: "vs-bstack-2026-09-19T14-51-12.jsonl", engine: "rev1", note: "判据=旧窄" },

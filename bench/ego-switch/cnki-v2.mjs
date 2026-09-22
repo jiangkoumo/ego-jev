@@ -1,6 +1,8 @@
 // 实测（v2）：ego 上跑 CNKI 基础检索，落盘全部结果行 + 摸清各列的真实选择器
 const { writeFile } = await import("node:fs/promises");
-const OUT = "/tmp/ego-switch/cnki-search-v2.json";
+const OUT_DIR = "/tmp/ego-switch";
+const OUT = `${OUT_DIR}/cnki-search-v2.json`;
+await (await import("node:fs/promises")).mkdir(OUT_DIR, { recursive: true });
 const QUERY = "大语言模型";
 const space = await taskSpace(`ego-cnki-${Date.now()}`);
 const page = space.page("p1");

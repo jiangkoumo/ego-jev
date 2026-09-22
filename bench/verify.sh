@@ -5,8 +5,10 @@
 # 用法: bash bench/verify.sh [轮数]
 set -uo pipefail
 ROUNDS="${1:-10}"
-BENCH="/Users/jiangkoumo/Documents/ego-jev/bench"
-JEVDIR="/Users/jiangkoumo/Documents/scratchpad/jev-ultrafast"
+BENCH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT="$(cd "${BENCH}/.." && pwd)"
+# B 栈对照需要 jev-ultrafast 仓库（不在本仓库里）——用环境变量显式给出，原来写死了本机路径
+JEVDIR="${JEV_ULTRAFAST_DIR:?请设 JEV_ULTRAFAST_DIR=<jev-ultrafast 仓库路径>（B 栈对照需要它）}"
 STAMP="$(date -u +%Y-%m-%dT%H-%M-%S)"
 OUT="${BENCH}/raw/verify-${STAMP}.jsonl"
 LOG="${BENCH}/raw/verify-${STAMP}.log"
@@ -27,7 +29,7 @@ extract() { grep -o '^{"stack".*' <<<"$1" | tail -1; }
 run_once() {
   local stack="$1" task="$2"
   if [ "$stack" = "A" ]; then
-    sed "s/__TASK__/${task}/" "${BENCH}/verify-run-a.tpl.js" | timeout 240 ego-browser nodejs 2>&1
+    sed -e "s/__TASK__/${task}/" -e "s|__REPO__|${ROOT}|g" "${BENCH}/verify-run-a.tpl.js" | timeout 240 ego-browser nodejs 2>&1
   else
     (cd "$JEVDIR" && timeout 240 uv run --env-file .env python "${BENCH}/verify-run-b.py" "$task" 2>&1)
   fi

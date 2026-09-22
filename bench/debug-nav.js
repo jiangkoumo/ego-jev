@@ -1,7 +1,15 @@
 // 诊断：在延迟导航测试页上，新旧观测层各自看到什么
 // 用法: ego-browser nodejs < bench/debug-nav.js
+// 前置：/tmp/ego-jev-nav/a.html 需已存在（静态页怎么起见 bench/delayed-nav.js 的注释）
 const { readFile } = await import("node:fs/promises");
-const JE = "/Users/jiangkoumo/Documents/ego-jev/scripts/ego-jev.mjs";
+// 仓库根定位：ego 内嵌运行时拿不到 cwd、import.meta.url 是 "file:////[eval2]"、自定义 env 不传入。
+// ① 推荐（测当前工作树）：sed "s|__REPO__|$PWD|g" bench/debug-nav.js | ego-browser nodejs
+// ② 直接 `< bench/debug-nav.js`：走已安装技能（$HOME/.agents/skills/ego-jev）
+const REPO_INJECTED = "__REPO__";
+const ROOT = REPO_INJECTED.startsWith("/") ? REPO_INJECTED : (process.env.HOME || "") + "/.agents/skills/ego-jev";
+const { BENCH, JE, RAW, loadBenchApiKey, loadBenchTextModel } = await import(ROOT + "/bench/lib.mjs").catch(() => {
+  throw new Error(`无法定位仓库根（${ROOT}）：请用 sed "s|__REPO__|$PWD|g" bench/<script> | ego-browser nodejs 运行，或先 npx skills add jiangkoumo/ego-jev`);
+});
 const { parseActionTargets, enrichTargets, buildActionMenu } = await import(JE);
 
 const task = await taskSpace("ego-dbg-" + Date.now());
