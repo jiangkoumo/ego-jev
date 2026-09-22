@@ -8,8 +8,13 @@
 > [TypeSafe](https://docs.typesafe.ai)'s System One model **Jev**. Jev reads one *indexed element
 > table* and answers, in a single request, both the **operation** (`click` / `type_text` / `select` /
 > `scroll_up` / `scroll_down` / `wait` / `done` / `blocked`) and the **target element**. Code owns
-> observation, execution, verification and exit conditions. See [Benchmarks](#实测) — roughly **2×**
-> faster than a per-step large-model loop on two measured tasks (3 pairs each, high variance).
+> observation, execution, verification and exit conditions.
+>
+> Measured after the engine rebuild: HN two-step navigation **4569ms → 1916ms** on the same task, and
+> against browser-harness + jev-ultrafast over 100 pre-registered paired rounds — click chain
+> **−378ms**, wiki search **−819ms** (using 1 Jev decision instead of 3), form filling **no
+> difference**, native select **+248ms** in their favour. Raw data in
+> [`bench/raw/`](bench/raw) via [VERIFY-REPORT.md](VERIFY-REPORT.md).
 
 ---
 
@@ -44,15 +49,42 @@ A = `ego-jev` 单进程闭环；B = 经典循环（**每步一个独立进程** 
 - ✅ **决策往返**：Jev 约 1.0–1.5s/次，可用大模型 1.6–4.5s/次
   （实测 `kimi-k3` 1.8s、`minimax-m3` 1.6s、`glm-5.3` 3.2s、`qwen3.8-max` 3.5s、`deepseek-v4-pro` 4.5s）
 - ✅ **每步退出浏览器上下文**：B 每步一个新进程，A 全程 1 个（进程启动实测仅 250–350ms/次，不是主要成本）
-- ❌ **不省浏览器动作**：两边都是每步 1 次 `page.snapshot()` + 1 次批量 `page.evaluate()`
+- ✅ **省浏览器动作**（引擎重建后新增，现在是最大收益项）：默认观测是**一次 `page.evaluate`**
+  自建 DOM 元素表（约 **2ms / 1.8k 字符**），动作走**裸 CDP**（**13–16ms**）；
+  旧路径是 `page.snapshot()` **110–130ms / 27484 字符**、`page.click(ref)` **788–1005ms**
 
-> ⚠️ 只有 3 对样本/任务且**方差很大**（对照组单轮 7.3s–22s），不构成基准。
-> 目标准能用选择器写死时，直接写代码比两者都快。基准脚本见 [`examples/bench/`](examples/bench/)。
+> ⚠️ 上表是**引擎重建前**的测量（2026-09-19，3 对/任务，方差大）。重建后的数字见下。
+> 目标能用选择器写死时，直接写代码比两者都快。基准脚本见 [`examples/bench/`](examples/bench/)。
+
+### 引擎重建后（2026-09-22）
+
+按剖析结果重建，不是按猜测——真实瓶颈是 **ego 的语义动作通道**，不是快照。
+同任务隔离实验（5 臂 × 3 任务 × 3 次，全部 3/3 成功）：
+
+| 任务 | 重建前 | 重建后 |
+| --- | ---: | ---: |
+| Hacker News 两步导航 | 4569ms | **1916ms** |
+| httpbin 表单（填写+勾选+提交） | 6782ms | **3607ms** |
+| 维基搜索（含文本生成） | 3663ms | 3634ms（受模型延迟主导，无变化） |
+
+**与 browser-harness + jev-ultrafast 的预登记配对验证**（5 任务 × 2 栈 × 10 轮 = 100 轮，
+bootstrap 95% CI，判定规则**跑前写死**）：
+
+| 任务 | 结论 |
+| --- | --- |
+| HN 点击链 | **本体更快 −378ms**，CI[−1453,−313]，10/0 |
+| 维基搜索 | **本体更快 −819ms**，CI[−1314,−195]；且只需 **1 次 Jev 决策**（对方 3 次）|
+| 表单填写 | **无差异**（CI 跨 0）|
+| 原生下拉 | 对方更快 **+248ms**，CI[163,426] |
+| 翻页（目标在文档序 110/119）| 两栈都完不成 —— 能力边界，非速度问题 |
+
+另外：**滚动若真的移动了视口或露出新元素就算进展** —— X 上必须连滚 >3 次的深帖任务 **0/6 → 6/6**。
+详见 [`VERIFY-REPORT.md`](VERIFY-REPORT.md)，每个数字都能追到 [`bench/raw/`](bench/raw)。
 
 ## 架构
 
 ```
-页面 ──snapshot──► 索引化元素表（ref | role | 名称 | 当前值 | 勾选态 | 下拉选项 | 路径）
+页面 ──page.evaluate──► 元素表（ref | role | 名称 | 当前值 | 勾选态 | 下拉选项 | 路径）
                         │
                         ▼
               单次 Jev 请求（并行、互不可见）
@@ -67,7 +99,7 @@ A = `ego-jev` 单进程闭环；B = 经典循环（**每步一个独立进程** 
                      只消费命中操作的那个头 → 执行 → 由代码判定是否达成
 ```
 
-关键设计（借鉴 [browser-use/jev-ultrafast](https://github.com/browser-use/jev-ultrafast)）：
+关键设计：
 
 - **一次请求、多个 target 头**：避免串行的「先问操作再问目标」，也天然排除不兼容的目标
 - **每个 target 头显式写明它假设的 operation**（并行问题读不到彼此答案）
@@ -284,8 +316,6 @@ update.sh                一键更新（幂等；自动识别克隆/拷贝两种
 
 - [citrolabs/ego-lite](https://github.com/citrolabs/ego-lite)（MIT）—— 本项目的运行基础。
   根目录的 `SKILL.md` 是本项目自带的**附加技能**，装在应用包之外，不是对它的文档做的修改
-- [browser-use/jev-ultrafast](https://github.com/browser-use/jev-ultrafast) —— 架构灵感来源
-  （dynamic operation + target、代码侧选项索引、推测性 target 头）
 - [TypeSafe](https://docs.typesafe.ai) —— Jev / System One
 
 本项目**没有**再分发 ego-lite 的任何文档或代码；`skill/ego-jev-section.md` 仅包含我们自己撰写的章节。
