@@ -21,6 +21,9 @@ if (BENCH.includes("/.agents/skills/")) {
   console.log(`[bench] 仓库根取自已安装技能：${ROOT}（要测当前工作树请用 sed 注入 __REPO__，见脚本头部注释）`);
 }
 
+// 注意：脚本头部注释里那条手工 sed 命令里的路径含 `&` / `|` / `\` 时需要自行转义；
+// 本仓库的 bash 包装器（bench/verify.sh、bench/vs-bstack.sh）已经做了转义。
+
 /**
  * Jev 凭证：用引擎自己的解析链（TYPESAFE_API_KEY → ~/.config/typesafe/api_key）。
  * 以前这里读的是本机的一个备份文件路径（别人克隆后必然失败）。
@@ -38,14 +41,15 @@ export async function loadBenchApiKey() {
 
 /**
  * 文本模型配置（只有需要生成输入文本的基准才用）。
- * 优先级：EGO_JEV_ENV_FILE=<.env 路径>（含 TEXT_MODEL_BASE_URL / TEXT_MODEL / TEXT_MODEL_API_KEY）
- *        → 引擎自己的 ~/.config/typesafe/text_model.json。
+ * 优先级：
+ *   ① 显式路径：EGO_JEV_ENV_FILE（普通 node 运行时可用）
+ *      或 $HOME/.config/ego-jev/bench.env（ego 内嵌运行时里环境变量不传入，只能走文件）
+ *   ② 引擎自己的 ~/.config/typesafe/text_model.json
  * 都没有就明确报错——原来写死了另一个仓库的绝对路径，既不通用也不该公开。
  */
 export async function loadBenchTextModel() {
-  const envFile = process.env.EGO_JEV_ENV_FILE;
-  if (envFile) {
-    if (!existsSync(envFile)) throw new Error(`EGO_JEV_ENV_FILE 指向的文件不存在：${envFile}`);
+  const envFile = process.env.EGO_JEV_ENV_FILE || (process.env.HOME ? join(process.env.HOME, ".config", "ego-jev", "bench.env") : "");
+  if (envFile && existsSync(envFile)) {
     const env = Object.fromEntries(
       (await readFile(envFile, "utf8"))
         .split("\n")
@@ -56,17 +60,20 @@ export async function loadBenchTextModel() {
         })
     );
     if (!env.TEXT_MODEL_BASE_URL || !env.TEXT_MODEL || !env.TEXT_MODEL_API_KEY) {
-      throw new Error(`EGO_JEV_ENV_FILE=${envFile} 缺少 TEXT_MODEL_BASE_URL / TEXT_MODEL / TEXT_MODEL_API_KEY`);
+      throw new Error(`${envFile} 缺少 TEXT_MODEL_BASE_URL / TEXT_MODEL / TEXT_MODEL_API_KEY`);
     }
     return { baseUrl: env.TEXT_MODEL_BASE_URL, model: env.TEXT_MODEL, apiKey: env.TEXT_MODEL_API_KEY };
   }
+  if (process.env.EGO_JEV_ENV_FILE) throw new Error(`EGO_JEV_ENV_FILE 指向的文件不存在：${process.env.EGO_JEV_ENV_FILE}`);
   const { loadTextModelConfig, resolveTextApiKey } = await import(JE);
   const cfg = loadTextModelConfig();
-  if (!cfg) {
+  const apiKey = cfg ? resolveTextApiKey(cfg) : null;
+  if (!cfg || !apiKey) {
     throw new Error(
-      "缺少文本模型配置：设 EGO_JEV_ENV_FILE=<.env 路径>（含 TEXT_MODEL_BASE_URL / TEXT_MODEL / TEXT_MODEL_API_KEY），" +
-        "或配置 ~/.config/typesafe/text_model.json（见 SKILL.md）。"
+      "缺少文本模型配置：把 .env（含 TEXT_MODEL_BASE_URL / TEXT_MODEL / TEXT_MODEL_API_KEY）放到 " +
+        "$HOME/.config/ego-jev/bench.env（或普通 node 下用 EGO_JEV_ENV_FILE=<路径> 指定），" +
+        "或配置 $HOME/.config/typesafe/text_model.json（见 SKILL.md）。"
     );
   }
-  return { ...cfg, apiKey: resolveTextApiKey(cfg) };
+  return { ...cfg, apiKey };
 }

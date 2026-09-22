@@ -9,6 +9,10 @@ BENCH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$(cd "${BENCH}/.." && pwd)"
 # B 栈对照需要 jev-ultrafast 仓库（不在本仓库里）——用环境变量显式给出，原来写死了本机路径
 JEVDIR="${JEV_ULTRAFAST_DIR:?请设 JEV_ULTRAFAST_DIR=<jev-ultrafast 仓库路径>（B 栈对照需要它）}"
+# 路径里可能带 & | \，直接当 sed 替换串会出错（& 会展开成匹配到的占位符），先转义
+REPO_SED="${ROOT//\\/\\\\}"
+REPO_SED="${REPO_SED//&/\\&}"
+REPO_SED="${REPO_SED//|/\\|}"
 STAMP="$(date -u +%Y-%m-%dT%H-%M-%S)"
 OUT="${BENCH}/raw/vs-bstack-${STAMP}.jsonl"
 LOG="${BENCH}/raw/vs-bstack-${STAMP}.log"
@@ -25,7 +29,7 @@ extract() { grep -o '^{"stack".*' <<<"$1" | tail -1; }
 run_once() {
   local stack="$1" task="$2"
   if [ "$stack" = "A" ]; then
-    sed -e "s/__TASK__/${task}/" -e "s|__REPO__|${ROOT}|g" "${BENCH}/run-a.tpl.js" | timeout 240 ego-browser nodejs 2>&1
+    sed -e "s/__TASK__/${task}/" -e "s|__REPO__|${REPO_SED}|g" "${BENCH}/run-a.tpl.js" | timeout 240 ego-browser nodejs 2>&1
   else
     (cd "$JEVDIR" && timeout 240 uv run --env-file .env python "${BENCH}/run-b.py" "$task" 2>&1)
   fi
