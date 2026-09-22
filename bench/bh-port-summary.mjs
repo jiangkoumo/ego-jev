@@ -2,14 +2,27 @@
 // 用法: node bench/bh-port-summary.mjs
 import { readdirSync, readFileSync } from "node:fs";
 const RAW = new URL("./raw/", import.meta.url).pathname;
+/** 1 轮 harness 校验（dryrun）与审阅后复核（postreview）不进主表 */
 const latest = (prefix) => {
   const files = readdirSync(RAW)
-    .filter((f) => f.startsWith(prefix) && f.endsWith(".json") && !f.includes("dryrun"))
+    .filter((f) => f.startsWith(prefix) && f.endsWith(".json") && !f.includes("dryrun") && !f.includes("postreview"))
     .sort();
   if (!files.length) return null;
   const file = files[files.length - 1];
   return { file, data: JSON.parse(readFileSync(RAW + file, "utf8")) };
 };
+const latestAny = (prefix, tag) => {
+  const files = readdirSync(RAW).filter((f) => f.startsWith(prefix) && f.endsWith(".json") && f.includes(tag)).sort();
+  if (!files.length) return null;
+  const file = files[files.length - 1];
+  return { file, data: JSON.parse(readFileSync(RAW + file, "utf8")) };
+};
+/** 某前缀下全部非 dryrun 文件（用于汇总线上运行计数） */
+const allFiles = (prefix) =>
+  readdirSync(RAW)
+    .filter((f) => f.startsWith(prefix) && f.endsWith(".json") && !f.includes("dryrun"))
+    .sort()
+    .map((f) => ({ file: f, data: JSON.parse(readFileSync(RAW + f, "utf8")) }));
 const pct = (a, b) => `${a}/${b}`;
 
 console.log("=== P0-1a  X 配对（修正后的 harness：测锚点与跑任务在同一次加载上）===");
@@ -40,6 +53,20 @@ console.log("=== P0-1a  X 配对（修正后的 harness：测锚点与跑任务�
     console.log(
       `  新引擎最长同动作峰值 ${Math.max(...by("new").map((r) => r.maxSameActionRun || 0))}；只读互锁拦截 ${all.reduce((a, r) => a + (r.readOnlyBlocked?.length || 0), 0)} 次；` +
         `A 机制(滚入)合计 ${by("new").reduce((a, r) => a + (r.intoViewTotal || 0), 0)} 次`
+    );
+  }
+}
+
+console.log("\n=== P0-1a' X final 引擎复核（x-far × 3 轮，审阅后）===");
+{
+  const hit = latestAny("x-scroll-pair-", "postreview");
+  if (!hit) console.log("  (缺 x-scroll-pair-postreview-*.json)");
+  else {
+    const all = hit.data.records.filter((r) => r.reason !== "no_anchor");
+    const by = (e) => all.filter((r) => r.engine === e);
+    console.log(
+      `  raw: ${hit.file}\n  old ${pct(by("old").filter((r) => r.success).length, by("old").length)} ${JSON.stringify(by("old").map((r) => r.reason))}` +
+        `  →  new ${pct(by("new").filter((r) => r.success).length, by("new").length)}  滚动步[${by("new").map((r) => r.scrollSteps).join(",")}] 最长同动作[${by("new").map((r) => r.maxSameActionRun).join(",")}]`
     );
   }
 }
@@ -102,15 +129,15 @@ console.log("\n=== X 上新引擎运行的 Jev 400 / 异常计数（emoji 验收
 {
   let runs = 0;
   let errors = 0;
-  for (const [prefix, key] of [["x-scroll-pair-", "new"], ["x-frozen-new-", null], ["x-one-step-", null], ["x-diagnose-", null]]) {
-    const hit = latest(prefix);
-    if (!hit) continue;
-    const rs = (hit.data.records || hit.data.iterations || []).filter((r) => r.reason !== "no_anchor");
-    for (const r of rs) {
-      if (prefix === "x-scroll-pair-" && r.engine !== key) continue;
-      if (!r.reason && !r.action) continue;
-      runs += 1;
-      if (r.reason === "harness_error" || r.reason === "action_failed" || r.error) errors += 1;
+  for (const prefix of ["x-scroll-pair-", "x-frozen-new-", "x-one-step-", "x-diagnose-"]) {
+    for (const hit of allFiles(prefix)) {
+      const rs = (hit.data.records || hit.data.iterations || []).filter((r) => r.reason !== "no_anchor");
+      for (const r of rs) {
+        if (prefix === "x-scroll-pair-" && r.engine !== "new") continue;
+        if (!r.reason && !r.action) continue;
+        runs += 1;
+        if (r.reason === "harness_error" || r.reason === "action_failed" || r.error) errors += 1;
+      }
     }
   }
   console.log(`  计入 ${runs} 次运行，其中 harness_error / action_failed / error = ${errors}（Jev 400 invalid Unicode text 会落在这两类里）`);
