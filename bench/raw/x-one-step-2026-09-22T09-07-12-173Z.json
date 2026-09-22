@@ -1,0 +1,17 @@
+{
+  "probedAt": "2026-09-22T09:06:58.871Z",
+  "iterations": [
+    {
+      "i": 1,
+      "reason": "no_anchor"
+    },
+    {
+      "i": 2,
+      "reason": "no_anchor"
+    },
+    {
+      "i": 3,
+      "reason": "no_anchor"
+    }
+  ]
+}

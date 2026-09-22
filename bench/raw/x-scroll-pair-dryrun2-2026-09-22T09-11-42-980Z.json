@@ -1,0 +1,353 @@
+{
+  "startedAt": "2026-09-22T09:10:49.982Z",
+  "rounds": 1,
+  "old": "/Users/jiangkoumo/Documents/ego-jev/bench/scroll-baseline-engine.mjs",
+  "new": "/Users/jiangkoumo/Documents/ego-jev/scripts/ego-jev.mjs",
+  "records": [
+    {
+      "round": 1,
+      "task": "x-control",
+      "engine": "old",
+      "order": "old>new",
+      "targetDepth": "首屏",
+      "handle": "littlelion_love",
+      "targetId": "2101961264310165926",
+      "targetScreen": 0.26,
+      "domArticles": 3,
+      "docH": 9639,
+      "elapsedMs": 980,
+      "steps": 1,
+      "success": true,
+      "reason": "check_passed_after_step",
+      "finalUrl": "https://x.com/littlelion_love/status/2101961264310165926",
+      "jevCalls": 1,
+      "scrollSteps": 0,
+      "scrollMovedSteps": 0,
+      "progressedSteps": 0,
+      "intoViewTotal": 0,
+      "maxSameActionRun": 1,
+      "revealCount": 0,
+      "revealMaxAttempt": 0,
+      "invalidResponses": 0,
+      "guardRejected": 0,
+      "targetMissing": 0,
+      "readOnlyBlocked": [],
+      "clickedLabels": [
+        "link \"9月21日\" 当前值=空 /littlelion_love/status/2101961264310165926"
+      ],
+      "actionLabels": [
+        "click:ref=40"
+      ]
+    },
+    {
+      "round": 1,
+      "task": "x-control",
+      "engine": "new",
+      "order": "old>new",
+      "targetDepth": "首屏",
+      "handle": "Dr_goosee",
+      "targetId": "2102245600901394577",
+      "targetScreen": 0.26,
+      "domArticles": 3,
+      "docH": 9670,
+      "elapsedMs": 812,
+      "steps": 1,
+      "success": true,
+      "reason": "check_passed_after_step",
+      "finalUrl": "https://x.com/Dr_goosee/status/2102245600901394577",
+      "jevCalls": 1,
+      "scrollSteps": 0,
+      "scrollMovedSteps": 0,
+      "progressedSteps": 1,
+      "intoViewTotal": 0,
+      "maxSameActionRun": 1,
+      "revealCount": 0,
+      "revealMaxAttempt": 0,
+      "invalidResponses": 0,
+      "guardRejected": 0,
+      "targetMissing": 0,
+      "readOnlyBlocked": [],
+      "clickedLabels": [
+        "link \"5小时 前\" 当前值=空 /Dr_goosee/status/2102245600901394577"
+      ],
+      "actionLabels": [
+        "click:ref=40"
+      ]
+    },
+    {
+      "round": 1,
+      "task": "x-below",
+      "engine": "old",
+      "order": "old>new",
+      "targetDepth": "1.2–4 屏",
+      "handle": "AndyL5cc",
+      "targetId": "2102319652928159810",
+      "targetScreen": 1.82,
+      "domArticles": 3,
+      "docH": 9718,
+      "elapsedMs": 1536,
+      "steps": 2,
+      "success": true,
+      "reason": "check_passed_after_step",
+      "finalUrl": "https://x.com/AndyL5cc/status/2102319652928159810",
+      "jevCalls": 2,
+      "scrollSteps": 1,
+      "scrollMovedSteps": 0,
+      "progressedSteps": 0,
+      "intoViewTotal": 0,
+      "maxSameActionRun": 1,
+      "revealCount": 0,
+      "revealMaxAttempt": 0,
+      "invalidResponses": 0,
+      "guardRejected": 0,
+      "targetMissing": 0,
+      "readOnlyBlocked": [],
+      "clickedLabels": [
+        "link \"20分钟 前\" 当前值=空 /AndyL5cc/status/2102319652928159810"
+      ],
+      "actionLabels": [
+        "scroll_down",
+        "click:ref=76"
+      ]
+    },
+    {
+      "round": 1,
+      "task": "x-below",
+      "engine": "new",
+      "order": "old>new",
+      "targetDepth": "1.2–4 屏",
+      "handle": "ZhuJianMind",
+      "targetId": "2102295687740494158",
+      "targetScreen": 1.6,
+      "domArticles": 3,
+      "docH": 10500,
+      "elapsedMs": 2039,
+      "steps": 3,
+      "success": true,
+      "reason": "check_passed_after_step",
+      "finalUrl": "https://x.com/ZhuJianMind/status/2102295687740494158",
+      "jevCalls": 3,
+      "scrollSteps": 1,
+      "scrollMovedSteps": 1,
+      "progressedSteps": 2,
+      "intoViewTotal": 0,
+      "maxSameActionRun": 2,
+      "revealCount": 0,
+      "revealMaxAttempt": 0,
+      "invalidResponses": 0,
+      "guardRejected": 0,
+      "targetMissing": 0,
+      "readOnlyBlocked": [],
+      "clickedLabels": [
+        "link \"1小时 前\" 当前值=空 /ZhuJianMind/status/2102295687740494158",
+        "link \"1小时 前\" 当前值=空 /ZhuJianMind/status/2102295687740494158"
+      ],
+      "actionLabels": [
+        "scroll_down",
+        "click:ref=67",
+        "click:ref=67"
+      ]
+    },
+    {
+      "round": 1,
+      "task": "x-deep",
+      "engine": "old",
+      "order": "old>new",
+      "targetDepth": ">1.8 屏",
+      "reason": "no_anchor",
+      "success": false,
+      "domArticles": 3,
+      "docH": 9526,
+      "readOnlyBlocked": []
+    },
+    {
+      "round": 1,
+      "task": "x-deep",
+      "engine": "new",
+      "order": "old>new",
+      "targetDepth": ">1.8 屏",
+      "reason": "no_anchor",
+      "success": false,
+      "domArticles": 3,
+      "docH": 9246,
+      "readOnlyBlocked": []
+    },
+    {
+      "round": 1,
+      "task": "x-far",
+      "engine": "old",
+      "order": "old>new",
+      "targetDepth": ">2.5 屏（预滚测量，回到顶部开跑）",
+      "handle": "LKDenchin",
+      "targetId": "2102074317450445235",
+      "targetScreen": 5.18,
+      "domArticles": 10,
+      "docH": 9914,
+      "elapsedMs": 2860,
+      "steps": 4,
+      "success": false,
+      "reason": "stuck",
+      "finalUrl": "https://x.com/home",
+      "jevCalls": 4,
+      "scrollSteps": 4,
+      "scrollMovedSteps": 0,
+      "progressedSteps": 0,
+      "intoViewTotal": 0,
+      "maxSameActionRun": 4,
+      "revealCount": 0,
+      "revealMaxAttempt": 0,
+      "invalidResponses": 0,
+      "guardRejected": 0,
+      "targetMissing": 0,
+      "readOnlyBlocked": [],
+      "clickedLabels": [],
+      "actionLabels": [
+        "scroll_down",
+        "scroll_down",
+        "scroll_down",
+        "scroll_down"
+      ]
+    },
+    {
+      "round": 1,
+      "task": "x-far",
+      "engine": "new",
+      "order": "old>new",
+      "targetDepth": ">2.5 屏（预滚测量，回到顶部开跑）",
+      "handle": "Rin_Mashiro_",
+      "targetId": "2101962589395935315",
+      "targetScreen": 4.95,
+      "domArticles": 8,
+      "docH": 10503,
+      "elapsedMs": 5296,
+      "steps": 7,
+      "success": true,
+      "reason": "check_passed_after_step",
+      "finalUrl": "https://x.com/Rin_Mashiro_/status/2101962589395935315",
+      "jevCalls": 7,
+      "scrollSteps": 6,
+      "scrollMovedSteps": 6,
+      "progressedSteps": 7,
+      "intoViewTotal": 0,
+      "maxSameActionRun": 6,
+      "revealCount": 0,
+      "revealMaxAttempt": 0,
+      "invalidResponses": 0,
+      "guardRejected": 0,
+      "targetMissing": 0,
+      "readOnlyBlocked": [],
+      "clickedLabels": [
+        "link \"23小时 前\" 当前值=空 /Rin_Mashiro_/status/2101962589395935315"
+      ],
+      "actionLabels": [
+        "scroll_down",
+        "scroll_down",
+        "scroll_down",
+        "scroll_down",
+        "scroll_down",
+        "scroll_down",
+        "click:ref=156"
+      ]
+    }
+  ],
+  "summary": [
+    {
+      "task": "x-control",
+      "oldSuccess": "1/1",
+      "newSuccess": "1/1",
+      "oldReasons": [],
+      "newReasons": [],
+      "oldMedianMs": 980,
+      "newMedianMs": 812,
+      "newScrollSteps": [
+        0
+      ],
+      "newMaxSameActionRun": [
+        1
+      ],
+      "newIntoView": [
+        0
+      ],
+      "newReveal": [
+        0
+      ],
+      "oldScrollSteps": [
+        0
+      ],
+      "oldMaxSameActionRun": [
+        1
+      ]
+    },
+    {
+      "task": "x-below",
+      "oldSuccess": "1/1",
+      "newSuccess": "1/1",
+      "oldReasons": [],
+      "newReasons": [],
+      "oldMedianMs": 1536,
+      "newMedianMs": 2039,
+      "newScrollSteps": [
+        1
+      ],
+      "newMaxSameActionRun": [
+        2
+      ],
+      "newIntoView": [
+        0
+      ],
+      "newReveal": [
+        0
+      ],
+      "oldScrollSteps": [
+        1
+      ],
+      "oldMaxSameActionRun": [
+        1
+      ]
+    },
+    {
+      "task": "x-deep",
+      "oldSuccess": "0/0",
+      "newSuccess": "0/0",
+      "oldReasons": [],
+      "newReasons": [],
+      "oldMedianMs": null,
+      "newMedianMs": null,
+      "newScrollSteps": [],
+      "newMaxSameActionRun": [],
+      "newIntoView": [],
+      "newReveal": [],
+      "oldScrollSteps": [],
+      "oldMaxSameActionRun": []
+    },
+    {
+      "task": "x-far",
+      "oldSuccess": "0/1",
+      "newSuccess": "1/1",
+      "oldReasons": [
+        "stuck"
+      ],
+      "newReasons": [],
+      "oldMedianMs": null,
+      "newMedianMs": 5296,
+      "newScrollSteps": [
+        6
+      ],
+      "newMaxSameActionRun": [
+        6
+      ],
+      "newIntoView": [
+        0
+      ],
+      "newReveal": [
+        0
+      ],
+      "oldScrollSteps": [
+        4
+      ],
+      "oldMaxSameActionRun": [
+        4
+      ]
+    }
+  ]
+}

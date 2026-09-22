@@ -1,0 +1,83 @@
+{
+  "probedAt": "2026-09-22T09:05:30.434Z",
+  "iterations": [
+    {
+      "kind": "table",
+      "i": 1,
+      "targets": 60,
+      "newCount": 60,
+      "targetInTable": true,
+      "targetIndex": 39,
+      "statusLinks": 2
+    },
+    {
+      "kind": "table",
+      "i": 2,
+      "targets": 58,
+      "newCount": 25,
+      "targetInTable": false,
+      "targetIndex": -1,
+      "statusLinks": 1
+    },
+    {
+      "kind": "jev",
+      "goal": "exact",
+      "action": "scroll_down",
+      "confidence": 0.55,
+      "probabilities": {
+        "scroll_up": 0.22,
+        "done": 0,
+        "type_text": 0,
+        "blocked": 0.07,
+        "click": 0.1,
+        "wait": 0,
+        "type_text_submit": 0.01,
+        "scroll_down": 0.6
+      },
+      "target": null,
+      "targetLabel": "",
+      "targetInState": false,
+      "statusLinesInState": 3
+    },
+    {
+      "kind": "jev",
+      "goal": "nohint",
+      "action": "scroll_down",
+      "confidence": 0.52,
+      "probabilities": {
+        "click": 0.1,
+        "wait": 0,
+        "scroll_down": 0.59,
+        "scroll_up": 0.14,
+        "done": 0,
+        "blocked": 0.17,
+        "type_text_submit": 0,
+        "type_text": 0
+      },
+      "target": null,
+      "targetLabel": "",
+      "targetInState": false,
+      "statusLinesInState": 3
+    },
+    {
+      "kind": "jev",
+      "goal": "byurl",
+      "action": "type_text_submit",
+      "confidence": 0.54,
+      "probabilities": {
+        "scroll_down": 0.02,
+        "type_text_submit": 0.6,
+        "type_text": 0.07,
+        "done": 0,
+        "click": 0.28,
+        "blocked": 0.02,
+        "scroll_up": 0.01,
+        "wait": 0
+      },
+      "target": "ref=38",
+      "targetLabel": "combobox \"查询词条\" 当前值=空",
+      "targetInState": false,
+      "statusLinesInState": 0
+    }
+  ]
+}

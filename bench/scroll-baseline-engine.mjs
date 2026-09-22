@@ -18,47 +18,6 @@ import { existsSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join, resolve } from "node:path";
 
-/**
- * 按「码点」截断文本，并顺手丢掉孤立代理（lone surrogate）。
- *
- * 为什么不能直接用 String.prototype.slice：元素名 / 当前值 / 下拉选项全部来自任意页面文本，
- * UTF-16 的 slice(0, 60) 会把 emoji 这类代理对从正中间切开，留下半个代理。它经
- * JSON.stringify 变成 "\uD83D" 这样的转义，Jev 端解析后无法再编码成合法 UTF-8，直接返回
- * 400 `invalid Unicode text` —— 整轮因此被判成 action_failed。实测 X 时间线 235 个元素里
- * 约 5 个命中，足够把一整轮打死。
- * for..of / Array.from 按码点切分，同时解决「按码点截断」与「剔除页面里本就存在的孤立代理」。
- *
- * 注意：observeDom 必须在页面上下文里运行、不得引用模块作用域，因此它自带一份等价实现；
- * enrichTargets / selectInPage 里的页面回调同理。改动必须同步。
- */
-function clipText(value, max) {
-  const out = [];
-  for (const ch of String(value ?? "")) {
-    const cp = ch.codePointAt(0);
-    if (ch.length === 1 && cp >= 0xd800 && cp <= 0xdfff) continue; // 孤立代理
-    out.push(ch);
-    if (out.length >= max) break;
-  }
-  return out.join("");
-}
-
-/**
- * 孤立代理会让 Jev 直接 400 invalid Unicode text。截断点已按码点处理（clipText），
- * 这里对整份 state / questions 再兜底清理一次：任何调用方传进来的页面文本（如 document.title）
- * 都不可能把请求打死。只清理值、不动键名，避免改变 criteria 的键集合。
- */
-const LONE_SURROGATE = /[\ud800-\udbff](?![\udc00-\udfff])|(?<![\ud800-\udbff])[\udc00-\udfff]/g;
-const scrubLoneSurrogates = (value) => {
-  if (typeof value === "string") return value.replace(LONE_SURROGATE, "");
-  if (Array.isArray(value)) return value.map(scrubLoneSurrogates);
-  if (value && typeof value === "object") {
-    const out = {};
-    for (const [k, v] of Object.entries(value)) out[k] = scrubLoneSurrogates(v);
-    return out;
-  }
-  return value;
-};
-
 const BASE_URL = process.env.TYPESAFE_BASE_URL || "https://api.typesafe.ai/v1";
 const CREDENTIAL_FILES = [
   process.env.TYPESAFE_API_KEY_FILE,
@@ -104,8 +63,8 @@ export async function askJev(state, questions, options = {}) {
     },
     body: JSON.stringify({
       model: options.model || "jev-latest",
-      state: scrubLoneSurrogates(typeof state === "string" ? state : JSON.stringify(state)),
-      questions: scrubLoneSurrogates(questions),
+      state: typeof state === "string" ? state : JSON.stringify(state),
+      questions,
     }),
   });
   if (!res.ok) {
@@ -245,18 +204,6 @@ export async function generateText(input, options = {}) {
 function observeDom(payload) {
   const limit = (payload && payload.limit) || 60;
   const maxText = (payload && payload.maxText) || 0;
-  // 与模块级 clipText 同一实现（页面上下文不能引用模块作用域）：按码点截断 + 丢孤立代理。
-  // 用 slice 截断会把 emoji 切成半个代理，Jev 收到后 400 invalid Unicode text。
-  const clip = (value, max) => {
-    const out = [];
-    for (const ch of String(value ?? "")) {
-      const cp = ch.codePointAt(0);
-      if (ch.length === 1 && cp >= 0xd800 && cp <= 0xdfff) continue;
-      out.push(ch);
-      if (out.length >= max) break;
-    }
-    return out.join("");
-  };
   const cache = (window.__egoJev ||= { ids: new WeakMap(), nodes: new Map(), next: 1 });
   const shown = (cache.shown ||= new Set());
   for (const [id, el] of cache.nodes) if (!el.isConnected) cache.nodes.delete(id);
@@ -337,7 +284,7 @@ function observeDom(payload) {
   const guardOf = (el) => [
     identify(el),
     roleOf(el),
-    clip((nameOf(el) || "").replace(/\s+/g, " ").trim(), 80),
+    (nameOf(el) || "").replace(/\s+/g, " ").trim().slice(0, 80),
     el.matches(":disabled"),
     el.getAttribute("aria-disabled"),
     el.getAttribute("href"),
@@ -371,7 +318,7 @@ function observeDom(payload) {
       ref: `ref=${identify(el)}`,
       role,
       kind,
-      name: clip((nameOf(el) || "").replace(/\s+/g, " ").trim(), 60),
+      name: (nameOf(el) || "").replace(/\s+/g, " ").trim().slice(0, 60),
       guard: guardOf(el),
     };
     if (el.tagName === "A") item.url = el.href;
@@ -379,12 +326,12 @@ function observeDom(payload) {
       item.checked = typeof el.checked === "boolean" ? el.checked : el.getAttribute("aria-checked") === "true";
     }
     if (el.tagName === "SELECT") {
-      item.options = [...el.options].map((o) => clip((o.textContent || "").trim(), 40)).slice(0, 30);
+      item.options = [...el.options].map((o) => (o.textContent || "").trim().slice(0, 40)).slice(0, 30);
       item.optionValues = [...el.options].map((o) => o.value).slice(0, 30);
       item.selectedIndex = el.selectedIndex;
-      item.value = clip((el.selectedOptions[0]?.textContent || "").trim(), 60);
+      item.value = (el.selectedOptions[0]?.textContent || "").trim().slice(0, 60);
     } else if ("value" in el && !["checkbox", "radio"].includes(el.type)) {
-      item.value = clip(String(el.value || ""), 60);
+      item.value = String(el.value || "").slice(0, 60);
     }
     candidates.push({ id: Number(item.ref.slice(4)), item });
   }
@@ -423,7 +370,7 @@ function observeDom(payload) {
         length += value.length;
       }
     }
-    text = clip(words.join("\n"), maxText);
+    text = words.join("\n").slice(0, maxText);
   }
 
   return {
@@ -495,18 +442,6 @@ function locateForInput(payload) {
   };
 }
 
-/**
- * 页面内：把已观测过的节点滚入视口中央（补回 ego 语义动作通道的「动作自动滚入视口」）。
- * 只用代码持有的 DOM 身份，不接选择器；返回是否真的可滚，调用方随后必须重新命中测试。
- */
-function scrollNodeIntoView(payload) {
-  const el = window.__egoJev?.nodes.get(payload.id);
-  if (!el || !el.isConnected) return { ok: false, reason: "node_gone" };
-  if (!el.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true })) return { ok: false, reason: "invisible" };
-  el.scrollIntoView({ block: "center", inline: "nearest", behavior: "instant" });
-  return { ok: true, y: scrollY };
-}
-
 /** 页面内：把下拉框改选为目标值并触发 input/change（对齐 jev-ultrafast 的做法） */
 function selectInPage(payload) {
   const el = window.__egoJev?.nodes.get(payload.id);
@@ -518,8 +453,7 @@ function selectInPage(payload) {
   el.value = payload.value;
   el.dispatchEvent(new Event("input", { bubbles: true }));
   el.dispatchEvent(new Event("change", { bubbles: true }));
-  // 这一项只进日志、不进 Jev 请求；仍按码点截断，避免半个代理出现在日志/回执里
-  return { ok: true, selected: Array.from(option.textContent.trim()).slice(0, 40).join("") };
+  return { ok: true, selected: option.textContent.trim().slice(0, 40) };
 }
 
 /** 页面内：滚动页面（返回是否真的滚动了，供调用方决定要不要退回鼠标滚轮） */
@@ -527,14 +461,6 @@ function scrollInPage(delta) {
   const before = scrollY;
   window.scrollBy({ top: delta, behavior: "instant" });
   return { moved: scrollY !== before, y: scrollY };
-}
-
-/**
- * 页面内：读当前视口滚动位置。用于「滚动动作是否真的移动了视口」——
- * 退回鼠标滚轮时滚的可能不是 window（内部滚动容器），必须实测，不能假设。
- */
-function readScrollY() {
-  return scrollY;
 }
 
 /**
@@ -572,9 +498,9 @@ const shortPath = (url) => {
   if (!url) return "";
   try {
     const parsed = new URL(url);
-    return clipText(parsed.pathname + parsed.search, 48);
+    return (parsed.pathname + parsed.search).slice(0, 48);
   } catch {
-    return clipText(url, 48);
+    return String(url).slice(0, 48);
   }
 };
 
@@ -636,8 +562,8 @@ export function parseActionTargets(snapshotText, { limit = 40 } = {}) {
       ref: `ref=${refMatch[1]}`,
       role,
       kind: classifyRole(role, loc),
-      name: clipText(name, 60),
-      value: clipText(value, 60),
+      name: name.slice(0, 60),
+      value: value.slice(0, 60),
       loc,
       url,
     });
@@ -683,12 +609,11 @@ export async function enrichTargets(page, targets, options = {}) {
         if (!el) continue;
         const entry = {};
         if (el.tagName === "SELECT") {
-          // 页面上下文：按码点截断（同 clipText），否则半个 emoji 会被送进 Jev 请求
-          entry.options = [...el.options].map((o) => Array.from((o.textContent || "").trim()).slice(0, 40).join(""));
+          entry.options = [...el.options].map((o) => (o.textContent || "").trim().slice(0, 40));
           entry.selectedIndex = el.selectedIndex;
         }
         if (typeof el.checked === "boolean") entry.checked = el.checked;
-        if (typeof el.value === "string") entry.liveValue = Array.from(el.value).slice(0, 60).join("");
+        if (typeof el.value === "string") entry.liveValue = el.value.slice(0, 60);
         out[item.ref] = entry;
       }
       return out;
@@ -715,17 +640,15 @@ export async function enrichTargets(page, targets, options = {}) {
         return list.map((el) => ({
           checked:
             typeof el.checked === "boolean" ? el.checked : el.getAttribute("aria-checked") === "true",
-          label: Array.from(
-            (
-              el.closest("label")?.textContent ||
-              el.getAttribute("aria-label") ||
-              el.getAttribute("name") ||
-              el.value ||
-              ""
-            ).trim()
+          label: (
+            el.closest("label")?.textContent ||
+            el.getAttribute("aria-label") ||
+            el.getAttribute("name") ||
+            el.value ||
+            ""
           )
-            .slice(0, 40)
-            .join(""),
+            .trim()
+            .slice(0, 40),
         }));
       });
       if (Array.isArray(dom) && dom.length === checkables.length) {
@@ -1261,10 +1184,6 @@ export async function runJevStep(page, goal, options = {}) {
   let executed = null;
   let error = null;
   let guardRejected = null;
-  // 滚动动作是否真的移动了视口：滚动不改 URL，光看 URL 无法判断「滚动有没有进展」
-  let scrollMoved = null;
-  // A 机制实际生效次数（目标被自动滚入视口后重新命中）：用于区分是哪个机制在起作用
-  let intoViewCount = 0;
   const domIdOf = (value) => {
     const clean = refOf(value); // select 的 ref=1#2 要先去选项后缀，否则 Number("1#2") = NaN
     const found = targets.find((t) => t.ref === clean);
@@ -1285,31 +1204,10 @@ export async function runJevStep(page, goal, options = {}) {
       String(target.guard[5] ?? "") === String(live.href ?? "")
     );
   };
-  // ── A：目标不在视口内时先滚入再动作 ──────────────────────────────────────
-  // ego 的语义动作通道（click/fill/hover/dragAndDrop）本来就会「自动把目标滚入视口」，
-  // 官方 SKILL.md 因此明写 “Do not pre-scroll solely to make a DOM target actionable”
-  // （0.5.0.32 / 0.5.1.11 包内 ego-skills/ego-browser/SKILL.md:241）。
-  // 我们换成裸 CDP 坐标派发（快 60 倍）时把这一步丢了：一旦元素在观测后被懒加载/虚拟列表
-  // 顶出视口，locateForInput 就只能报 offscreen，目标不可达。这里补回同一语义，但守两条：
-  //   * 只用代码持有的 DOM 身份滚动，不把选择器交给模型；
-  //   * 滚动后必须重新做命中测试取新坐标，不拿旧坐标硬点；每步最多一次，不会成环。
-  const locateReady = async (target, kind) => {
-    let live = await locate(target, kind);
-    if (live && !live.ok && live.reason === "offscreen") {
-      bump(metrics, "page.evaluate");
-      const moved = await page.evaluate(scrollNodeIntoView, { id: domIdOf(target.ref) });
-      if (moved?.ok) {
-        intoViewCount += 1;
-        await sleep(options.intoViewSettleMs ?? 60);
-        live = await locate(target, kind);
-      }
-    }
-    return live;
-  };
   try {
     if (action === "click" && validTarget) {
       if (observeMode === "dom") {
-        const live = await locateReady(chosenTarget, chosenTarget.kind);
+        const live = await locate(chosenTarget, chosenTarget.kind);
         if (!live?.ok) guardRejected = live?.reason || "locate_failed";
         else if (!guardMatches(chosenTarget, live)) guardRejected = "stale_guard";
         else {
@@ -1323,7 +1221,7 @@ export async function runJevStep(page, goal, options = {}) {
       }
     } else if (isTypeOp && validTarget && text) {
       if (observeMode === "dom") {
-        const live = await locateReady(chosenTarget, "editable");
+        const live = await locate(chosenTarget, "editable");
         if (!live?.ok) guardRejected = live?.reason || "locate_failed";
         else if (!guardMatches(chosenTarget, live)) guardRejected = "stale_guard";
         else {
@@ -1348,7 +1246,7 @@ export async function runJevStep(page, goal, options = {}) {
       const index = Number(chosen.split("#")[1]);
       const value = chosenTarget?.optionValues?.[index] ?? chosenTarget?.options?.[index];
       if (observeMode === "dom" && value !== undefined) {
-        const live = await locateReady(chosenTarget, "selectable");
+        const live = await locate(chosenTarget, "selectable");
         if (!live?.ok) guardRejected = live?.reason || "locate_failed";
         else if (!guardMatches(chosenTarget, live)) guardRejected = "stale_guard";
         else {
@@ -1364,7 +1262,6 @@ export async function runJevStep(page, goal, options = {}) {
       }
     } else if (action === "scroll_down" || action === "scroll_up") {
       const delta = action === "scroll_down" ? 600 : -600;
-      const yBefore = scrollInfo?.y ?? null;
       bump(metrics, "page.evaluate");
       const scrolled = await page.evaluate(scrollInPage, delta);
       if (scrolled && !scrolled.moved) {
@@ -1373,16 +1270,6 @@ export async function runJevStep(page, goal, options = {}) {
           type: "mouseWheel", x: 550, y: 400, deltaX: 0, deltaY: delta,
         });
         bump(metrics, "page.cdp");
-        // 滚轮滚的可能不是 window：再读一次真实视口位置，别把「没动」当成「动了」
-        try {
-          bump(metrics, "page.evaluate");
-          const yAfter = await page.evaluate(readScrollY);
-          scrollMoved = yBefore === null || typeof yAfter !== "number" ? null : yAfter !== yBefore;
-        } catch {
-          scrollMoved = null;
-        }
-      } else {
-        scrollMoved = scrolled?.moved === true;
       }
       executed = action;
     } else if (action === "wait") {
@@ -1411,8 +1298,6 @@ export async function runJevStep(page, goal, options = {}) {
       ? chosenTarget.options[Number(chosen.split("#")[1])]
       : null;
 
-  const changed = stableUrl(urlAfter) !== stableUrl(urlBefore) || observedAfterNavigation;
-
   return {
     stepDurationMs: Date.now() - started,
     action,
@@ -1430,11 +1315,7 @@ export async function runJevStep(page, goal, options = {}) {
     newTargetCount,
     scrollInfo,
     error,
-    changed,
-    scrollMoved,
-    intoViewCount,
-    // 进展判定：URL/导航变化，或滚动动作真的移动了视口。滚动不改 URL，必须单独算。
-    progressed: changed || scrollMoved === true,
+    changed: stableUrl(urlAfter) !== stableUrl(urlBefore) || observedAfterNavigation,
     urlBefore,
     urlAfter,
     observeMode,
@@ -1496,7 +1377,6 @@ export async function runJevAutonomousLoop(page, goal, options = {}) {
         (result.option ? ` = "${result.option}"` : "") +
         (result.text ? ` "${result.text}"` : "") +
         (result.observeMode ? ` | 观测:${result.observeMode}` : "") +
-        (result.intoViewCount ? ` | 目标已滚入视口${result.intoViewCount}次` : "") +
         (result.staleTarget ? ` | ⚠️ ${result.staleTarget} 已过期，未执行` : "") +
         (result.guardRejected ? ` | ⚠️ 执行前守卫拒绝: ${result.guardRejected}` : "") +
         (result.invalidResponse ? ` | ⚠️ 响应校验失败(${result.invalidHead}): ${result.invalidResponse}，未执行` : "") +
@@ -1624,19 +1504,8 @@ export async function runJevAutonomousLoop(page, goal, options = {}) {
       guardRejectedStreak = 0;
     }
 
-    // ── 进展判定：滚动必须算进来 ────────────────────────────────────────────
-    // 旧判据只看 URL（stableUrl(urlAfter)!==stableUrl(urlBefore)）：滚动不改 URL，
-    // 于是「滚一屏 → 重新观测 → 再滚」永远算无进展，连续 3 次同动作即判 stuck。
-    // 实测 X 时间线上第 4 次滚动就被中止（A 0/15，同一批 B 6/12）；B 的 fingerprint()
-    // 把 scroll 位置算进指纹，所以它滚得下去。这里对齐同一语义，但只用引擎已有的信号：
-    //   (a) 上一步是滚动，而本轮观测露出新元素（newTargetCount > 0，观测层本来就在算）；
-    //   (b) 上一步的滚动动作真的移动了视口（scrollMoved，由滚动动作自己实测返回）。
-    // 有界性没有被放开：滚到页面边界后 scrollY 不再变化、(a) 也不再成立，
-    // sameActionStreak 照常累加到 maxSameAction 并停止；maxSteps 仍是硬上限。
-    const scrolledLastStep = lastAction === "scroll_down" || lastAction === "scroll_up";
-    const revealedByLastScroll = scrolledLastStep && (result.newTargetCount ?? 0) > 0;
-    const progressed = Boolean(result.progressed) || revealedByLastScroll;
-    sameActionStreak = result.action === lastAction && !progressed ? sameActionStreak + 1 : 0;
+    // 同一个动作连续重复且页面无变化（含反复滚动/等待）：判为卡住
+    sameActionStreak = result.action === lastAction && !result.changed ? sameActionStreak + 1 : 0;
     lastAction = result.action;
     if (sameActionStreak >= (options.maxSameAction ?? 3)) {
       return { success: false, steps: step, reason: "stuck", history };
@@ -1649,8 +1518,7 @@ export async function runJevAutonomousLoop(page, goal, options = {}) {
     const isMutating =
       executedSomething &&
       (result.action === "click" || result.action?.startsWith("type_text") || result.action === "select");
-    // 滚动/等待不是 mutating 动作，本来就不计入这里；mutating 动作仍以页面是否变化为准
-    if (!isMutating || progressed) {
+    if (!isMutating || result.changed) {
       noProgressStreak = 0;
     } else {
       noProgressStreak += 1;

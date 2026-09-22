@@ -1,0 +1,281 @@
+{
+  "startedAt": "2026-09-22T09:09:23.993Z",
+  "rounds": 1,
+  "old": "/Users/jiangkoumo/Documents/ego-jev/bench/scroll-baseline-engine.mjs",
+  "new": "/Users/jiangkoumo/Documents/ego-jev/scripts/ego-jev.mjs",
+  "records": [
+    {
+      "round": 1,
+      "task": "x-control",
+      "engine": "old",
+      "order": "old>new",
+      "targetDepth": "首屏",
+      "handle": "Starlight4You_",
+      "targetId": "2102298294022197538",
+      "targetScreen": 0.26,
+      "domArticles": 3,
+      "docH": 9182,
+      "elapsedMs": 1298,
+      "steps": 1,
+      "success": true,
+      "reason": "check_passed_after_step",
+      "finalUrl": "https://x.com/Starlight4You_/status/2102298294022197538",
+      "jevCalls": 1,
+      "scrollSteps": 0,
+      "scrollMovedSteps": 0,
+      "progressedSteps": 0,
+      "intoViewTotal": 0,
+      "maxSameActionRun": 1,
+      "revealCount": 0,
+      "revealMaxAttempt": 0,
+      "invalidResponses": 0,
+      "guardRejected": 0,
+      "targetMissing": 0,
+      "readOnlyBlocked": [],
+      "clickedLabels": [
+        "link \"1小时 前\" 当前值=空 /Starlight4You_/status/2102298294022197538"
+      ],
+      "actionLabels": [
+        "click:ref=40"
+      ]
+    },
+    {
+      "round": 1,
+      "task": "x-control",
+      "engine": "new",
+      "order": "old>new",
+      "targetDepth": "首屏",
+      "handle": "AndyL5cc",
+      "targetId": "2102039340130197609",
+      "targetScreen": 0.26,
+      "domArticles": 4,
+      "docH": 10263,
+      "elapsedMs": 1249,
+      "steps": 1,
+      "success": true,
+      "reason": "check_passed_after_step",
+      "finalUrl": "https://x.com/AndyL5cc/status/2102039340130197609",
+      "jevCalls": 1,
+      "scrollSteps": 0,
+      "scrollMovedSteps": 0,
+      "progressedSteps": 1,
+      "intoViewTotal": 0,
+      "maxSameActionRun": 1,
+      "revealCount": 0,
+      "revealMaxAttempt": 0,
+      "invalidResponses": 0,
+      "guardRejected": 0,
+      "targetMissing": 0,
+      "readOnlyBlocked": [],
+      "clickedLabels": [
+        "link \"18小时 前\" 当前值=空 /AndyL5cc/status/2102039340130197609"
+      ],
+      "actionLabels": [
+        "click:ref=40"
+      ]
+    },
+    {
+      "round": 1,
+      "task": "x-below",
+      "engine": "old",
+      "order": "old>new",
+      "targetDepth": "1.2–4 屏",
+      "handle": "BlockInsight214",
+      "targetId": "2102194698479870401",
+      "targetScreen": 2.07,
+      "domArticles": 3,
+      "docH": 9965,
+      "elapsedMs": 2028,
+      "steps": 3,
+      "success": true,
+      "reason": "check_passed_after_step",
+      "finalUrl": "https://x.com/BlockInsight214/status/2102194698479870401",
+      "jevCalls": 3,
+      "scrollSteps": 2,
+      "scrollMovedSteps": 0,
+      "progressedSteps": 0,
+      "intoViewTotal": 0,
+      "maxSameActionRun": 2,
+      "revealCount": 0,
+      "revealMaxAttempt": 0,
+      "invalidResponses": 0,
+      "guardRejected": 0,
+      "targetMissing": 0,
+      "readOnlyBlocked": [],
+      "clickedLabels": [
+        "link \"8小时 前\" 当前值=空 /BlockInsight214/status/2102194698479870401"
+      ],
+      "actionLabels": [
+        "scroll_down",
+        "scroll_down",
+        "click:ref=98"
+      ]
+    },
+    {
+      "round": 1,
+      "task": "x-below",
+      "engine": "new",
+      "order": "old>new",
+      "targetDepth": "1.2–4 屏",
+      "handle": "798145343h",
+      "targetId": "2102266621792272434",
+      "targetScreen": 1.8,
+      "domArticles": 3,
+      "docH": 9982,
+      "elapsedMs": 2001,
+      "steps": 3,
+      "success": true,
+      "reason": "check_passed_after_step",
+      "finalUrl": "https://x.com/798145343h/status/2102266621792272434",
+      "jevCalls": 3,
+      "scrollSteps": 1,
+      "scrollMovedSteps": 1,
+      "progressedSteps": 2,
+      "intoViewTotal": 0,
+      "maxSameActionRun": 2,
+      "revealCount": 0,
+      "revealMaxAttempt": 0,
+      "invalidResponses": 0,
+      "guardRejected": 0,
+      "targetMissing": 0,
+      "readOnlyBlocked": [],
+      "clickedLabels": [
+        "link \"3小时 前\" 当前值=空 /798145343h/status/2102266621792272434",
+        "link \"3小时 前\" 当前值=空 /798145343h/status/2102266621792272434"
+      ],
+      "actionLabels": [
+        "scroll_down",
+        "click:ref=77",
+        "click:ref=77"
+      ]
+    },
+    {
+      "round": 1,
+      "task": "x-deep",
+      "engine": "old",
+      "order": "old>new",
+      "targetDepth": ">1.8 屏",
+      "reason": "no_anchor",
+      "success": false,
+      "domArticles": 3,
+      "docH": 10035,
+      "readOnlyBlocked": []
+    },
+    {
+      "round": 1,
+      "task": "x-deep",
+      "engine": "new",
+      "order": "old>new",
+      "targetDepth": ">1.8 屏",
+      "handle": "fankaishuoai",
+      "targetId": "2102243625816182974",
+      "targetScreen": 2.54,
+      "domArticles": 3,
+      "docH": 10082,
+      "elapsedMs": 2046,
+      "steps": 3,
+      "success": true,
+      "reason": "check_passed_after_step",
+      "finalUrl": "https://x.com/fankaishuoai/status/2102243625816182974",
+      "jevCalls": 3,
+      "scrollSteps": 2,
+      "scrollMovedSteps": 2,
+      "progressedSteps": 3,
+      "intoViewTotal": 0,
+      "maxSameActionRun": 2,
+      "revealCount": 0,
+      "revealMaxAttempt": 0,
+      "invalidResponses": 0,
+      "guardRejected": 0,
+      "targetMissing": 0,
+      "readOnlyBlocked": [],
+      "clickedLabels": [
+        "link \"5小时 前\" 当前值=空 /fankaishuoai/status/2102243625816182974"
+      ],
+      "actionLabels": [
+        "scroll_down",
+        "scroll_down",
+        "click:ref=99"
+      ]
+    }
+  ],
+  "summary": [
+    {
+      "task": "x-control",
+      "oldSuccess": "1/1",
+      "newSuccess": "1/1",
+      "oldReasons": [],
+      "newReasons": [],
+      "oldMedianMs": 1298,
+      "newMedianMs": 1249,
+      "newScrollSteps": [
+        0
+      ],
+      "newMaxSameActionRun": [
+        1
+      ],
+      "newIntoView": [
+        0
+      ],
+      "newReveal": [
+        0
+      ],
+      "oldScrollSteps": [
+        0
+      ],
+      "oldMaxSameActionRun": [
+        1
+      ]
+    },
+    {
+      "task": "x-below",
+      "oldSuccess": "1/1",
+      "newSuccess": "1/1",
+      "oldReasons": [],
+      "newReasons": [],
+      "oldMedianMs": 2028,
+      "newMedianMs": 2001,
+      "newScrollSteps": [
+        1
+      ],
+      "newMaxSameActionRun": [
+        2
+      ],
+      "newIntoView": [
+        0
+      ],
+      "newReveal": [
+        0
+      ],
+      "oldScrollSteps": [
+        2
+      ],
+      "oldMaxSameActionRun": [
+        2
+      ]
+    },
+    {
+      "task": "x-deep",
+      "oldSuccess": "0/0",
+      "newSuccess": "1/1",
+      "oldReasons": [],
+      "newReasons": [],
+      "oldMedianMs": null,
+      "newMedianMs": 2046,
+      "newScrollSteps": [
+        2
+      ],
+      "newMaxSameActionRun": [
+        2
+      ],
+      "newIntoView": [
+        0
+      ],
+      "newReveal": [
+        0
+      ],
+      "oldScrollSteps": [],
+      "oldMaxSameActionRun": []
+    }
+  ]
+}

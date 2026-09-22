@@ -1,0 +1,126 @@
+{
+  "pass": 24,
+  "fail": 0,
+  "results": [
+    {
+      "name": "连滚 6 次没有被 stuck 中止",
+      "ok": true,
+      "detail": "\"max_steps_reached\""
+    },
+    {
+      "name": "确实跑了 6 步（>3）",
+      "ok": true,
+      "detail": "steps=6"
+    },
+    {
+      "name": "每步 scrollMoved=true",
+      "ok": true,
+      "detail": "[true,true,true,true,true,true]"
+    },
+    {
+      "name": "每步 progressed=true",
+      "ok": true,
+      "detail": "[true,true,true,true,true,true]"
+    },
+    {
+      "name": "changed 仍为 false（URL 没变，语义没被混淆）",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "步数上限仍是硬边界",
+      "ok": true,
+      "detail": "\"max_steps_reached\""
+    },
+    {
+      "name": "滚不动且无新内容 → reason=stuck",
+      "ok": true,
+      "detail": "\"stuck\""
+    },
+    {
+      "name": "第 4 步停下（3 次同动作）",
+      "ok": true,
+      "detail": "steps=4"
+    },
+    {
+      "name": "scrollMoved=false",
+      "ok": true,
+      "detail": "[false,false,false,false]"
+    },
+    {
+      "name": "露出新元素 → 不被 stuck 中止",
+      "ok": true,
+      "detail": "\"max_steps_reached\""
+    },
+    {
+      "name": "跑满 5 步",
+      "ok": true,
+      "detail": "steps=5"
+    },
+    {
+      "name": "目标被滚入视口 1 次",
+      "ok": true,
+      "detail": "1"
+    },
+    {
+      "name": "滚动后重新命中成功、未被守卫拒绝",
+      "ok": true,
+      "detail": "null"
+    },
+    {
+      "name": "点击真的派发了（2 个 CDP 鼠标事件）",
+      "ok": true,
+      "detail": "cdp=2"
+    },
+    {
+      "name": "滚动后重做过命中测试（locate 调了 2 次）",
+      "ok": true,
+      "detail": "locate=2"
+    },
+    {
+      "name": "循环以成功收尾",
+      "ok": true,
+      "detail": "{\"success\":true,\"reason\":\"check_passed_after_step\"}"
+    },
+    {
+      "name": "reason=guard_rejected（不是无限重试）",
+      "ok": true,
+      "detail": "\"guard_rejected\""
+    },
+    {
+      "name": "第 3 步停下",
+      "ok": true,
+      "detail": "steps=3"
+    },
+    {
+      "name": "每步只滚入 1 次（步内不成环）",
+      "ok": true,
+      "detail": "[1,1,1]"
+    },
+    {
+      "name": "始终没有派发鼠标事件",
+      "ok": true,
+      "detail": "cdp=0"
+    },
+    {
+      "name": "scrollMoved=true",
+      "ok": true,
+      "detail": "true"
+    },
+    {
+      "name": "progressed=true",
+      "ok": true,
+      "detail": "true"
+    },
+    {
+      "name": "changed=false",
+      "ok": true,
+      "detail": "false"
+    },
+    {
+      "name": "intoViewCount=0（本步没有点元素）",
+      "ok": true,
+      "detail": "0"
+    }
+  ]
+}

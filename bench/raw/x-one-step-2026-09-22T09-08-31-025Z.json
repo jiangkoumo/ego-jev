@@ -1,0 +1,86 @@
+{
+  "probedAt": "2026-09-22T09:08:13.094Z",
+  "iterations": [
+    {
+      "i": 1,
+      "handle": "xmglab",
+      "id": "2102299358012281059",
+      "targetScreen": 0.26,
+      "domArticles": 3,
+      "targetInState": true,
+      "targetLine": "ref=40 | link | \"1小时 前\" | /xmglab/status/2102299358012281059",
+      "statusLinesInState": 1,
+      "action": "click",
+      "confidence": 0.99,
+      "probabilities": {
+        "type_text": 0,
+        "click": 0.99,
+        "scroll_up": 0,
+        "done": 0.01,
+        "wait": 0,
+        "scroll_down": 0,
+        "blocked": 0,
+        "type_text_submit": 0
+      },
+      "chosenTarget": "ref=40",
+      "chosenLabel": "link \"1小时 前\" 当前值=空 /xmglab/status/2102299358012281059",
+      "guardRejected": null,
+      "error": null,
+      "readOnlyBlocked": []
+    },
+    {
+      "i": 2,
+      "handle": "xiaofapro",
+      "id": "2102308621845709292",
+      "targetScreen": 0.26,
+      "domArticles": 3,
+      "targetInState": true,
+      "targetLine": "ref=40 | link | \"1小时 前\" | /xiaofapro/status/2102308621845709292",
+      "statusLinesInState": 3,
+      "action": "click",
+      "confidence": 0.99,
+      "probabilities": {
+        "type_text_submit": 0,
+        "blocked": 0,
+        "click": 0.99,
+        "scroll_up": 0,
+        "scroll_down": 0,
+        "wait": 0,
+        "done": 0.01,
+        "type_text": 0
+      },
+      "chosenTarget": "ref=40",
+      "chosenLabel": "link \"1小时 前\" 当前值=空 /xiaofapro/status/2102308621845709292",
+      "guardRejected": null,
+      "error": null,
+      "readOnlyBlocked": []
+    },
+    {
+      "i": 3,
+      "handle": "AndyL5cc",
+      "id": "2102304113908396190",
+      "targetScreen": 0.26,
+      "domArticles": 3,
+      "targetInState": true,
+      "targetLine": "ref=40 | link | \"1小时 前\" | /AndyL5cc/status/2102304113908396190",
+      "statusLinesInState": 3,
+      "action": "click",
+      "confidence": 0.99,
+      "probabilities": {
+        "done": 0,
+        "wait": 0,
+        "type_text_submit": 0,
+        "click": 1,
+        "scroll_up": 0,
+        "scroll_down": 0,
+        "blocked": 0,
+        "type_text": 0
+      },
+      "chosenTarget": "ref=40",
+      "chosenLabel": "link \"1小时 前\" 当前值=空 /AndyL5cc/status/2102304113908396190",
+      "guardRejected": null,
+      "error": null,
+      "readOnlyBlocked": []
+    }
+  ]
+}

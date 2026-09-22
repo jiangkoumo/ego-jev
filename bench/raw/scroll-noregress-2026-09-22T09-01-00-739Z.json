@@ -1,0 +1,785 @@
+{
+  "startedAt": "2026-09-22T08:58:55.293Z",
+  "rounds": 6,
+  "old": {
+    "path": "/Users/jiangkoumo/Documents/ego-jev/bench/scroll-baseline-engine.mjs"
+  },
+  "new": {
+    "path": "/Users/jiangkoumo/Documents/ego-jev/scripts/ego-jev.mjs"
+  },
+  "records": [
+    {
+      "round": 1,
+      "task": "hn-nav",
+      "engine": "old",
+      "order": "old>new",
+      "elapsedMs": 2125,
+      "steps": 2,
+      "success": true,
+      "reason": "check_passed_after_step",
+      "jevCalls": 2,
+      "finalUrl": "https://news.ycombinator.com/newcomments",
+      "actionLabels": [
+        "click:ref=3",
+        "click:ref=5"
+      ],
+      "scrollMovedSteps": 0,
+      "progressedSteps": 0,
+      "intoViewTotal": 0,
+      "invalidResponses": 0
+    },
+    {
+      "round": 1,
+      "task": "hn-nav",
+      "engine": "new",
+      "order": "old>new",
+      "elapsedMs": 1549,
+      "steps": 2,
+      "success": true,
+      "reason": "check_passed_after_step",
+      "jevCalls": 2,
+      "finalUrl": "https://news.ycombinator.com/newcomments",
+      "actionLabels": [
+        "click:ref=3",
+        "click:ref=5"
+      ],
+      "scrollMovedSteps": 0,
+      "progressedSteps": 2,
+      "intoViewTotal": 0,
+      "invalidResponses": 0
+    },
+    {
+      "round": 1,
+      "task": "wiki-search",
+      "engine": "old",
+      "order": "old>new",
+      "elapsedMs": 3382,
+      "steps": 1,
+      "success": true,
+      "reason": "check_passed_after_step",
+      "jevCalls": 1,
+      "finalUrl": "https://en.wikipedia.org/wiki/Japanese_encephalitis",
+      "actionLabels": [
+        "type_text_submit:ref=2"
+      ],
+      "scrollMovedSteps": 0,
+      "progressedSteps": 0,
+      "intoViewTotal": 0,
+      "invalidResponses": 0
+    },
+    {
+      "round": 1,
+      "task": "wiki-search",
+      "engine": "new",
+      "order": "old>new",
+      "elapsedMs": 2325,
+      "steps": 1,
+      "success": true,
+      "reason": "check_passed_after_step",
+      "jevCalls": 1,
+      "finalUrl": "https://en.wikipedia.org/wiki/JEV",
+      "actionLabels": [
+        "type_text_submit:ref=2"
+      ],
+      "scrollMovedSteps": 0,
+      "progressedSteps": 1,
+      "intoViewTotal": 0,
+      "invalidResponses": 0
+    },
+    {
+      "round": 1,
+      "task": "select-native",
+      "engine": "old",
+      "order": "old>new",
+      "elapsedMs": 969,
+      "steps": 2,
+      "success": true,
+      "reason": "check_passed_after_step",
+      "jevCalls": 2,
+      "finalUrl": "http://127.0.0.1:8099/d.html?lang=da",
+      "actionLabels": [
+        "select:ref=1#2",
+        "click:ref=2"
+      ],
+      "scrollMovedSteps": 0,
+      "progressedSteps": 0,
+      "intoViewTotal": 0,
+      "invalidResponses": 0
+    },
+    {
+      "round": 1,
+      "task": "select-native",
+      "engine": "new",
+      "order": "old>new",
+      "elapsedMs": 1284,
+      "steps": 2,
+      "success": true,
+      "reason": "check_passed_after_step",
+      "jevCalls": 2,
+      "finalUrl": "http://127.0.0.1:8099/d.html?lang=da",
+      "actionLabels": [
+        "select:ref=1#2",
+        "click:ref=2"
+      ],
+      "scrollMovedSteps": 0,
+      "progressedSteps": 1,
+      "intoViewTotal": 0,
+      "invalidResponses": 0
+    },
+    {
+      "round": 2,
+      "task": "hn-nav",
+      "engine": "new",
+      "order": "new>old",
+      "elapsedMs": 1550,
+      "steps": 2,
+      "success": true,
+      "reason": "check_passed_after_step",
+      "jevCalls": 2,
+      "finalUrl": "https://news.ycombinator.com/newcomments",
+      "actionLabels": [
+        "click:ref=3",
+        "click:ref=5"
+      ],
+      "scrollMovedSteps": 0,
+      "progressedSteps": 2,
+      "intoViewTotal": 0,
+      "invalidResponses": 0
+    },
+    {
+      "round": 2,
+      "task": "hn-nav",
+      "engine": "old",
+      "order": "new>old",
+      "elapsedMs": 1523,
+      "steps": 2,
+      "success": true,
+      "reason": "check_passed_after_step",
+      "jevCalls": 2,
+      "finalUrl": "https://news.ycombinator.com/newcomments",
+      "actionLabels": [
+        "click:ref=3",
+        "click:ref=5"
+      ],
+      "scrollMovedSteps": 0,
+      "progressedSteps": 0,
+      "intoViewTotal": 0,
+      "invalidResponses": 0
+    },
+    {
+      "round": 2,
+      "task": "wiki-search",
+      "engine": "new",
+      "order": "new>old",
+      "elapsedMs": 3245,
+      "steps": 1,
+      "success": true,
+      "reason": "check_passed_after_step",
+      "jevCalls": 1,
+      "finalUrl": "https://en.wikipedia.org/wiki/JEV",
+      "actionLabels": [
+        "type_text_submit:ref=2"
+      ],
+      "scrollMovedSteps": 0,
+      "progressedSteps": 1,
+      "intoViewTotal": 0,
+      "invalidResponses": 0
+    },
+    {
+      "round": 2,
+      "task": "wiki-search",
+      "engine": "old",
+      "order": "new>old",
+      "elapsedMs": 3028,
+      "steps": 1,
+      "success": true,
+      "reason": "check_passed_after_step",
+      "jevCalls": 1,
+      "finalUrl": "https://en.wikipedia.org/wiki/JEV",
+      "actionLabels": [
+        "type_text_submit:ref=2"
+      ],
+      "scrollMovedSteps": 0,
+      "progressedSteps": 0,
+      "intoViewTotal": 0,
+      "invalidResponses": 0
+    },
+    {
+      "round": 2,
+      "task": "select-native",
+      "engine": "new",
+      "order": "new>old",
+      "elapsedMs": 916,
+      "steps": 2,
+      "success": true,
+      "reason": "check_passed_after_step",
+      "jevCalls": 2,
+      "finalUrl": "http://127.0.0.1:8099/d.html?lang=da",
+      "actionLabels": [
+        "select:ref=1#2",
+        "click:ref=2"
+      ],
+      "scrollMovedSteps": 0,
+      "progressedSteps": 1,
+      "intoViewTotal": 0,
+      "invalidResponses": 0
+    },
+    {
+      "round": 2,
+      "task": "select-native",
+      "engine": "old",
+      "order": "new>old",
+      "elapsedMs": 1008,
+      "steps": 2,
+      "success": true,
+      "reason": "check_passed_after_step",
+      "jevCalls": 2,
+      "finalUrl": "http://127.0.0.1:8099/d.html?lang=da",
+      "actionLabels": [
+        "select:ref=1#2",
+        "click:ref=2"
+      ],
+      "scrollMovedSteps": 0,
+      "progressedSteps": 0,
+      "intoViewTotal": 0,
+      "invalidResponses": 0
+    },
+    {
+      "round": 3,
+      "task": "hn-nav",
+      "engine": "old",
+      "order": "old>new",
+      "elapsedMs": 1539,
+      "steps": 2,
+      "success": true,
+      "reason": "check_passed_after_step",
+      "jevCalls": 2,
+      "finalUrl": "https://news.ycombinator.com/newcomments",
+      "actionLabels": [
+        "click:ref=3",
+        "click:ref=5"
+      ],
+      "scrollMovedSteps": 0,
+      "progressedSteps": 0,
+      "intoViewTotal": 0,
+      "invalidResponses": 0
+    },
+    {
+      "round": 3,
+      "task": "hn-nav",
+      "engine": "new",
+      "order": "old>new",
+      "elapsedMs": 1533,
+      "steps": 2,
+      "success": true,
+      "reason": "check_passed_after_step",
+      "jevCalls": 2,
+      "finalUrl": "https://news.ycombinator.com/newcomments",
+      "actionLabels": [
+        "click:ref=3",
+        "click:ref=5"
+      ],
+      "scrollMovedSteps": 0,
+      "progressedSteps": 2,
+      "intoViewTotal": 0,
+      "invalidResponses": 0
+    },
+    {
+      "round": 3,
+      "task": "wiki-search",
+      "engine": "old",
+      "order": "old>new",
+      "elapsedMs": 3668,
+      "steps": 1,
+      "success": true,
+      "reason": "check_passed_after_step",
+      "jevCalls": 1,
+      "finalUrl": "https://en.wikipedia.org/wiki/JEV",
+      "actionLabels": [
+        "type_text_submit:ref=2"
+      ],
+      "scrollMovedSteps": 0,
+      "progressedSteps": 0,
+      "intoViewTotal": 0,
+      "invalidResponses": 0
+    },
+    {
+      "round": 3,
+      "task": "wiki-search",
+      "engine": "new",
+      "order": "old>new",
+      "elapsedMs": 2768,
+      "steps": 1,
+      "success": true,
+      "reason": "check_passed_after_step",
+      "jevCalls": 1,
+      "finalUrl": "https://en.wikipedia.org/wiki/JEV",
+      "actionLabels": [
+        "type_text_submit:ref=2"
+      ],
+      "scrollMovedSteps": 0,
+      "progressedSteps": 1,
+      "intoViewTotal": 0,
+      "invalidResponses": 0
+    },
+    {
+      "round": 3,
+      "task": "select-native",
+      "engine": "old",
+      "order": "old>new",
+      "elapsedMs": 884,
+      "steps": 2,
+      "success": true,
+      "reason": "check_passed_after_step",
+      "jevCalls": 2,
+      "finalUrl": "http://127.0.0.1:8099/d.html?lang=da",
+      "actionLabels": [
+        "select:ref=1#2",
+        "click:ref=2"
+      ],
+      "scrollMovedSteps": 0,
+      "progressedSteps": 0,
+      "intoViewTotal": 0,
+      "invalidResponses": 0
+    },
+    {
+      "round": 3,
+      "task": "select-native",
+      "engine": "new",
+      "order": "old>new",
+      "elapsedMs": 871,
+      "steps": 2,
+      "success": true,
+      "reason": "check_passed_after_step",
+      "jevCalls": 2,
+      "finalUrl": "http://127.0.0.1:8099/d.html?lang=da",
+      "actionLabels": [
+        "select:ref=1#2",
+        "click:ref=2"
+      ],
+      "scrollMovedSteps": 0,
+      "progressedSteps": 1,
+      "intoViewTotal": 0,
+      "invalidResponses": 0
+    },
+    {
+      "round": 4,
+      "task": "hn-nav",
+      "engine": "new",
+      "order": "new>old",
+      "elapsedMs": 1529,
+      "steps": 2,
+      "success": true,
+      "reason": "check_passed_after_step",
+      "jevCalls": 2,
+      "finalUrl": "https://news.ycombinator.com/newcomments",
+      "actionLabels": [
+        "click:ref=3",
+        "click:ref=5"
+      ],
+      "scrollMovedSteps": 0,
+      "progressedSteps": 2,
+      "intoViewTotal": 0,
+      "invalidResponses": 0
+    },
+    {
+      "round": 4,
+      "task": "hn-nav",
+      "engine": "old",
+      "order": "new>old",
+      "elapsedMs": 1547,
+      "steps": 2,
+      "success": true,
+      "reason": "check_passed_after_step",
+      "jevCalls": 2,
+      "finalUrl": "https://news.ycombinator.com/newcomments",
+      "actionLabels": [
+        "click:ref=3",
+        "click:ref=5"
+      ],
+      "scrollMovedSteps": 0,
+      "progressedSteps": 0,
+      "intoViewTotal": 0,
+      "invalidResponses": 0
+    },
+    {
+      "round": 4,
+      "task": "wiki-search",
+      "engine": "new",
+      "order": "new>old",
+      "elapsedMs": 3143,
+      "steps": 1,
+      "success": true,
+      "reason": "check_passed_after_step",
+      "jevCalls": 1,
+      "finalUrl": "https://en.wikipedia.org/wiki/JEV",
+      "actionLabels": [
+        "type_text_submit:ref=2"
+      ],
+      "scrollMovedSteps": 0,
+      "progressedSteps": 1,
+      "intoViewTotal": 0,
+      "invalidResponses": 0
+    },
+    {
+      "round": 4,
+      "task": "wiki-search",
+      "engine": "old",
+      "order": "new>old",
+      "elapsedMs": 4495,
+      "steps": 1,
+      "success": true,
+      "reason": "check_passed_after_step",
+      "jevCalls": 1,
+      "finalUrl": "https://en.wikipedia.org/wiki/JEV",
+      "actionLabels": [
+        "type_text_submit:ref=2"
+      ],
+      "scrollMovedSteps": 0,
+      "progressedSteps": 0,
+      "intoViewTotal": 0,
+      "invalidResponses": 0
+    },
+    {
+      "round": 4,
+      "task": "select-native",
+      "engine": "new",
+      "order": "new>old",
+      "elapsedMs": 1657,
+      "steps": 2,
+      "success": true,
+      "reason": "check_passed_after_step",
+      "jevCalls": 2,
+      "finalUrl": "http://127.0.0.1:8099/d.html?lang=da",
+      "actionLabels": [
+        "select:ref=1#2",
+        "click:ref=2"
+      ],
+      "scrollMovedSteps": 0,
+      "progressedSteps": 1,
+      "intoViewTotal": 0,
+      "invalidResponses": 0
+    },
+    {
+      "round": 4,
+      "task": "select-native",
+      "engine": "old",
+      "order": "new>old",
+      "elapsedMs": 1148,
+      "steps": 2,
+      "success": true,
+      "reason": "check_passed_after_step",
+      "jevCalls": 2,
+      "finalUrl": "http://127.0.0.1:8099/d.html?lang=da",
+      "actionLabels": [
+        "select:ref=1#2",
+        "click:ref=2"
+      ],
+      "scrollMovedSteps": 0,
+      "progressedSteps": 0,
+      "intoViewTotal": 0,
+      "invalidResponses": 0
+    },
+    {
+      "round": 5,
+      "task": "hn-nav",
+      "engine": "old",
+      "order": "old>new",
+      "elapsedMs": 2230,
+      "steps": 2,
+      "success": true,
+      "reason": "check_passed_after_step",
+      "jevCalls": 2,
+      "finalUrl": "https://news.ycombinator.com/newcomments",
+      "actionLabels": [
+        "click:ref=3",
+        "click:ref=5"
+      ],
+      "scrollMovedSteps": 0,
+      "progressedSteps": 0,
+      "intoViewTotal": 0,
+      "invalidResponses": 0
+    },
+    {
+      "round": 5,
+      "task": "hn-nav",
+      "engine": "new",
+      "order": "old>new",
+      "elapsedMs": 2416,
+      "steps": 2,
+      "success": true,
+      "reason": "check_passed_after_step",
+      "jevCalls": 2,
+      "finalUrl": "https://news.ycombinator.com/newcomments",
+      "actionLabels": [
+        "click:ref=3",
+        "click:ref=5"
+      ],
+      "scrollMovedSteps": 0,
+      "progressedSteps": 2,
+      "intoViewTotal": 0,
+      "invalidResponses": 0
+    },
+    {
+      "round": 5,
+      "task": "wiki-search",
+      "engine": "old",
+      "order": "old>new",
+      "elapsedMs": 3135,
+      "steps": 1,
+      "success": true,
+      "reason": "check_passed_after_step",
+      "jevCalls": 1,
+      "finalUrl": "https://en.wikipedia.org/wiki/JEV",
+      "actionLabels": [
+        "type_text_submit:ref=2"
+      ],
+      "scrollMovedSteps": 0,
+      "progressedSteps": 0,
+      "intoViewTotal": 0,
+      "invalidResponses": 0
+    },
+    {
+      "round": 5,
+      "task": "wiki-search",
+      "engine": "new",
+      "order": "old>new",
+      "elapsedMs": 2495,
+      "steps": 1,
+      "success": true,
+      "reason": "check_passed_after_step",
+      "jevCalls": 1,
+      "finalUrl": "https://en.wikipedia.org/wiki/JEV",
+      "actionLabels": [
+        "type_text_submit:ref=2"
+      ],
+      "scrollMovedSteps": 0,
+      "progressedSteps": 1,
+      "intoViewTotal": 0,
+      "invalidResponses": 0
+    },
+    {
+      "round": 5,
+      "task": "select-native",
+      "engine": "old",
+      "order": "old>new",
+      "elapsedMs": 2118,
+      "steps": 2,
+      "success": true,
+      "reason": "check_passed_after_step",
+      "jevCalls": 2,
+      "finalUrl": "http://127.0.0.1:8099/d.html?lang=da",
+      "actionLabels": [
+        "select:ref=1#2",
+        "click:ref=2"
+      ],
+      "scrollMovedSteps": 0,
+      "progressedSteps": 0,
+      "intoViewTotal": 0,
+      "invalidResponses": 0
+    },
+    {
+      "round": 5,
+      "task": "select-native",
+      "engine": "new",
+      "order": "old>new",
+      "elapsedMs": 1519,
+      "steps": 2,
+      "success": true,
+      "reason": "check_passed_after_step",
+      "jevCalls": 2,
+      "finalUrl": "http://127.0.0.1:8099/d.html?lang=da",
+      "actionLabels": [
+        "select:ref=1#2",
+        "click:ref=2"
+      ],
+      "scrollMovedSteps": 0,
+      "progressedSteps": 1,
+      "intoViewTotal": 0,
+      "invalidResponses": 0
+    },
+    {
+      "round": 6,
+      "task": "hn-nav",
+      "engine": "new",
+      "order": "new>old",
+      "elapsedMs": 2388,
+      "steps": 2,
+      "success": true,
+      "reason": "check_passed_after_step",
+      "jevCalls": 2,
+      "finalUrl": "https://news.ycombinator.com/newcomments",
+      "actionLabels": [
+        "click:ref=3",
+        "click:ref=5"
+      ],
+      "scrollMovedSteps": 0,
+      "progressedSteps": 2,
+      "intoViewTotal": 0,
+      "invalidResponses": 0
+    },
+    {
+      "round": 6,
+      "task": "hn-nav",
+      "engine": "old",
+      "order": "new>old",
+      "elapsedMs": 4130,
+      "steps": 2,
+      "success": true,
+      "reason": "check_passed_after_step",
+      "jevCalls": 2,
+      "finalUrl": "https://news.ycombinator.com/newcomments",
+      "actionLabels": [
+        "click:ref=3",
+        "click:ref=5"
+      ],
+      "scrollMovedSteps": 0,
+      "progressedSteps": 0,
+      "intoViewTotal": 0,
+      "invalidResponses": 0
+    },
+    {
+      "round": 6,
+      "task": "wiki-search",
+      "engine": "new",
+      "order": "new>old",
+      "elapsedMs": 3611,
+      "steps": 1,
+      "success": true,
+      "reason": "check_passed_after_step",
+      "jevCalls": 1,
+      "finalUrl": "https://en.wikipedia.org/wiki/JEV",
+      "actionLabels": [
+        "type_text_submit:ref=2"
+      ],
+      "scrollMovedSteps": 0,
+      "progressedSteps": 1,
+      "intoViewTotal": 0,
+      "invalidResponses": 0
+    },
+    {
+      "round": 6,
+      "task": "wiki-search",
+      "engine": "old",
+      "order": "new>old",
+      "elapsedMs": 4839,
+      "steps": 1,
+      "success": true,
+      "reason": "check_passed_after_step",
+      "jevCalls": 1,
+      "finalUrl": "https://en.wikipedia.org/wiki/JEV",
+      "actionLabels": [
+        "type_text_submit:ref=2"
+      ],
+      "scrollMovedSteps": 0,
+      "progressedSteps": 0,
+      "intoViewTotal": 0,
+      "invalidResponses": 0
+    },
+    {
+      "round": 6,
+      "task": "select-native",
+      "engine": "new",
+      "order": "new>old",
+      "elapsedMs": 1038,
+      "steps": 2,
+      "success": true,
+      "reason": "check_passed_after_step",
+      "jevCalls": 2,
+      "finalUrl": "http://127.0.0.1:8099/d.html?lang=da",
+      "actionLabels": [
+        "select:ref=1#2",
+        "click:ref=2"
+      ],
+      "scrollMovedSteps": 0,
+      "progressedSteps": 1,
+      "intoViewTotal": 0,
+      "invalidResponses": 0
+    },
+    {
+      "round": 6,
+      "task": "select-native",
+      "engine": "old",
+      "order": "new>old",
+      "elapsedMs": 1308,
+      "steps": 2,
+      "success": true,
+      "reason": "check_passed_after_step",
+      "jevCalls": 2,
+      "finalUrl": "http://127.0.0.1:8099/d.html?lang=da",
+      "actionLabels": [
+        "select:ref=1#2",
+        "click:ref=2"
+      ],
+      "scrollMovedSteps": 0,
+      "progressedSteps": 0,
+      "intoViewTotal": 0,
+      "invalidResponses": 0
+    }
+  ],
+  "summary": [
+    {
+      "task": "hn-nav",
+      "oldSuccess": "6/6",
+      "newSuccess": "6/6",
+      "oldMedian": 2125,
+      "newMedian": 1550,
+      "pairedRounds": 6,
+      "medianDiff": -6,
+      "ci": {
+        "low": -576,
+        "high": 186
+      },
+      "signTest": {
+        "pos": 2,
+        "neg": 4,
+        "p": 0.6875
+      },
+      "crossesZero": true,
+      "oldReasons": [],
+      "newReasons": []
+    },
+    {
+      "task": "wiki-search",
+      "oldSuccess": "6/6",
+      "newSuccess": "6/6",
+      "oldMedian": 3668,
+      "newMedian": 3143,
+      "pairedRounds": 6,
+      "medianDiff": -900,
+      "ci": {
+        "low": -1228,
+        "high": 217
+      },
+      "signTest": {
+        "pos": 1,
+        "neg": 5,
+        "p": 0.21875000000000006
+      },
+      "crossesZero": true,
+      "oldReasons": [],
+      "newReasons": []
+    },
+    {
+      "task": "select-native",
+      "oldSuccess": "6/6",
+      "newSuccess": "6/6",
+      "oldMedian": 1148,
+      "newMedian": 1284,
+      "pairedRounds": 6,
+      "medianDiff": -13,
+      "ci": {
+        "low": -270,
+        "high": 509
+      },
+      "signTest": {
+        "pos": 2,
+        "neg": 4,
+        "p": 0.6875
+      },
+      "crossesZero": true,
+      "oldReasons": [],
+      "newReasons": []
+    }
+  ]
+}

@@ -1,0 +1,111 @@
+{
+  "pass": 21,
+  "fail": 0,
+  "results": [
+    {
+      "name": "快照路径解析出元素",
+      "ok": true,
+      "detail": "[{\"ref\":\"ref=1\",\"role\":\"button\",\"kind\":\"clickable\",\"name\":\"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA😀\",\"value\":\"VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV😀\",\"loc\":\"css:button\",\"url\":\"https://example.com/x\"}]"
+    },
+    {
+      "name": "name 里没有孤立代理",
+      "ok": true,
+      "detail": "\"AA😀\""
+    },
+    {
+      "name": "name 恰好 60 个码点",
+      "ok": true,
+      "detail": "len=60"
+    },
+    {
+      "name": "name 以完整 emoji 收尾（没被切成半个）",
+      "ok": true,
+      "detail": "\"😀\""
+    },
+    {
+      "name": "value 里没有孤立代理",
+      "ok": true,
+      "detail": "\"VV😀\""
+    },
+    {
+      "name": "value 以完整 emoji 收尾",
+      "ok": true,
+      "detail": "\"😀\""
+    },
+    {
+      "name": "对照：旧 slice(0,60) 在同一输入上确实切出孤立代理",
+      "ok": true,
+      "detail": "\"A\\ud83d\""
+    },
+    {
+      "name": "元素表渲染文本无孤立代理",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "走了 dom 观测路径",
+      "ok": true,
+      "detail": "dom"
+    },
+    {
+      "name": "请求体 state 无孤立代理",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "请求体 state UTF-8 往返无损",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "完整请求体（含 questions）无孤立代理",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "完整请求体 UTF-8 往返无损",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "按钮名以完整 emoji 收尾",
+      "ok": true,
+      "detail": "边界被切开"
+    },
+    {
+      "name": "下拉选项以完整 emoji 收尾",
+      "ok": true,
+      "detail": "边界被切开"
+    },
+    {
+      "name": "输入框当前值以完整 emoji 收尾",
+      "ok": true,
+      "detail": "边界被切开"
+    },
+    {
+      "name": "页面可见文本以完整 emoji 收尾",
+      "ok": true,
+      "detail": "边界被切开"
+    },
+    {
+      "name": "可见文本截断到 2500 码点",
+      "ok": true,
+      "detail": "超出了 maxText"
+    },
+    {
+      "name": "走了 snapshot 观测路径",
+      "ok": true,
+      "detail": "snapshot"
+    },
+    {
+      "name": "请求体 state 无孤立代理",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "完整请求体 UTF-8 往返无损",
+      "ok": true,
+      "detail": ""
+    }
+  ]
+}
