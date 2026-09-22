@@ -103,6 +103,18 @@ cd ego-jev
 > 3. 确认 `~/.config/typesafe/api_key` 存在且权限 600，缺了就问我要 Key——**不要自己编，也不要回显它**；
 > 4. 跑下面「验证安装」里的命令，把真实输出和退出码报给我。
 
+### 更新
+
+```bash
+cd ego-jev && ./update.sh          # 克隆安装：拉取 + 刷新软链 + 打印版本（幂等，可反复跑）
+./update.sh --test                 # 顺带跑一次端到端冒烟
+npx skills add jiangkoumo/ego-jev  # skills CLI 安装的：重跑一次即覆盖更新
+```
+
+`update.sh` 会自动判断你属于哪种安装方式：git 克隆就 `git pull --ff-only`（软链自动跟随，无需重装）；
+skills CLI 装的是拷贝、会提示你重跑那条 `npx skills add`。**工作区有未提交改动时会跳过 pull**，
+不会覆盖你的改动。
+
 ### 验证安装（别只看代码，跑起来）
 
 ```bash
@@ -253,6 +265,7 @@ scripts/ego-jev.mjs      引擎
 scripts/ego-jev          CLI（自动在 同目录 / 仓库根 / ~/.agents/lib 里找引擎）
 examples/bench/          A/B 对照基准脚本
 install.sh               手工安装（不装技能，只把 CLI 接进 PATH 并准备凭证）
+update.sh                一键更新（幂等；自动识别克隆/拷贝两种安装方式）
 ```
 
 ## 致谢
