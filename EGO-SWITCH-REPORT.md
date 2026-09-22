@@ -1,6 +1,6 @@
 # 结论：默认浏览器栈已切回 ego——5 个文件里「默认走 bh」的指引全部改成 ego（bh 保留为备用），两个技能改用 ego-browser 真实 API 并实测通过（TL1 抓到 50 条候选、Draft.js 能写入且按 `[data-block]` 回读、CNKI 拿到 14,072 条结果）。
 
-被测环境：ego lite 0.5.0.32（`ego-browser nodejs`）；引擎**未改**（`scripts/ego-jev.mjs` md5 `d6f38705d1ba892ebeb691d040569a3a`，前后一致），未发现引擎缺陷。原始数据：`bench/raw/ego-switch-{tl1-fetch,tl1-fetch-v2,tl1-lifecycle,reply-click-error,draft-verify,skill-step4-run,click-focus,editor-dom,focus-diag,cnki-search,cnki-search-v2}.json`；探针脚本：`bench/ego-switch/*.mjs`。
+被测环境：ego lite 0.5.0.32（`ego-browser nodejs`）；引擎**未改**（`scripts/ego-jev.mjs` md5 `d6f38705d1ba892ebeb691d040569a3a`，前后一致），未发现引擎缺陷。原始数据：`bench/raw/ego-switch-{tl1-fetch,tl1-fetch-v2,tl1-lifecycle,tl1-final.log,reply-click-error,draft-verify,skill-step4-run,click-focus,editor-dom,focus-diag,cnki-search,cnki-search-v2}.json`；探针脚本（含逐字提取的 `skill-step1-verbatim.mjs`）：`bench/ego-switch/`。
 
 ## ① 规则切换（5 个文件逐个核对）
 
@@ -18,10 +18,10 @@
 
 **前提从头核实**（`ego-switch-tl1-fetch-v2.json` 的 `xHome` 步）：ego 侧 X 登录态已建立——`x.com/home` 直接进时间线（`loginWall=false`、DOM 内 `articles` 非空、首页撰写框存在），导航里有 `/jiangkoumo_`；TL1 的 `page.goto(..., domcontentloaded)` **未抛错**（同文件 `tl1GotoThrew=null`）。
 
-**TL1 抓取**（`ego-switch-tl1-fetch-v2.json` + `ego-switch-tl1-lifecycle.json`）：基础页 **50 条** → 点 `3h` + `≤20K` → URL 变 `/trending/hours/3/maxFans/20000` → 提取 50 条，**按帖子自报时间再过滤后 50 条全在 1~4h 窗口**（全为 `[2小时前]`，例 `https://x.com/NFT_Chen/status/2102297992179200329`）。`page.evaluate` 单次最大 **12ms**。
+**TL1 抓取**（`ego-switch-tl1-fetch-v2.json`、`ego-switch-tl1-lifecycle.json`，以及技能里那段代码的**逐字运行日志** `ego-switch-tl1-final.log`）：基础页 **50 条** → 点 `3h` + `≤20K` → URL 变 `/trending/hours/3/maxFans/20000` → 提取候选并**按帖子自报时间再过滤**：一次得 50/50、逐字运行得 34/34，**全部落在 1~4h 窗口**（全 `[2小时前]`；条数 34~50 随站点实时列表波动）。`page.evaluate` 单次最大 **12ms**。
 
 重取生命周期（只读量测，1s 采样）：基础页时间标签是混合的（`[4小时前] [2小时前] [22小时前]`）；点 `3h` 后 **约 1 秒**就换成全 `[2小时前]`；点 `≤20K` 后约 2 秒更新，**约 6 秒时观察到一次短暂清空再回填**（`links` 50→8→50）。bh 时代“~15 秒”的说法**未在 ego 上复现**。
-⚠️ 该轮基础页前 8 个时间标签**本来就**是 `[2小时前]`，所以“窗口条件成立”**不能**证明筛选重取已完成（本轮 2 秒即命中、未观察到清空）——真正保证候选在窗口内的是按帖子自报时间再过滤这一步（本轮 50/50）。
+⚠️ 基础页前 8 个时间标签**本来就**可能是 `[2小时前]`，所以“窗口条件成立”**不能**证明筛选重取已完成——因此判定改成：**所有时间标签不超窗 + status 链接数连续 3 个采样（每 2s）稳定**，再**按帖子自报时间过滤**候选（逐字运行实测等待 6000ms 后稳定）。
 
 **Draft.js 撰写框**（`ego-switch-draft-verify.json`，回复弹窗，写完放弃）：
 1. 开框：`page.click(回复按钮)` **失败**（原始报错 `ElementResolutionError: page.click timed out after 3000ms: page.click failed: <div> intercepts pointer events`，见 `ego-switch-reply-click-error.json`）→ 对**可见**副本 JS `.click()` 成功（同文件 `jsClickDialog=true`）；
