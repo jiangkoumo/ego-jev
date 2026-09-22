@@ -1,0 +1,46 @@
+{
+  "tweetUrl": "https://x.com/NFT_Chen/status/2102297992179200329",
+  "blocked": [],
+  "steps": [
+    {
+      "k": "replyCountBefore",
+      "v": null
+    },
+    {
+      "k": "focused",
+      "v": true
+    },
+    {
+      "k": "readBlocks",
+      "v": "[\"第一段：直接切入真实细节。\",\"⏎\",\"第二段：抛一个对方会有话聊的问题。\"]"
+    },
+    {
+      "k": "discardSheetFound",
+      "v": true
+    },
+    {
+      "k": "dialogClosed",
+      "v": true
+    },
+    {
+      "k": "urlUnchanged",
+      "v": true
+    },
+    {
+      "k": "replyCountAfter",
+      "v": "6 回复。回复"
+    },
+    {
+      "k": "reopenedBlocksRaw",
+      "v": "[\"\\n\"]"
+    },
+    {
+      "k": "notSaved",
+      "v": true
+    },
+    {
+      "k": "blockedClicks",
+      "v": []
+    }
+  ]
+}

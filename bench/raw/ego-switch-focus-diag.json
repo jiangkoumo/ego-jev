@@ -1,0 +1,116 @@
+{
+  "startedAt": "2026-09-22T10:18:28.205Z",
+  "steps": [
+    {
+      "k": "editorInfo",
+      "v": {
+        "cx": 617,
+        "cy": 640,
+        "rect": {
+          "x": 367,
+          "y": 620,
+          "w": 501,
+          "h": 96
+        },
+        "editorPointerEvents": "auto",
+        "editorVisibility": "visible",
+        "editorZ": "auto",
+        "isEditorAncestorOfHit": false,
+        "hitChain": [
+          {
+            "tag": "DIV",
+            "ce": "",
+            "testid": "ScrollSnap-List",
+            "cls": "css-g5y9jx r-18u37iz r-16y2uox r-1wbh5a2 r-tz",
+            "pe": "auto"
+          },
+          {
+            "tag": "DIV",
+            "ce": "",
+            "testid": "ScrollSnap-SwipeableList",
+            "cls": "css-g5y9jx r-1adg3ll r-16y2uox r-1wbh5a2 r-1p",
+            "pe": "auto"
+          },
+          {
+            "tag": "DIV",
+            "ce": "",
+            "testid": "",
+            "cls": "css-g5y9jx r-1awozwy r-1ro0kt6 r-18u37iz r-16",
+            "pe": "auto"
+          },
+          {
+            "tag": "NAV",
+            "ce": "",
+            "testid": "",
+            "cls": "css-g5y9jx r-1awozwy r-18u37iz r-knv0ih r-13a",
+            "pe": "auto"
+          },
+          {
+            "tag": "DIV",
+            "ce": "",
+            "testid": "toolBar",
+            "cls": "css-g5y9jx r-1awozwy r-1jijijv r-18u37iz r-1w",
+            "pe": "auto"
+          },
+          {
+            "tag": "DIV",
+            "ce": "",
+            "testid": "",
+            "cls": "css-g5y9jx",
+            "pe": "auto"
+          }
+        ],
+        "scrollY": 10
+      }
+    },
+    {
+      "k": "recordedClicks",
+      "v": [
+        {
+          "x": 617,
+          "y": 640,
+          "tag": "DIV",
+          "ce": "",
+          "testid": "ScrollSnap-List",
+          "cls": "css-g5y9jx r-18u37iz r-16y2uox r-1wbh5a2 r-tzz3ar "
+        }
+      ]
+    },
+    {
+      "k": "activeElement",
+      "v": {
+        "tag": "DIV",
+        "ce": "",
+        "testid": "",
+        "cls": "css-g5y9jx r-1ny4l3l r-18u37iz r-1pi2tsx r-1777fci"
+      }
+    },
+    {
+      "k": "activeAfterProgrammaticFocus",
+      "v": {
+        "tag": "DIV",
+        "ce": "true",
+        "testid": "tweetTextarea_0"
+      }
+    },
+    {
+      "k": "blocksAfterProgrammaticInsert",
+      "v": "[\"程序化聚焦后 insertText 测试\"]"
+    },
+    {
+      "k": "confirmSheet",
+      "v": {
+        "cancel": 1,
+        "save": 1
+      }
+    },
+    {
+      "k": "dialogAfterDiscard",
+      "v": 0
+    },
+    {
+      "k": "url",
+      "v": "https://x.com/NFT_Chen/status/2102297992179200329"
+    }
+  ]
+}

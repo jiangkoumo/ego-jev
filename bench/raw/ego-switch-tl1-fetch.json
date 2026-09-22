@@ -1,0 +1,322 @@
+{
+  "startedAt": "2026-09-22T10:12:39.035Z",
+  "steps": [
+    {
+      "k": "evaluateMs",
+      "v": 6
+    },
+    {
+      "k": "xAccount",
+      "v": {
+        "switcher": "",
+        "handleCandidates": [
+          "/home",
+          "/explore",
+          "/notifications",
+          "/jiangkoumo_",
+          "/AndyL5cc",
+          "/vovudebosh",
+          "/bljping1",
+          "/Liasloo",
+          "/pmarca",
+          "/niubi",
+          "/AOC"
+        ]
+      }
+    },
+    {
+      "k": "evaluateMs",
+      "v": 3
+    },
+    {
+      "k": "basePageLinks",
+      "v": 50
+    },
+    {
+      "k": "url",
+      "v": "https://www.tl1.com/trending"
+    },
+    {
+      "k": "evaluateMs",
+      "v": 4
+    },
+    {
+      "k": "buttons",
+      "v": [
+        "全部",
+        "1h",
+        "2h",
+        "3h",
+        "4h",
+        "5h",
+        "6h",
+        "7h",
+        "8h",
+        "不限",
+        "≤5K",
+        "≤10K",
+        "≤20K",
+        "≤50K",
+        "≤100K",
+        "不限",
+        "≥2次",
+        "≥3次",
+        "≥5次",
+        "≥10次",
+        "5M蹭楼",
+        "‹",
+        "1",
+        "2",
+        "50",
+        "›"
+      ]
+    },
+    {
+      "k": "evaluateMs",
+      "v": 10
+    },
+    {
+      "k": "click3h",
+      "v": {
+        "ok": true
+      }
+    },
+    {
+      "k": "evaluateMs",
+      "v": 12
+    },
+    {
+      "k": "clickFans",
+      "v": {
+        "ok": true
+      }
+    },
+    {
+      "k": "urlAfterFilter",
+      "v": "https://www.tl1.com/trending/hours/3/maxFans/20000"
+    },
+    {
+      "k": "evaluateMs",
+      "v": 4
+    },
+    {
+      "k": "inWindow",
+      "v": true
+    },
+    {
+      "k": "ages",
+      "v": "[\"[2小时前]\",\"[2小时前]\",\"[2小时前]\",\"[2小时前]\",\"[2小时前]\",\"[2小时前]\",\"[2小时前]\",\"[2小时前]\"]"
+    },
+    {
+      "k": "evaluateMs",
+      "v": 3
+    },
+    {
+      "k": "postCount",
+      "v": 50
+    }
+  ],
+  "posts": [
+    {
+      "url": "https://x.com/NFT_Chen/status/2102297992179200329",
+      "rawText": "1 SuSu_酥酥👅 @NFT_Chen ↑3 214.5 v/min [2小时前] 🤯卧槽！开源圈又杀出个比 Laya 更狠的 System-1 决策核模型 AgentJev-0.6B ！ Typed Decisions 2000 题 Top-1：79.25% vs Laya 77.00%，硬超 +2.25pt。 底座 Qwen3-0.6B，Boolean / Choice / Score "
+    },
+    {
+      "url": "https://x.com/xmglab/status/2102299358012281059",
+      "rawText": "2 小码哥 @xmglab ↑3 175.2 v/min [2小时前] 笑死了，😅 又测试了一遍 Grok 4.6，Grok 4.7 拉没拉完不说，Grok4.6 算是彻底拉完了。 Grok 4.7 上线后，Grok 4.6 明显降智了！！ 做成这鬼样，也是没谁了。 哎，Grok 这波让我有点失望啊…… https://t.co/YcI8EJLsT2 15 1 13 11.7K 2分钟前采样 \ud83c"
+    },
+    {
+      "url": "https://x.com/shengtang135754/status/2102300349499580491",
+      "rawText": "3 麦麦提 @shengtang135754 ↑5 61.7 v/min [2小时前] 🚨今晚有大事发生，高概率事件👇👇🍾 Claude opus5.5要发布 1.预计价格，输入4美元，输出20美元 2.Stealth测试字符串流出，claude-opus-5-5,claude-wafer-cap,claude-wafer-eap 3.Anthropic非常喜欢在北京时间凌晨官宣，灰度先行"
+    },
+    {
+      "url": "https://x.com/VAlexanderYang/status/2102296792973123755",
+      "rawText": "4 老杨特靠谱 @VAlexanderYang ↑8 36.6 v/min [2小时前] 📢 兄弟们！ ＞ 多地区 ＞ 极度纯净 ＞ 100 Mbps 带宽 ＞ 全节点「家宽」 &amp; 「原生 IP」 这样的「VPN 机场」 喜不喜欢？！ ＞ 比 自建/买 (家宽、住宅、静态)还便宜！ ＞ 买现成的一般只有 20～50Mbps ＞ 比自建或买现成的地区多！ ＞ 比任何机场都纯！ 😎帮兄弟们"
+    },
+    {
+      "url": "https://x.com/tou_de74826/status/2102295093072081289",
+      "rawText": "5 明野 @tou_de74826 ↑9 33.1 v/min [2小时前] 玩 x 的好处就是 你发的是一坨💩 蓝 v 的朋友也会捧你 夸你 nb 不像国内的生态 动不动就开喷 还是x 群友的素质高 54 0 46 4.3K 3分钟前采样 🏆 2"
+    },
+    {
+      "url": "https://x.com/xiaomovps/status/2102296954458001613",
+      "rawText": "6 小墨同学 @xiaomovps ↑9 32.1 v/min [2小时前] 最近我用 Pi 做前端，慢慢改掉了一个习惯🔥 不再让它一次设计完整页面，而是把 UI 拆开，去找对应风格的网站学习 这 5 个网站非常值得学习： 1、Navbar Gallery｜专门学导航 https://t.co/hxlZMOJpUI Navbar、Mega Menu、Web App 导航都有，先让 Pi 把顶部结"
+    },
+    {
+      "url": "https://x.com/Hh06554468Hh/status/2102296414604665120",
+      "rawText": "7 罗夏日记 @Hh06554468Hh ↑16 22.9 v/min [2小时前] 大家看，我从来不称台湾友人为“同胞”，而是称他们为“台湾朋友”。这是我非常注意的措辞。 事实上，我连对中国人都不喜欢用“同胞”这个词。本来不沾亲、不带故，一句“同胞”，就好像我天然必须承担某种义务似的。在我看来，这个词带着浓厚的、令人厌恶的集体主义色彩。 https://t.co/hlW2rqtnUd 15 4 "
+    },
+    {
+      "url": "https://x.com/anblk984/status/2102299550908285269",
+      "rawText": "8 琵琶牧々 @anblk984 ↑16 20 v/min [2小时前] 窝就这么骂人 https://t.co/TAGnInrfQT 13 3 90 2.7K 4分钟前采样 🏆 216"
+    },
+    {
+      "url": "https://x.com/zhang_weig73947/status/2102298359361101909",
+      "rawText": "9 weiguo zhang @zhang_weig73947 ↑19 17.6 v/min [2小时前] \"未来，机器思考的总量，将是人类的1000倍以上。\" 说这话的，是阿里巴巴集团CEO吴泳铭。 https://t.co/HEuKGVPfq9 3 0 3 5.7K 2分钟前采样 🏆 3"
+    },
+    {
+      "url": "https://x.com/Yelvlv930/status/2102296937995342113",
+      "rawText": "10 耶律律 @Yelvlv930 ↑21 9.9 v/min [2小时前] 自己做局，自己玩砸了，然后自己冻结IPO。 最后搞个大新闻。 所以，王兴兴为啥不开心？ 6 0 28 2.9K 10分钟前采样 🏆 13"
+    },
+    {
+      "url": "https://x.com/uncle_moon_x/status/2102295279915663789",
+      "rawText": "11 月球大叔 @uncle_moon_x ↑21 9.8 v/min [2小时前] 可以再看看这些早期论文里的author list和致谢，有很多惊喜 人类群星闪耀时 1 0 18 3.8K 10分钟前采样 🏆 36"
+    },
+    {
+      "url": "https://x.com/wangxiaolong188/status/2102299358465302995",
+      "rawText": "12 王小龙 @wangxiaolong188 ↑23 9.2 v/min [2小时前] 看来四川大学听劝了 接下来快进到取消烟民低保 https://t.co/0ZsyGVQkWq 12 0 4 4.3K 12分钟前采样 🏆 53"
+    },
+    {
+      "url": "https://x.com/Charles77xixi/status/2102299233454108867",
+      "rawText": "13 Charles在路上 @Charles77xixi ↑23 9.2 v/min [2小时前] 把我自己写的开源 macOS 桌宠项目（DSH Desk Pet）丢进 Pexo，一句话需求加两张截图，跑出来一条 19 秒可以直接挂 X 和 GitHub README 上的产品 Launch Video。 做独立开发或 Vibe Coding 最头疼的就是代码写完了、发布时拿不出像样的动效。Pe"
+    },
+    {
+      "url": "https://x.com/BlockInsight214/status/2102298959515668481",
+      "rawText": "14 王小庄 @BlockInsight214 ↑26 8 v/min [2小时前] 体验了下 Google Colab 跑海明威模型， 都不用排队，GPU这么丰富吗 https://t.co/nB3eQvBmT0 1 0 4 1.7K 9分钟前采样 🏆 43"
+    },
+    {
+      "url": "https://x.com/chen20010418/status/2102299102390415713",
+      "rawText": "15 多吃香菜 @chen20010418 ↑26 7.9 v/min [2小时前] 还有三天就中秋节了 各位的月饼🥮肯定收到吃不完吧 一定是的吧 各位 https://t.co/TmHMHjk5MJ 1 0 3 1.4K 9分钟前采样 🏆 9"
+    },
+    {
+      "url": "https://x.com/fiapp_pro/status/2102295715506721045",
+      "rawText": "16 索螺丝 @fiapp_pro ↑27 7.6 v/min [2小时前] GPT 内置浏览器最有用的一集，找到 netcup 月付 -5 欧优惠码，年付减一个月优惠码，全自动填写验证 https://t.co/LzZSRyxK30 5 0 8 5.4K 2分钟前采样 🏆 189"
+    },
+    {
+      "url": "https://x.com/TianbaoSu/status/2102295672708104252",
+      "rawText": "17 甜酒朦朦 @TianbaoSu ↑27 7.5 v/min [2小时前] 会用VPN的就已经是万里挑一 能用X的就更是百里挑一的绝对是人中龙凤 中国有13.5亿人都没听过这两词 48 0 37 1.8K 12分钟前采样 🏆 18"
+    },
+    {
+      "url": "https://x.com/immortal_00994/status/2102295728198750661",
+      "rawText": "18 Karl 卡尔 e/acc @immortal_00994 ↑27 7.1 v/min [2小时前] 多年以后，21世纪的最强大脑 be like： https://t.co/Ieog3qISc5 6 1 23 1.4K 12分钟前采样 🏆 25"
+    },
+    {
+      "url": "https://x.com/xds2000/status/2102298841659703348",
+      "rawText": "19 Tommy Xiao @xds2000 ↑27 7 v/min [2小时前] k8e-sandbox，这次迭代引入了 rqlite 作为存储，去掉 etcd，但是为了兼容 k8s，还需要引入一层接入，我用 zig 重写了一套 etcd 的接入。因为这个 case 太大，我想后面把 rqlite 也用 zig 重写一套。我期望我的Sbx服务全面使用 Zig，为啥用 Zig，因为我喜欢。用户只管"
+    },
+    {
+      "url": "https://x.com/interestxy/status/2102295833844523295",
+      "rawText": "20 段闲云 @interestxy ↑27 6.9 v/min [2小时前] 人是在变强的路上逐渐爱上自己的。 那种爱，不是自恋，而是经历了无数次独自穿过暴风雨后的自信。你开始信任自己的判断，欣赏自己的韧性，也坦然接受自己的局限，完全的专注于自己，不再根据他人的反应，来确认自己的价值。 5 7 45 1.2K 12分钟前采样 🏆 27"
+    },
+    {
+      "url": "https://x.com/Ryu_LCat/status/2102296197407101152",
+      "rawText": "21 赚_LCat @Ryu_LCat ↑27 6.9 v/min [2小时前] 一跌就喊熊，一涨就喊牛。🥹 加密市场市场就不能在不同区间里反复震荡几年吗？ 要做交易、做波段，完全没问题，短期波动本身也是机会。 但如果是站在长线布局的角度，再把资金成本、机会成本都算进去，其实这几年真没错过什么。反而规避了很多让资金损失的风险。 https://t.co/VRupyt0jKa 21 9 39 2."
+    },
+    {
+      "url": "https://x.com/aiqiang888/status/2102300385923002449",
+      "rawText": "22 记得爱强 @aiqiang888 ↑27 6.9 v/min [2小时前] 第三次开网格了...... 距离回本还有两次爆仓😶 https://t.co/osEekS7kQf 10 0 9 1.6K 12分钟前采样 🏆 113"
+    },
+    {
+      "url": "https://x.com/mjjwiki/status/2102297106811924658",
+      "rawText": "23 MJJ百科 @mjjwiki NEW 6.6 v/min [2小时前] 手把手教大家领取新创作者收益（原创内容奖励）一：ID Verification身份核验，全程不到5分钟。 https://t.co/K9Zn3FklwM 15 1 24 1.3K 12分钟前采样 🏆 32"
+    },
+    {
+      "url": "https://x.com/zhizhuxia22/status/2102296177261912076",
+      "rawText": "24 蜘蛛侠 | 1000X GEM @zhizhuxia22 NEW 5.9 v/min [2小时前] 接下来的几个月，是你一生一次的机会，你要谢绝一切饭局，放弃一切娱乐，把自己锁在屋子里，不要约会，不要度假，100%专注行情，抓住你一生难得的自由机会！ 15 0 8 2.3K 12分钟前采样 🏆 78"
+    },
+    {
+      "url": "https://x.com/phill76815/status/2102295295296250144",
+      "rawText": "25 龙神-Dragon God🐉 🌊🕊️ @phill76815 NEW 5.2 v/min [2小时前] 刚发现，Axis Community Sale已经开始了，差点忘了这大事，看来tge好事将近了！ 唯一遗憾的是中国大陆地区没法参与，还有美国和英国等地区也不能参与，算了，还是看看就好了，找kyc感觉风险还是挺大！ 公售的认购时间是9-21至9-28！有资格参与的看好时间！主要注意的方"
+    },
+    {
+      "url": "https://x.com/HenryinvestX/status/2102296328600736101",
+      "rawText": "26 Henry 鸿锐 @HenryinvestX NEW 5.2 v/min [2小时前] 回过头来看，之前分享的这篇投研，含金量确实拉满了。 这种跟公司一起成长的感觉，有点像把自己的孩子养大，一点一点看着它成长，自己也能在这个过程中获得回报。 我关注 BP，是它做传统证券与链上交易的融合。现在，SEC 已经通过监管豁免，为部分代币化美股的链上交易打开了合规通道。 5 0 5 2.2K 12分钟"
+    },
+    {
+      "url": "https://x.com/wings1105/status/2102298146361725019",
+      "rawText": "27 香菜面 @wings1105 NEW 4.4 v/min [2小时前] 你们身边有没有这样的人 😗😗😗 就是如果你身边能够找出一个人，他既没有负债，也没有房贷、没有车贷 甚至连信用卡跟网贷都没有，甚至从来没有欠过身边朋友一分钱，而且他的口袋里面还有一点存款。 身边有这样的人可要珍惜了🤨🤨🤨 9 0 9 1.7K 12分钟前采样 🏆 12"
+    },
+    {
+      "url": "https://x.com/Stone141319/status/2102299904483950627",
+      "rawText": "28 石头 @Stone141319 NEW 4.4 v/min [2小时前] 最近我自己一直在折腾自动交易，所以看到 @vergex_ai 这个 AI 交易员板块，我第一反应就是先去翻历史订单。 毕竟策略介绍写得再漂亮都没用，我更想看它以前到底怎么开的单，赚了还是亏了。 VergeX 这点我比较喜欢，平台里的 AI https://t.co/75OBjNkFH2 20 0 8 614 12分钟前"
+    },
+    {
+      "url": "https://x.com/wings1105/status/2102297385561112843",
+      "rawText": "29 香菜面 @wings1105 NEW 4.2 v/min [2小时前] 突然想明白了一个事：一个人内心情绪太重的时候，真的很难把注意力放在学习上！ 因为你根本不是在学习，你是在用大量的精力压住自己的情绪。 我身边就有人跟我说，姐，我真的想学，我也想往上爬，可我就是学不进去，我都快学疯了。 16 0 11 904 12分钟前采样 🏆 12"
+    },
+    {
+      "url": "https://x.com/Victory_1900/status/2102299354942058902",
+      "rawText": "30 V @Victory_1900 NEW 4 v/min [2小时前] 如果你是一个资本家，你的公司真的快要做出了AGI，你会要求大家一起加强安全监管、放慢研发么？当然不是啊，什么安全不安全的，先做出来再说，干死其他模型厂先啊！我认为是社会融资资金池的流入端开始放缓了。 0 0 14 1.5K 12分钟前采样 🏆 8"
+    },
+    {
+      "url": "https://x.com/48Kchunbai/status/2102299490577531360",
+      "rawText": "31 48K纯白 @48Kchunbai NEW 4 v/min [2小时前] 遇到行情，要敢于进场，敢于直面自己的错误，敢于二次进场，复盘一下昨日的操作。 开盘前6根，按学委说的，一般都不做，跳空高开本来倾向是回测一下昨天的低点，但开盘就给出了突破信号，虽然影线补掉了缺口 https://t.co/R9naJo1Tr2 10 0 12 1.4K 12分钟前采样 🏆 7"
+    },
+    {
+      "url": "https://x.com/jhdxhl/status/2102298117131608153",
+      "rawText": "32 Fox @jhdxhl NEW 4 v/min [2小时前] 轻断食或者间歇性饮食真的可以减肥吗 10 0 6 1.5K 12分钟前采样 🏆 10"
+    },
+    {
+      "url": "https://x.com/wey_gu/status/2102295628776899055",
+      "rawText": "33 Wey Gu 古思为 @wey_gu NEW 3.9 v/min [2小时前] 🥰🥰🥰 2 0 17 1.7K 2分钟前采样 🏆 119"
+    },
+    {
+      "url": "https://x.com/xin_pai88825/status/2102299064566235439",
+      "rawText": "34 Paidax @xin_pai88825 NEW 3.7 v/min [2小时前] 虽然人没能赶上云栖大会，但我的产品替我到场啦，在 3 号展馆，小红书科技馆这里，在云栖的朋友来帮我打打卡 https://t.co/2Q97M28eGi 0 0 16 1.5K 12分钟前采样 🏆 109"
+    },
+    {
+      "url": "https://x.com/qwq_shark/status/2102296863735218337",
+      "rawText": "35 悲惨世界与内心独白 @qwq_shark NEW 3.4 v/min [2小时前] https://t.co/y71D6IqVoR 4 0 76 1.1K 12分钟前采样"
+    },
+    {
+      "url": "https://x.com/CasaVerilla/status/2102295049853694232",
+      "rawText": "36 Verilla.eth @CasaVerilla NEW 3.1 v/min [2小时前] 不用预判涨跌，不用猜 BTC 往上还是往下。Polymarket 上确实存在这样一类套利。 同一个市场里，YES 和 NO 两边一起吃，总成本压在 1 美元以内。到期结算，两边相加注定等于 1 美元，一边兑付全额，一边归零。 YES 47 美分，NO 49 美分，合计 96 美分。一笔组合拿在手里，纸"
+    },
+    {
+      "url": "https://x.com/benlinbaofu/status/2102295302892056886",
+      "rawText": "37 Getrichworkbook.eth @benlinbaofu NEW 2.8 v/min [2小时前] 昨天打这个NFT，网络不稳，多打了一次0.02zec。 项目方居然全部给退款了，不管别人怎么说， 就这一点来看，项目分只拿自己该拿的，还是体面的。 又加了一个。 https://t.co/ANgwO2Wuvp 11 0 12 1.2K 12分钟前采样 🏆 29"
+    },
+    {
+      "url": "https://x.com/Jack_FluxAI/status/2102296771531784633",
+      "rawText": "38 Jack Flux @Jack_FluxAI NEW 2.7 v/min [2小时前] 00 后打三份工非连续创业的在职牛马 两个月涨粉三千多，又拿了老马几百刀创作者收益 能有几个赞？ 12 0 18 709 12分钟前采样 🏆 30"
+    },
+    {
+      "url": "https://x.com/ScarletKc/status/2102295815268254092",
+      "rawText": "39 KC @ScarletKc NEW 2.5 v/min [2小时前] 鹈鹕骑自行车也好，玩家们自己出的各种模型测试也好，我觉得最缺的还是控制变量。题目看起来一样，提示词、用的工具、重试次数却未必一样，最后很难说差距到底来自模型，还是测试方式 所以我做了 2 2 14 1.5K 12分钟前采样 🏆 55"
+    },
+    {
+      "url": "https://x.com/lunaaalunaluna/status/2102300456886382836",
+      "rawText": "40 Luna雪儿 @lunaaalunaluna NEW 2 v/min [2小时前] 谁懂就问 他说加班到十点，打车回家。 打车软件记录显示：上车点离公司4.3公里，是家常去的那家火锅店门口。 下车时间比他说的晚了快一小时。 你们查过打车记录吗？查完敢不敢问？ 16 0 4 529 12分钟前采样 🏆 6"
+    },
+    {
+      "url": "https://x.com/cgnot996/status/2102299049479340140",
+      "rawText": "41 铁柱AGI @cgnot996 NEW 2 v/min [2小时前] 原来是赶今天云栖大会，凌晨 4 点发公众号文章 发布既开源 https://t.co/vgcZSeHm6S 1 0 9 882 12分钟前采样 🏆 65"
+    },
+    {
+      "url": "https://x.com/wings1105/status/2102298395348193456",
+      "rawText": "42 香菜面 @wings1105 NEW 1.9 v/min [2小时前] X 上能不能相亲？ 天天互赞、互评、聊天， 聊着聊着 真有感情了怎么办？ 有没有爱上我的 大胆说出来 本奶龙为你打call😇😇😇 顺便交一波朋友我真的诚信！！！ 25 0 11 909 12分钟前采样 🏆 12"
+    },
+    {
+      "url": "https://x.com/xman646470/status/2102298855194943799",
+      "rawText": "43 x-flower🌹 @xman646470 NEW 1.9 v/min [2小时前] 富二代想羞辱女孩，殊不知女孩的男友是个悍匪，一场好戏开始了。 https://t.co/PG9JJ40cKz 8 0 3 722 12分钟前采样 🏆 12"
+    },
+    {
+      "url": "https://x.com/Misstang1102/status/2102298693131243996",
+      "rawText": "44 Miss tang|Gate打金狗0Gas费 @Misstang1102 NEW 1.9 v/min [2小时前] 哇，不看不知道，一看吓一跳。@Gate 现在的资产规模，已经排到全球中心化交易所第六了。 刚好今天看到 DeFiLlama 的 CEX 数据，就点进去看了一下。目前 Gate 的资产规模大约 76.9 亿美元，Clean Assets 约 64.48 亿美元。 最近一个月的净流"
+    },
+    {
+      "url": "https://x.com/qianyuwing/status/2102295442428219441",
+      "rawText": "45 芊羽Wing @qianyuwing NEW 1.8 v/min [2小时前] 也是很荣幸能为币安广场尽点绵薄之力了 小伙伴们可以去官方创作者学院看我的文章啦 如果有建议随时提，我可以优化修改 后续还有更多优质创作者和内容哦 币安广场新版本机会很多啦 快来试试，和X同步做🥰 @binancezh @binance @heyibinance @CYZhang01 @yingbinance h"
+    },
+    {
+      "url": "https://x.com/Hrb9si/status/2102298090242015329",
+      "rawText": "46 九思 @Hrb9si NEW 1.5 v/min [2小时前] 昨天大家聚在一起吃烤肉，是金哥请客。大概都喝高了，纷纷说起了往事，轮到金哥说这桌烤肉，以前哪有这么繁杂的吃法呀，就是一块铁板，下面架着火，上面烤着猪肉，熟了沾点盐面子吃。想着确实是，以前穷，啥也没有，有肉吃沾点盐真的就非常好吃了，哪像现在又调酱料又包生菜的。 2 0 8 416 9分钟前采样 🏆 2"
+    },
+    {
+      "url": "https://x.com/MysticXBT/status/2102295472824303927",
+      "rawText": "47 Mystic ⟁🜃 @MysticXBT NEW 1.5 v/min [2小时前] 几个月前我在调研 X 上美股垂类的KOL 时，发现数量并不多，真正懂股票、有自己的真东西的优质 KOL 就更少了。 当时刷到 @WiseInvest513 就认定是美股赛道的明日之星，也聊了和 Stockcoin的合作。今天来看，Wise 成长速度很快，即将成为顶流！ 最近 Wise上线了新的产品，很专业，"
+    },
+    {
+      "url": "https://x.com/xpnikapax/status/2102300112135356828",
+      "rawText": "48 大溪水 @xpnikapax NEW 1.4 v/min [2小时前] 《落难十三言》 https://t.co/on9Rvf6QT7 5 3 8 555 12分钟前采样 🏆 218"
+    },
+    {
+      "url": "https://x.com/bclaobai/status/2102297372441342317",
+      "rawText": "49 老白｜LaoBai 🌊 👑 @bclaobai NEW 1.3 v/min [2小时前] . $STRC 回正这个事件，只剩 1 个点涨幅。现在比特币涨的这么猛，回正是大概率。 由于流动性太低，还在80%晃，慢慢挂单接，80%买上大概率赚 20 个点。 @predictdotfun 挺期待回正，微策略沉寂四个月的买币通道再次打开，买 BTC 感觉会很猛。 https://t.co/tOu"
+    },
+    {
+      "url": "https://x.com/xingbugengming/status/2102298423588446704",
+      "rawText": "50 小奇说 @xingbugengming NEW 1.2 v/min [2小时前] 卧槽！Google Flow IOS 端的App终于上线了！ 感觉跳票了挺长时间的，现在终于能在手机上把玩Omni Flash了，而且账号云端的视频资产与网页端也是互通的 关闭视频水印的操作更简单了，直接点击头像就能看到 https://t.co/k8w5EGtNkq 1 0 4 260 12分钟前采样 🏆 "
+    }
+  ],
+  "endedAt": "2026-09-22T10:12:52.737Z"
+}

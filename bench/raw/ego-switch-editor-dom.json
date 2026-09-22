@@ -1,0 +1,69 @@
+{
+  "startedAt": "2026-09-22T10:16:59.411Z",
+  "structure": {
+    "found": true,
+    "wrapTag": "DIV",
+    "wrapCe": "true",
+    "wrapCls": "notranslate public-DraftEditor-content",
+    "wrapHtml": "<div aria-activedescendant=\"typeaheadFocus-0.6744715748822357\" aria-autocomplete=\"list\" aria-controls=\"typeaheadDropdownWrapped-2\" aria-describedby=\"placeholder-aq50t\" aria-label=\"帖子文本\" aria-multiline=\"true\" class=\"notranslate public-DraftEditor-content\" contenteditable=\"true\" data-testid=\"tweetTextarea_0\" role=\"textbox\" spellcheck=\"true\" tabindex=\"0\" no-focustrapview-refocus=\"true\" style=\"outline: none; user-select: text; white-space: pre-wrap; overflow-wrap: break-word;\"><div data-contents=\"true\"><div class=\"\" data-block=\"true\" data-editor=\"aq50t\" data-offset-key=\"8k4re-0-0\"><div data-offset-key=\"8k4re-0-0\" class=\"public-DraftStyleDefault-block public-DraftStyleDefault-ltr\"><span data-offs",
+    "wrapBox": "367,620 501x96",
+    "descendants": [
+      {
+        "tag": "DIV",
+        "ce": null,
+        "cls": "",
+        "testid": "",
+        "blocks": 1,
+        "box": "367,620 501x28"
+      },
+      {
+        "tag": "DIV",
+        "ce": null,
+        "cls": "",
+        "testid": "",
+        "blocks": 0,
+        "box": "367,620 501x28"
+      },
+      {
+        "tag": "DIV",
+        "ce": null,
+        "cls": "public-DraftStyleDefault-block public-DraftStyleDefault-ltr",
+        "testid": "",
+        "blocks": 0,
+        "box": "367,620 501x28"
+      },
+      {
+        "tag": "SPAN",
+        "ce": null,
+        "cls": "",
+        "testid": "",
+        "blocks": 0,
+        "box": "367,622 0x24"
+      },
+      {
+        "tag": "BR",
+        "ce": null,
+        "cls": "",
+        "testid": "",
+        "blocks": 0,
+        "box": "367,622 0x24"
+      }
+    ],
+    "allEditableInDialog": [
+      {
+        "ce": "true",
+        "cls": "notranslate public-DraftEditor-content",
+        "testid": "tweetTextarea_0",
+        "blocks": 1,
+        "box": "501x96"
+      }
+    ],
+    "viewport": {
+      "w": 1200,
+      "h": 682,
+      "y": 10
+    }
+  },
+  "dialogAfter": 0,
+  "url": "https://x.com/NFT_Chen/status/2102297992179200329"
+}

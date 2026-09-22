@@ -1,0 +1,113 @@
+{
+  "startedAt": "2026-09-22T10:21:04.045Z",
+  "query": "大语言模型",
+  "steps": [
+    {
+      "k": "url",
+      "v": "https://kns.cnki.net/kns8s/search"
+    },
+    {
+      "k": "title",
+      "v": "检索-中国知网"
+    },
+    {
+      "k": "searchBoxFound",
+      "v": true
+    },
+    {
+      "k": "captchaBefore",
+      "v": null
+    },
+    {
+      "k": "filledValue",
+      "v": "大语言模型"
+    },
+    {
+      "k": "submitted",
+      "v": true
+    },
+    {
+      "k": "resultsArrivedMs",
+      "v": 543
+    },
+    {
+      "k": "captchaAfter",
+      "v": null
+    },
+    {
+      "k": "urlAfterSearch",
+      "v": "https://kns.cnki.net/kns8s/search"
+    },
+    {
+      "k": "resultCount",
+      "v": "14,072"
+    },
+    {
+      "k": "rowCount",
+      "v": 20
+    }
+  ],
+  "result": {
+    "count": "14,072",
+    "rowCount": 20,
+    "list": [
+      {
+        "n": 1,
+        "title": "“问题驱动+大语言模型”融合教学在多模态心脏数据数字化教学中的应用",
+        "href": "https://kns.cnki.net/kcms2/article/abstract?v=qrQFgNyM9UlBWs63ootmS4fcKBrRlQYfAEeSV2LPx1IFwba5vCg-Iba8xExcd5uNL7q1SmPDzYeoenOsymKRJqrstx3nYPQRHnZmm3jAP1x2E0ltF6Anf8dNqMo2VEUEfo9ZAOdW0PHJFixasnNIDqsdHAdOnAKmdOV4yeb2ZQmu0OGw9hubOA==",
+        "exportId": "kd9kqNkOM8Xyu_MccKCQ5AM1UHjV0uMR_icN4IXwgifKf3TuzLR1rrx5J2yZWqSLr7Bl59yK09oAQQr0Yptb0QaBrY7S9XkpoIwjfAktEnKX8H-zThafoXFu3hRPWoVX",
+        "authors": "宫成荣; 常小红; 罗翔; 李改霞; 张国鹏",
+        "journal": "心脏杂志",
+        "date": "2026-09-22 17:40",
+        "citations": "",
+        "downloads": ""
+      },
+      {
+        "n": 2,
+        "title": "基于时序基础模型知识迁移与多元特征融合的负荷预测方法",
+        "href": "https://kns.cnki.net/kcms2/article/abstract?v=qrQFgNyM9UnjAnFmQ0UX5Y-UDIlNhPX43oR4aO-poJJS-ejM3iVJxw9OKnlUSKo5dllku_9eLY3d9yeJh8hbY2do6Mk3ZveJQ9fXlD_RoY6l1UGooztiG5EP-_7M-tUF0iNFC5UmzAv7PO7Ekgezma4tpffnCMdT9gxha8R-wE2I1PVYf2Dvzw==",
+        "exportId": "kd9kqNkOM8Xyu_MccKCQ5AM1UHjV0uMR_icN4IXwgidhW29fWO9Vsf9fUuabbDMvST9-E9SvDfGu-xh_3p_llgaBrY7S9XkpoIwjfAktEnKX8H-zThafoXFu3hRPWoVX",
+        "authors": "何蕾; 耿闯; 包铁; 肖望; 侯嘉璐",
+        "journal": "电力系统自动化",
+        "date": "2026-09-22 16:42",
+        "citations": "",
+        "downloads": ""
+      },
+      {
+        "n": 3,
+        "title": "强化学习驱动的有害信息智能检测方法",
+        "href": "https://kns.cnki.net/kcms2/article/abstract?v=qrQFgNyM9UnZSEe3Jb7feYZ9IWIJM2BlEUPETwWpAptM9p1wnWstC1qBFPkYXguqlMKPEwPJVzUk9lTlWwnP0ClR9WtmCn4HDVfy4sS5R0MlrwnnXYUgBcbTmEfydGeJLtX7B7pCo8JBMzovmNYHpNtMLNXCDjbDgodf8r5QdQlcAfotKBwWlQ==",
+        "exportId": "kd9kqNkOM8Xyu_MccKCQ5AM1UHjV0uMR_icN4IXwgied6AHu0whaQlkASKdKhB9Wf83VtmOpDDjfg-DVdN1tkAaBrY7S9XkpoIwjfAktEnKX8H-zThafoXFu3hRPWoVX",
+        "authors": "闫硕; 张兴伟; 张淳杰; 郑晓龙",
+        "journal": "中国科学:信息科学",
+        "date": "2026-09-22 15:52",
+        "citations": "",
+        "downloads": ""
+      },
+      {
+        "n": 4,
+        "title": "基于大语言模型的固体推进剂配方设计的初步实践",
+        "href": "https://kns.cnki.net/kcms2/article/abstract?v=qrQFgNyM9UkRqepS75A8RcFiE8OHoPy9_vIv9ZEz98bf6UsN_23Bqq4fGPuSnSm958nDnCOlzzo53eF2DLROhLnTUKTDCA-WdxoLoavyvc-mH8JKTPD6-A1iuzvKoJ5SKwSirJKVPTIGmVKUGiTMFfF2_v_vAaTrDfJVTN4WA3rQALQWeppiIw==",
+        "exportId": "kd9kqNkOM8Xyu_MccKCQ5AM1UHjV0uMR_icN4IXwgicdnAwuXnLzoyyyZxo5QfW7S0qIg1rKvVORV4iVRNbVQwaBrY7S9XkpoIwjfAktEnKX8H-zThafoXFu3hRPWoVX",
+        "authors": "马思瑜; 涂金英; 毛成立; 曾哲妮; 张惠坤; 黄洪勇",
+        "journal": "推进技术",
+        "date": "2026-09-22 14:14",
+        "citations": "",
+        "downloads": ""
+      },
+      {
+        "n": 5,
+        "title": "基于LLM闭环反馈的兵棋推演方案优化仿真实验方法研究",
+        "href": "https://kns.cnki.net/kcms2/article/abstract?v=qrQFgNyM9Ul_-aIMf1CU2uiDhxrjTn6nFLhO43fVUnhkuy3RQ92NcXw2DWNJWysH1UJiOhMCClhM1uvWgeyNbnpLIxD41CyS9rSM6-9An8br8hJNURjt7xUF9SMbceS3Ws2lXoJa7FbCoIQrlgGak772FE_05QFOYLHxkEwkp_MsDQq44DwCcg==",
+        "exportId": "kd9kqNkOM8Xyu_MccKCQ5AM1UHjV0uMR_icN4IXwgif_068FpsZgRb4h5IPUBfVwEEyaHjgT9jtXhuKWKc5o9AaBrY7S9XkpoIwjfAktEnKX8H-zThafoXFu3hRPWoVX",
+        "authors": "李辰宇; 陶九阳; 叶林发; 钟琪; 刘静",
+        "journal": "指挥控制与仿真",
+        "date": "2026-09-22 12:57",
+        "citations": "",
+        "downloads": ""
+      }
+    ],
+    "firstTitle": "“问题驱动+大语言模型”融合教学在多模态心脏数据数字化教学中的应用"
+  },
+  "endedAt": "2026-09-22T10:21:06.690Z"
+}

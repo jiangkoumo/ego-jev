@@ -1,0 +1,8 @@
+{
+  "activeBefore": "DIV|ce=null|",
+  "clickResult": "ok",
+  "activeAfterRealClick": "DIV|ce=true|tweetTextarea_0",
+  "blocksAfterRealClickInsert": "[\"真实点击后直接 insertText\"]",
+  "dialogAfter": 0,
+  "url": "https://x.com/NFT_Chen/status/2102297992179200329"
+}

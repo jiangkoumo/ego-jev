@@ -1,0 +1,151 @@
+{
+  "startedAt": "2026-09-22T10:25:20.830Z",
+  "tweet": "https://x.com/NFT_Chen/status/2102297992179200329",
+  "steps": [
+    {
+      "k": "replyCountBefore",
+      "v": "6 回复。回复"
+    },
+    {
+      "k": "dialogOpened",
+      "v": true
+    },
+    {
+      "k": "realClickEditor",
+      "v": "ok"
+    },
+    {
+      "k": "focus",
+      "v": {
+        "tag": "DIV",
+        "editable": "true",
+        "testid": "tweetTextarea_0"
+      }
+    },
+    {
+      "k": "afterPara1",
+      "v": {
+        "blocks": [
+          "第一段：ego 侧实测写入。"
+        ],
+        "blocksRaw": [
+          "第一段：ego 侧实测写入。"
+        ],
+        "blocksTotal": 1,
+        "innerText": "第一段：ego 侧实测写入。"
+      }
+    },
+    {
+      "k": "afterEnter2",
+      "v": {
+        "blocks": [
+          "第一段：ego 侧实测写入。",
+          "⏎",
+          "⏎"
+        ],
+        "blocksRaw": [
+          "第一段：ego 侧实测写入。",
+          "\n",
+          "\n"
+        ],
+        "blocksTotal": 3,
+        "innerText": "第一段：ego 侧实测写入。⏎⏎⏎⏎"
+      }
+    },
+    {
+      "k": "blocksFinal",
+      "v": {
+        "blocks": [
+          "第一段：ego 侧实测写入。",
+          "⏎",
+          "第二段：用 [data-block] 回读校验。"
+        ],
+        "blocksRaw": [
+          "第一段：ego 侧实测写入。",
+          "\n",
+          "第二段：用 [data-block] 回读校验。"
+        ],
+        "blocksTotal": 3,
+        "innerText": "第一段：ego 侧实测写入。⏎⏎⏎第二段：用 [data-block] 回读校验。"
+      }
+    },
+    {
+      "k": "discard",
+      "v": {
+        "closed": true,
+        "sheet": {
+          "cancel": 1,
+          "save": 1
+        },
+        "chose": "confirmationSheetCancel(放弃)"
+      }
+    },
+    {
+      "k": "dialogAfterDiscard",
+      "v": 0
+    },
+    {
+      "k": "urlAfterDiscard",
+      "v": "https://x.com/NFT_Chen/status/2102297992179200329"
+    },
+    {
+      "k": "replyCountAfter",
+      "v": "6 回复。回复"
+    },
+    {
+      "k": "reopenedBlocks",
+      "v": {
+        "blocks": [
+          "⏎"
+        ],
+        "blocksRaw": [
+          "\n"
+        ],
+        "blocksTotal": 1,
+        "innerText": "⏎"
+      }
+    },
+    {
+      "k": "notSaved",
+      "v": true
+    },
+    {
+      "k": "discardAgain",
+      "v": {
+        "closed": true,
+        "sheet": {
+          "cancel": 0,
+          "save": 0
+        },
+        "chose": null
+      }
+    },
+    {
+      "k": "finalUrl",
+      "v": "https://x.com/NFT_Chen/status/2102297992179200329"
+    },
+    {
+      "k": "blockedClicks",
+      "v": []
+    }
+  ],
+  "readback": {
+    "blocks": [
+      "第一段：ego 侧实测写入。",
+      "⏎",
+      "第二段：用 [data-block] 回读校验。"
+    ],
+    "blocksRaw": [
+      "第一段：ego 侧实测写入。",
+      "\n",
+      "第二段：用 [data-block] 回读校验。"
+    ],
+    "blocksTotal": 3,
+    "innerText": "第一段：ego 侧实测写入。⏎⏎⏎第二段：用 [data-block] 回读校验。"
+  },
+  "writeMethod": "programmatic focus + keyboard.insertText",
+  "newlineMethod": "keyboard.press(\"Enter\")",
+  "notSaved": true,
+  "endedAt": "2026-09-22T10:25:47.832Z",
+  "blockedClicks": []
+}
