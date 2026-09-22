@@ -13,3 +13,7 @@ examples/bench/*-measurement.json
 # Python 字节码（本地跑 py_compile 会生成）
 __pycache__/
 *.pyc
+
+# 单元测试的输出：每跑一次就新建一个带时间戳的文件，属可再生产物，不入仓库。
+# 注：**此前已提交的 test-* 仍在版本控制里**（报告引用它们当证据），gitignore 不影响已跟踪文件。
+bench/raw/test-*
