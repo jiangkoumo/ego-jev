@@ -1,7 +1,7 @@
 // 护栏的端到端验证：正常路径 0 次误拒（见 isolation 数据），这里证明「异常路径确实会被拦住」。
 // 用 stub page + 假 fetch 驱动真实 runJevStep / runJevAutonomousLoop，不需要浏览器。
 // 用法: node bench/test-guardrails.mjs
-const JE = "/Users/jiangkoumo/Documents/scratchpad/ego-jev/scripts/ego-jev.mjs";
+const JE = "/Users/jiangkoumo/Documents/ego-jev/scripts/ego-jev.mjs";
 const { validateChoice, runJevStep, runJevAutonomousLoop } = await import(JE);
 
 let pass = 0, fail = 0;

@@ -2,7 +2,7 @@
 // 判定规则（预先指定）：CI 跨 0 → "无差异"；不跨 0 → 报方向与幅度。
 // 用法: node bench/analyze-verify.mjs [verify-*.jsonl]
 const { readdirSync, readFileSync, writeFileSync } = await import("node:fs");
-const RAW = "/Users/jiangkoumo/Documents/scratchpad/ego-jev/bench/raw";
+const RAW = "/Users/jiangkoumo/Documents/ego-jev/bench/raw";
 const SEED = 20260919;      // 预登记里写死的种子
 const BOOT = 10000;         // 预登记里写死的重采样次数
 

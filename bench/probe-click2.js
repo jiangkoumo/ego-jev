@@ -1,9 +1,9 @@
 // 裁决对比 2：ref 点击 / mouse.click / 裸 CDP 派发；并区分「点击开销」与「导航等待」
 // 用法: ego-browser nodejs < bench/probe-click2.js
 const { readFile, writeFile, mkdir } = await import("node:fs/promises");
-const JE = "/Users/jiangkoumo/Documents/scratchpad/ego-jev/scripts/ego-jev.mjs";
+const JE = "/Users/jiangkoumo/Documents/ego-jev/scripts/ego-jev.mjs";
 const { parseActionTargets } = await import(JE);
-const BENCH = "/Users/jiangkoumo/Documents/scratchpad/ego-jev/bench";
+const BENCH = "/Users/jiangkoumo/Documents/ego-jev/bench";
 
 const FIND = () => {
   const link = [...document.querySelectorAll("a")].find((a) => (a.textContent || "").trim() === "new");

@@ -6,8 +6,8 @@
 //   A4-full   A3 + 响应校验 + 提示词规则 + 执行前守卫 → Δ校验与提示词
 // 用法: ego-browser nodejs < bench/isolation.js
 const { readFile, writeFile, mkdir } = await import("node:fs/promises");
-const BENCH = "/Users/jiangkoumo/Documents/scratchpad/ego-jev/bench";
-const NEW = "/Users/jiangkoumo/Documents/scratchpad/ego-jev/scripts/ego-jev.mjs";
+const BENCH = "/Users/jiangkoumo/Documents/ego-jev/bench";
+const NEW = "/Users/jiangkoumo/Documents/ego-jev/scripts/ego-jev.mjs";
 const OLD = `${BENCH}/baseline-engine.mjs`;
 const RUNS = 3;
 

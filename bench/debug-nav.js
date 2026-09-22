@@ -1,7 +1,7 @@
 // 诊断：在延迟导航测试页上，新旧观测层各自看到什么
 // 用法: ego-browser nodejs < bench/debug-nav.js
 const { readFile } = await import("node:fs/promises");
-const JE = "/Users/jiangkoumo/Documents/scratchpad/ego-jev/scripts/ego-jev.mjs";
+const JE = "/Users/jiangkoumo/Documents/ego-jev/scripts/ego-jev.mjs";
 const { parseActionTargets, enrichTargets, buildActionMenu } = await import(JE);
 
 const task = await taskSpace("ego-dbg-" + Date.now());

@@ -1,7 +1,7 @@
 // 修复验证的统计：功能验收（hn-page2 成功率）+ 无回归（配对 old vs new，bootstrap CI）
 // 用法: node bench/analyze-fix.mjs
 const { readdirSync, readFileSync, writeFileSync } = await import("node:fs");
-const RAW = "/Users/jiangkoumo/Documents/scratchpad/ego-jev/bench/raw";
+const RAW = "/Users/jiangkoumo/Documents/ego-jev/bench/raw";
 const SEED = 20260919, BOOT = 10000;
 
 const newest = (re) => readdirSync(RAW).filter((f) => re.test(f)).sort().pop();

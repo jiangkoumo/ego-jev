@@ -5,7 +5,7 @@
 # 用法: bash bench/verify.sh [轮数]
 set -uo pipefail
 ROUNDS="${1:-10}"
-BENCH="/Users/jiangkoumo/Documents/scratchpad/ego-jev/bench"
+BENCH="/Users/jiangkoumo/Documents/ego-jev/bench"
 JEVDIR="/Users/jiangkoumo/Documents/scratchpad/jev-ultrafast"
 STAMP="$(date -u +%Y-%m-%dT%H-%M-%S)"
 OUT="${BENCH}/raw/verify-${STAMP}.jsonl"

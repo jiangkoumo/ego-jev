@@ -2,9 +2,9 @@
 // 2) fill / selectOption / insertText 的开销
 // 用法: ego-browser nodejs < bench/probe-raw.js
 const { readFile, writeFile, mkdir } = await import("node:fs/promises");
-const JE = "/Users/jiangkoumo/Documents/scratchpad/ego-jev/scripts/ego-jev.mjs";
+const JE = "/Users/jiangkoumo/Documents/ego-jev/scripts/ego-jev.mjs";
 const { parseActionTargets, enrichTargets, buildActionMenu, buildQuestions } = await import(JE);
-const BENCH = "/Users/jiangkoumo/Documents/scratchpad/ego-jev/bench";
+const BENCH = "/Users/jiangkoumo/Documents/ego-jev/bench";
 const KEY = (await readFile(process.env.HOME + "/.agents/lib/backups/typesafe-api-key.bak", "utf8")).trim();
 
 const out = {};

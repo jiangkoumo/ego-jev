@@ -1,7 +1,7 @@
 // 快速冒烟：确认 wiki 搜索 / httpbin 表单 两个任务在新引擎下能跑通
 // 用法: ego-browser nodejs < bench/smoke-tasks.js
 const { readFile } = await import("node:fs/promises");
-const { runJevAutonomousLoop } = await import("/Users/jiangkoumo/Documents/scratchpad/ego-jev/scripts/ego-jev.mjs");
+const { runJevAutonomousLoop } = await import("/Users/jiangkoumo/Documents/ego-jev/scripts/ego-jev.mjs");
 const envText = await readFile("/Users/jiangkoumo/Documents/scratchpad/jev-ultrafast/.env", "utf8");
 const env = Object.fromEntries(
   envText.split("\n").filter((l) => /^[A-Z_]+=/.test(l)).map((l) => {

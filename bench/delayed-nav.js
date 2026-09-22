@@ -2,9 +2,9 @@
 // 页面 /tmp/ego-jev-nav/a.html：改选下拉框 → 250ms 后才出现确认按钮 → 点它 350ms 后才真正跳转
 // 用法: ego-browser nodejs < bench/delayed-nav.js
 const { readFile, writeFile, mkdir } = await import("node:fs/promises");
-const ENGINE = "/Users/jiangkoumo/Documents/scratchpad/ego-jev/scripts/ego-jev.mjs";
-const ORIG = "/Users/jiangkoumo/Documents/scratchpad/ego-jev/bench/baseline-engine.mjs";
-const BENCH = "/Users/jiangkoumo/Documents/scratchpad/ego-jev/bench";
+const ENGINE = "/Users/jiangkoumo/Documents/ego-jev/scripts/ego-jev.mjs";
+const ORIG = "/Users/jiangkoumo/Documents/ego-jev/bench/baseline-engine.mjs";
+const BENCH = "/Users/jiangkoumo/Documents/ego-jev/bench";
 const KEY = (await readFile(process.env.HOME + "/.agents/lib/backups/typesafe-api-key.bak", "utf8")).trim();
 const GOAL = "把语言下拉框改选为 Dansk，然后点击确认按钮完成跳转";
 const START = "http://127.0.0.1:8099/a.html";

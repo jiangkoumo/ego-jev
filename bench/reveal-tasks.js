@@ -4,8 +4,8 @@
 // 记录：成功率、耗时、步数、Jev 调用、**揭示次数分布**、触顶情况、失败原因。
 // 用法: ego-browser nodejs < bench/reveal-tasks.js   （轮数 __ROUNDS__，默认 5）
 const { readFile, writeFile, mkdir } = await import("node:fs/promises");
-const BENCH = "/Users/jiangkoumo/Documents/scratchpad/ego-jev/bench";
-const { runJevAutonomousLoop } = await import("/Users/jiangkoumo/Documents/scratchpad/ego-jev/scripts/ego-jev.mjs");
+const BENCH = "/Users/jiangkoumo/Documents/ego-jev/bench";
+const { runJevAutonomousLoop } = await import("/Users/jiangkoumo/Documents/ego-jev/scripts/ego-jev.mjs");
 const { parseRevealCounts, describe } = await import(`${BENCH}/reveal-util.mjs`);
 const ROUNDS = Number(globalThis.__ROUNDS__ || 5);
 const ONLY = globalThis.__ONLY__ || null; // 只跑指定任务（调试用）

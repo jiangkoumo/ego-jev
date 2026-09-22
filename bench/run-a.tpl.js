@@ -1,7 +1,7 @@
 // A 栈（移植后 ego-jev）单任务运行器；计时口径与 run-b.py 对齐。
 // 模板：__TASK__ 由 vs-bstack.sh 替换。输出一行 JSON。
 const { readFile } = await import("node:fs/promises");
-const { runJevAutonomousLoop } = await import("/Users/jiangkoumo/Documents/scratchpad/ego-jev/scripts/ego-jev.mjs");
+const { runJevAutonomousLoop } = await import("/Users/jiangkoumo/Documents/ego-jev/scripts/ego-jev.mjs");
 
 const TASKS = {
   "hn-nav": {

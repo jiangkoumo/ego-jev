@@ -1,8 +1,8 @@
 // 用 Proxy 给 page 的每个方法计时，找出 runJevStep 里真正慢的调用
 // 用法: ego-browser nodejs < bench/probe-step.js
 const { readFile, writeFile, mkdir } = await import("node:fs/promises");
-const { runJevStep } = await import("/Users/jiangkoumo/Documents/scratchpad/ego-jev/scripts/ego-jev.mjs");
-const BENCH = "/Users/jiangkoumo/Documents/scratchpad/ego-jev/bench";
+const { runJevStep } = await import("/Users/jiangkoumo/Documents/ego-jev/scripts/ego-jev.mjs");
+const BENCH = "/Users/jiangkoumo/Documents/ego-jev/bench";
 const KEY = (await readFile(process.env.HOME + "/.agents/lib/backups/typesafe-api-key.bak", "utf8")).trim();
 const GOAL = "先打开 new 页面，再打开 comments 页面";
 

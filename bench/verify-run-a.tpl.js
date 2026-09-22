@@ -1,7 +1,7 @@
 // A 栈验证运行器（预登记协议 §2/§3）。模板：__TASK__ 由 verify.sh 替换。输出一行 JSON。
 // 判据只用终态 URL / 页面断言，不看"点了哪个按钮"。
 const { readFile } = await import("node:fs/promises");
-const { runJevAutonomousLoop } = await import("/Users/jiangkoumo/Documents/scratchpad/ego-jev/scripts/ego-jev.mjs");
+const { runJevAutonomousLoop } = await import("/Users/jiangkoumo/Documents/ego-jev/scripts/ego-jev.mjs");
 
 const RE_WIKI_TITLE = /Japanese encephalitis|Search results/i;
 const RE_CUSTNAME = /custname"\s*:\s*"Jev"/;

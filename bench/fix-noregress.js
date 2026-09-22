@@ -2,8 +2,8 @@
 // 覆盖 hn-nav / wiki-search / select-native（判据与 verify-protocol.md 一致）。
 // 用法: ego-browser nodejs < bench/fix-noregress.js
 const { readFile, writeFile, mkdir } = await import("node:fs/promises");
-const BENCH = "/Users/jiangkoumo/Documents/scratchpad/ego-jev/bench";
-const NEW = "/Users/jiangkoumo/Documents/scratchpad/ego-jev/scripts/ego-jev.mjs";
+const BENCH = "/Users/jiangkoumo/Documents/ego-jev/bench";
+const NEW = "/Users/jiangkoumo/Documents/ego-jev/scripts/ego-jev.mjs";
 const OLD = `${BENCH}/fix-baseline-engine.mjs`;
 const ROUNDS = Number(globalThis.__ROUNDS__ || 6);
 

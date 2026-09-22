@@ -2,7 +2,7 @@
 // 严格只读：goto + 读取 + 滚动；不点击、不输入、不发布。
 // 用法: ego-browser nodejs < bench/reveal-probe-x.js
 const { writeFile, mkdir } = await import("node:fs/promises");
-const BENCH = "/Users/jiangkoumo/Documents/scratchpad/ego-jev/bench";
+const BENCH = "/Users/jiangkoumo/Documents/ego-jev/bench";
 
 const space = await taskSpace("reveal-probe-x-" + Date.now());
 const page = space.page("p1");

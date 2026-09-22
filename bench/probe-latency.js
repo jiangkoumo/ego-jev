@@ -1,9 +1,9 @@
 // 单步耗时分解：观测层成本 + Jev 延迟随载荷大小的变化
 // 用法: ego-browser nodejs < bench/probe-latency.js
 const { readFile, writeFile, mkdir } = await import("node:fs/promises");
-const JE = "/Users/jiangkoumo/Documents/scratchpad/ego-jev/scripts/ego-jev.mjs";
+const JE = "/Users/jiangkoumo/Documents/ego-jev/scripts/ego-jev.mjs";
 const { askJev, parseActionTargets, enrichTargets, buildActionMenu, buildQuestions } = await import(JE);
-const BENCH = "/Users/jiangkoumo/Documents/scratchpad/ego-jev/bench";
+const BENCH = "/Users/jiangkoumo/Documents/ego-jev/bench";
 const KEY = (await readFile(process.env.HOME + "/.agents/lib/backups/typesafe-api-key.bak", "utf8")).trim();
 const GOAL = "先打开 new 页面，再打开 comments 页面";
 const RUNS = 3;

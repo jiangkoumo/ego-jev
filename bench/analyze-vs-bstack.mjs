@@ -3,7 +3,7 @@
 // 在「旧窄判据」和「新宽判据」下分别重算成功与否，避免用引擎变量掩盖判据变更。
 // 用法: node bench/analyze-vs-bstack.mjs
 const { readdirSync, readFileSync, writeFileSync } = await import("node:fs");
-const RAW = "/Users/jiangkoumo/Documents/scratchpad/ego-jev/bench/raw";
+const RAW = "/Users/jiangkoumo/Documents/ego-jev/bench/raw";
 
 const BATCHES = [
   { file: "vs-bstack-2026-09-19T14-51-12.jsonl", engine: "rev1", note: "判据=旧窄" },

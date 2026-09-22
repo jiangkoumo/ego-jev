@@ -5,7 +5,7 @@
 # 用法: bash bench/vs-bstack.sh [轮数]
 set -uo pipefail
 ROUNDS="${1:-3}"
-BENCH="/Users/jiangkoumo/Documents/scratchpad/ego-jev/bench"
+BENCH="/Users/jiangkoumo/Documents/ego-jev/bench"
 JEVDIR="/Users/jiangkoumo/Documents/scratchpad/jev-ultrafast"
 STAMP="$(date -u +%Y-%m-%dT%H-%M-%S)"
 OUT="${BENCH}/raw/vs-bstack-${STAMP}.jsonl"

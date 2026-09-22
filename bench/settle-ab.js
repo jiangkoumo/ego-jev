@@ -2,9 +2,9 @@
 // 用法: ego-browser nodejs < bench/settle-ab.js
 // 原始数据: bench/raw/settle-ab-<ts>.json
 const { readFile, writeFile, mkdir } = await import("node:fs/promises");
-const { runJevAutonomousLoop } = await import("/Users/jiangkoumo/Documents/scratchpad/ego-jev/scripts/ego-jev.mjs");
+const { runJevAutonomousLoop } = await import("/Users/jiangkoumo/Documents/ego-jev/scripts/ego-jev.mjs");
 
-const BENCH = "/Users/jiangkoumo/Documents/scratchpad/ego-jev/bench";
+const BENCH = "/Users/jiangkoumo/Documents/ego-jev/bench";
 const KEY = (await readFile(process.env.HOME + "/.agents/lib/backups/typesafe-api-key.bak", "utf8")).trim();
 const GOAL = "先打开 new 页面，再打开 comments 页面";
 const URL = "https://news.ycombinator.com";

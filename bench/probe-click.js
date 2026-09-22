@@ -1,7 +1,7 @@
 // 裁决性对比：同一元素，page.click(ref) vs page.mouse.click(x,y)
 // 用法: ego-browser nodejs < bench/probe-click.js
 const { readFile, writeFile, mkdir } = await import("node:fs/promises");
-const BENCH = "/Users/jiangkoumo/Documents/scratchpad/ego-jev/bench";
+const BENCH = "/Users/jiangkoumo/Documents/ego-jev/bench";
 const KEY = (await readFile(process.env.HOME + "/.agents/lib/backups/typesafe-api-key.bak", "utf8")).trim();
 
 const FIND = () => {

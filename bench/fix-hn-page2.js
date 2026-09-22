@@ -2,8 +2,8 @@
 // 判据沿用 bench/verify-protocol.md：终态 URL 含 p=2。
 // 用法: ego-browser nodejs < bench/fix-hn-page2.js
 const { readFile, writeFile, mkdir } = await import("node:fs/promises");
-const BENCH = "/Users/jiangkoumo/Documents/scratchpad/ego-jev/bench";
-const NEW = "/Users/jiangkoumo/Documents/scratchpad/ego-jev/scripts/ego-jev.mjs";
+const BENCH = "/Users/jiangkoumo/Documents/ego-jev/bench";
+const NEW = "/Users/jiangkoumo/Documents/ego-jev/scripts/ego-jev.mjs";
 const OLD = `${BENCH}/fix-baseline-engine.mjs`;
 const ROUNDS = Number(globalThis.__ROUNDS__ || 10);
 const GOAL = "翻到下一页（More）";

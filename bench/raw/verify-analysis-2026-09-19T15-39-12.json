@@ -3,7 +3,7 @@
   "rows": 100,
   "seed": 20260919,
   "bootstrapResamples": 10000,
-  "generatedAt": "2026-09-19T15:49:17.862Z",
+  "generatedAt": "2026-09-22T05:28:14.703Z",
   "tasks": {
     "hn-nav": {
       "stacks": {

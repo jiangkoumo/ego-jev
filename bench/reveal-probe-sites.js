@@ -2,7 +2,7 @@
 // 严格只读：只 goto + 读 DOM，不点击、不输入、不登录、不发布。
 // 用法: ego-browser nodejs < bench/reveal-probe-sites.js
 const { writeFile, mkdir } = await import("node:fs/promises");
-const BENCH = "/Users/jiangkoumo/Documents/scratchpad/ego-jev/bench";
+const BENCH = "/Users/jiangkoumo/Documents/ego-jev/bench";
 const out = { probedAt: new Date().toISOString(), engineMd5Expected: "9b760682cebac9fdde7d4172639a928a", sites: {} };
 
 const probe = async (page, key, label, url, extract, settleMs = 3000) => {
