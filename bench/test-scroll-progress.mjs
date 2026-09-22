@@ -16,9 +16,12 @@
 //
 // 用法: node bench/test-scroll-progress.mjs
 const { writeFile, mkdir } = await import("node:fs/promises");
-const BENCH = "/Users/jiangkoumo/Documents/ego-jev/bench";
+const { dirname, join } = await import("node:path");
+const { fileURLToPath } = await import("node:url");
+// 相对自身定位，不要写死绝对路径——CI 与别人的机器上都要能跑
+const BENCH = dirname(fileURLToPath(import.meta.url));
 const { runJevStep, runJevAutonomousLoop } = await import(
-  "/Users/jiangkoumo/Documents/ego-jev/scripts/ego-jev.mjs"
+  join(BENCH, "..", "scripts", "ego-jev.mjs")
 );
 
 let pass = 0;

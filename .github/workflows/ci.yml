@@ -1,0 +1,49 @@
+name: CI
+
+# 只跑「不需要浏览器、不需要凭证」的检查，因此 fork/PR 上也能绿。
+# 需要 ego lite 或 TypeSafe API Key 的端到端测试不在这里跑，见 README 的「验证安装」。
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: syntax + unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: 语法检查（引擎 / CLI / bench 脚本）
+        run: |
+          set -e
+          node --check scripts/ego-jev.mjs
+          bash -n scripts/ego-jev
+          bash -n install.sh
+          bash -n update.sh
+          for f in bench/*.mjs bench/*.js; do node --check "$f"; done
+          for f in bench/*.sh; do bash -n "$f"; done
+
+      - name: 公开导出保持向后兼容
+        run: |
+          node --input-type=module -e '
+            const m = await import("./scripts/ego-jev.mjs");
+            const need = ["askJev","parseActionTargets","enrichTargets","buildQuestions",
+                          "runJevStep","runJevAutonomousLoop","generateText",
+                          "loadTextModelConfig","resolveTextApiKey","loadApiKey"];
+            const missing = need.filter((n) => !(n in m));
+            if (missing.length) { console.error("缺失导出:", missing); process.exit(1); }
+            console.log("导出检查通过:", need.length, "个");
+          '
+
+      - name: 单元测试（stub page + stub Jev，无浏览器、无凭证）
+        run: |
+          set -e
+          node bench/test-scroll-progress.mjs
+          node bench/test-guardrails.mjs

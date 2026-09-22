@@ -1,7 +1,10 @@
 // 护栏的端到端验证：正常路径 0 次误拒（见 isolation 数据），这里证明「异常路径确实会被拦住」。
 // 用 stub page + 假 fetch 驱动真实 runJevStep / runJevAutonomousLoop，不需要浏览器。
 // 用法: node bench/test-guardrails.mjs
-const JE = "/Users/jiangkoumo/Documents/ego-jev/scripts/ego-jev.mjs";
+const { dirname, join } = await import("node:path");
+const { fileURLToPath } = await import("node:url");
+// 相对自身定位，不要写死绝对路径——CI 与别人的机器上都要能跑
+const JE = join(dirname(fileURLToPath(import.meta.url)), "..", "scripts", "ego-jev.mjs");
 const { validateChoice, runJevStep, runJevAutonomousLoop } = await import(JE);
 
 let pass = 0, fail = 0;
