@@ -305,6 +305,7 @@ update.sh                一键更新（幂等；自动识别克隆/拷贝两种
 - [citrolabs/ego-lite](https://github.com/citrolabs/ego-lite)（MIT）—— 本项目的运行基础。
   根目录的 `SKILL.md` 是本项目自带的**附加技能**，装在应用包之外，不是对它的文档做的修改
 - [TypeSafe](https://docs.typesafe.ai) —— Jev / System One
+- 第三方代码的来源与许可声明见 [`THIRD-PARTY.md`](THIRD-PARTY.md)
 
 本项目**没有**再分发 ego-lite 的任何文档或代码；`skill/ego-jev-section.md` 仅包含我们自己撰写的章节。
 
