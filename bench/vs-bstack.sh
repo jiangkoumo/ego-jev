@@ -3,23 +3,36 @@
 # 3 个任务 × 交替 3 轮；每轮记录端到端耗时、步数、模型调用数、成功与否、终态 URL。
 # 两个栈共用同一个 Chrome 实例，偶尔会撞上 browser-harness 的 5s IPC 超时，故每轮最多重试 3 次。
 # 用法: bash bench/vs-bstack.sh [轮数]
+# 注：这个脚本必须有 B 臂（browser-harness）。机器上已没有 bh 时，只想跑 A 臂就用
+#     bash bench/verify.sh <轮数> --a-only（或先 --check-env 看环境）。
 set -uo pipefail
 ROUNDS="${1:-3}"
 BENCH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$(cd "${BENCH}/.." && pwd)"
-# B 栈对照需要 jev-ultrafast 仓库（不在本仓库里）——用环境变量显式给出，原来写死了本机路径
+
+if ! command -v bh >/dev/null 2>&1; then
+  echo "error: B 臂需要 bh（browser-harness），本机 PATH 里没有——这个脚本是 A/B 对照，缺 B 臂没意义。" >&2
+  echo "       只想跑 A 臂: bash bench/verify.sh ${ROUNDS} --a-only" >&2
+  exit 2
+fi
+
+# B 栈对照需要 jev-ultrafast 仓库（不在本仓库里）——用环境变量显式给出，本来就不写死本机路径
 JEVDIR="${JEV_ULTRAFAST_DIR:?请设 JEV_ULTRAFAST_DIR=<jev-ultrafast 仓库路径>（B 栈对照需要它）}"
 # 路径里可能带 & | \，直接当 sed 替换串会出错（& 会展开成匹配到的占位符），先转义
 REPO_SED="${ROOT//\\/\\\\}"
 REPO_SED="${REPO_SED//&/\\&}"
 REPO_SED="${REPO_SED//|/\\|}"
 STAMP="$(date -u +%Y-%m-%dT%H-%M-%S)"
-OUT="${BENCH}/raw/vs-bstack-${STAMP}.jsonl"
-LOG="${BENCH}/raw/vs-bstack-${STAMP}.log"
+OUTDIR="${BENCH_OUT_DIR:-${BENCH}/raw}"
+mkdir -p "$OUTDIR"
+OUT="${OUTDIR}/vs-bstack-${STAMP}.jsonl"
+LOG="${OUTDIR}/vs-bstack-${STAMP}.log"
 TASKS=(hn-nav wiki-search httpbin-form)
 MAX_ATTEMPTS=3
 
-export BU_CDP_WS="$(bh ensure 2>/dev/null)"
+BU_CDP_WS="$(bh ensure 2>/dev/null)"
+if [ -z "$BU_CDP_WS" ]; then echo "error: bh ensure 没给出 CDP 端点——B 臂跑不了" >&2; exit 2; fi
+export BU_CDP_WS
 echo "BU_CDP_WS=$BU_CDP_WS" | tee -a "$LOG"
 echo "OUT=$OUT" | tee -a "$LOG"
 

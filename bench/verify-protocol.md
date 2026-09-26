@@ -2,6 +2,11 @@
 
 > 本文件在**采集任何样本之前**写入。判据、样本量、统计方法与失败处理规则一经写入即冻结；
 > 后续所有原始数据落在 `bench/raw/verify-*.jsonl`，若与本文件不符，以本文件为准并需在报告中说明偏离。
+>
+> **环境前置（2026-09-26 补注）**：B 栈需要 `browser-harness`（`bh`）与 `JEV_ULTRAFAST_DIR`；
+> 本机已移除 bh，因此 B 栈目前**不可重跑**（已采样本与报告不受影响）。只跑 A 栈：
+> `bash bench/verify.sh <轮数> --a-only`（先 `bash bench/verify.sh --check-env` 看环境）；
+> 不加 `--a-only` 时缺 bh 会直接 exit 2，不会静默产出 `no_output`。
 
 ## 1. 被测对象（冻结版本）
 

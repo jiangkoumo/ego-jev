@@ -16,6 +16,13 @@ _JEV_ULTRAFAST = os.environ.get("JEV_ULTRAFAST_DIR")
 if not _JEV_ULTRAFAST:
     raise SystemExit("请设置 JEV_ULTRAFAST_DIR=<jev-ultrafast 仓库路径>（B 栈对照需要它）")
 sys.path.insert(0, _JEV_ULTRAFAST)
+try:
+    import browser_harness  # noqa: F401  （B 栈的真实依赖；本机可能已移除 bh）
+except ImportError:
+    raise SystemExit(
+        "B 栈脚本需要 browser-harness。本机若已移除 bh，只想跑 A 臂就用："
+        "bash bench/verify.sh <轮数> --a-only（产品路径与 A 臂都不依赖它）"
+    )
 from jev_ultrafast import Agent  # noqa: E402
 
 TASKS = {

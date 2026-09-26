@@ -34,7 +34,7 @@ fail() { printf 'error: %s\n' "$*" >&2; exit 1; }
 
 echo "==> 1/5 检查前置条件"
 command -v ego-browser >/dev/null 2>&1 || fail "未找到 ego-browser。请先安装 ego lite：https://github.com/citrolabs/ego-lite"
-info "ego-browser: $(ego-browser --version 2>/dev/null | head -1)"
+info "ego-browser: $(ego-browser --version 2>&1 | head -1)"   # 版本号走 stderr，别把 2>/dev/null 加上
 command -v node >/dev/null 2>&1 || fail "未找到 node（CLI 需要它生成配置 JSON）"
 
 echo "==> 2/5 安装命令入口"
