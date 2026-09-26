@@ -47,6 +47,7 @@ USAGE() {
 
 环境变量:
   TYPESAFE_API_KEY_FILE      Jev 凭证文件（默认 ~/.config/typesafe/api_key）
+  TYPESAFE_FALLBACK_BASE_URL 主后端失败时的降级端点（不设则不降级）
   TYPESAFE_TEXT_MODEL_FILE   文本生成配置（默认 ~/.config/typesafe/text_model.json）
   EGO_JEV_LIB                引擎路径（默认按 同目录/仓库根/用户级 lib 依次查找）
   EGO_BROWSER_BIN            ego-browser 可执行文件（默认 PATH 里的 ego-browser）
@@ -104,9 +105,13 @@ done
 
 if [[ -z "$GOAL" ]]; then echo "错误: 请提供目标描述" >&2; exit 2; fi
 if [[ ! -f "$LIB" ]]; then echo "错误: 找不到引擎 ${LIB}（可用 EGO_JEV_LIB 指定）" >&2; exit 2; fi
-if [[ -z "$API_KEY_OVERRIDE" && ! -f "$CONFIG_FILE" && -z "${TYPESAFE_API_KEY:-}" ]]; then
-  echo "错误: 未找到 Jev 凭证。请写入 ${CONFIG_FILE}（内容为 API Key 一行），或使用 --api-key。" >&2
-  exit 3
+if [[ -z "$API_KEY_OVERRIDE" ]]; then
+  # 用引擎自己的查找链判定（--api-key > 环境变量 > 文件链：我们自己的配置 / api_key / rc 里的 export）
+  if ! EGO_JEV_LIB_CHECK="$LIB" node --input-type=module -e \
+      'const m = await import(process.env.EGO_JEV_LIB_CHECK); process.exit(m.loadApiKey() ? 0 : 1);' >/dev/null 2>&1; then
+    echo "错误: 未找到 Jev 凭证。写入 ${CONFIG_FILE}（一行 API Key），或在 ~/.config/ego-jev/credentials 写 export TYPESAFE_API_KEY=…，或用 --api-key。" >&2
+    exit 3
+  fi
 fi
 command -v "$EGO_BIN" >/dev/null 2>&1 || { echo "错误: 找不到 ${EGO_BIN}（ego lite 是否已安装？）" >&2; exit 2; }
 
@@ -120,6 +125,7 @@ trap 'rm -rf "$TMPD"' EXIT
 JEV_GOAL="$GOAL" JEV_URL="$TARGET_URL" JEV_UNTIL="$UNTIL" JEV_KEEP="$KEEP" \
 JEV_STEPS="$MAX_STEPS" JEV_KEY="$API_KEY_OVERRIDE" JEV_SPACE="$SPACE_ID" \
 JEV_KEEP_SPACE="$KEEP_SPACE" JEV_CONFIG_OUT="$TMPD/config.json" \
+JEV_BASE_URL="${TYPESAFE_BASE_URL:-}" JEV_FALLBACK_BASE_URL="${TYPESAFE_FALLBACK_BASE_URL:-}" \
 node -e '
   const fs = require("node:fs");
   fs.writeFileSync(process.env.JEV_CONFIG_OUT, JSON.stringify({
@@ -131,6 +137,9 @@ node -e '
     spaceId: process.env.JEV_SPACE || null,
     keepSpace: process.env.JEV_KEEP_SPACE === "1",
     apiKey: process.env.JEV_KEY || null,
+    // ego 运行时拿不到父进程环境变量，后端地址必须在父进程读好、写进配置再送进去
+    baseUrl: process.env.JEV_BASE_URL || null,
+    fallbackBaseUrl: process.env.JEV_FALLBACK_BASE_URL || null,
     texts: process.argv.slice(1),
   }, null, 2));
 ' "${TEXTS[@]+"${TEXTS[@]}"}"
@@ -139,7 +148,7 @@ CFG="$TMPD/config.json"
 
 "$EGO_BIN" nodejs <<EOF
 const { readFile } = await import("node:fs/promises");
-const { runJevAutonomousLoop } = await import("$LIB");
+const { runJevAutonomousLoop, renderJevSummary } = await import("$LIB");
 
 const cfg = JSON.parse(await readFile("$CFG", "utf8"));
 const startedAt = Date.now();
@@ -172,13 +181,18 @@ const result = await runJevAutonomousLoop(page, cfg.goal, {
   maxSteps: cfg.steps,
   text: cfg.texts,
   apiKey: cfg.apiKey || undefined,
+  baseUrl: cfg.baseUrl || undefined,
+  fallbackBaseUrl: cfg.fallbackBaseUrl || undefined,
   check: cfg.until ? async (p) => (await p.url()).includes(cfg.until) : undefined,
 });
 
+console.log(renderJevSummary(result));
 console.log(JSON.stringify({
   success: result.success, reason: result.reason, steps: result.steps,
   elapsedMs: Date.now() - startedAt, url: await page.url(), title: await page.title(),
   spaceId: task.spaceId,
+  phases: result.phases, serverModels: result.serverModels, usage: result.usage,
+  serverEndpoints: result.serverEndpoints,
 }, null, 2));
 
 if (result.success && !cfg.keepSpace) {

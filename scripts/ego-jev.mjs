@@ -60,27 +60,62 @@ const scrubLoneSurrogates = (value) => {
 };
 
 const BASE_URL = process.env.TYPESAFE_BASE_URL || "https://api.typesafe.ai/v1";
-const CREDENTIAL_FILES = [
-  process.env.TYPESAFE_API_KEY_FILE,
-  join(homedir(), ".config", "typesafe", "api_key"),
+// 可关闭的降级后端：主后端失败时（网络/5xx/4xx）再试一次这里；没配置就等同关闭。
+const FALLBACK_BASE_URL = process.env.TYPESAFE_FALLBACK_BASE_URL || "";
+// 注意：上面这两个环境变量只在「普通 node 进程」里生效——ego-browser nodejs 运行时拿不到父进程的
+// 自定义环境变量（本仓库已记录的死坑）。走 CLI 时由 CLI 在父进程读好、写进配置再作为
+// options.baseUrl / options.fallbackBaseUrl 传进来（同 loadApiKey 的说明）。
+// 凭证查找链（全部是文件，符合「自定义环境变量进不了 ego 运行时」这条铁律）：
+//   显式 --api-key > 环境变量 > TYPESAFE_API_KEY_FILE > 我们自己的配置文件 >
+//   既有 ~/.config/typesafe/api_key > 用户已有 rc 文件里的同名 export。
+// 为什么回退到 rc：用户往往已经在 shell rc 里 export 过 key，不必再落盘一次；
+// 但它仍必须是文件——ego 运行时拿不到父进程的环境变量。
+const CREDENTIAL_SOURCES = [
+  process.env.TYPESAFE_API_KEY_FILE ? { file: process.env.TYPESAFE_API_KEY_FILE, allowBare: true } : null,
+  { file: join(homedir(), ".config", "ego-jev", "credentials"), allowBare: true },
+  { file: join(homedir(), ".config", "typesafe", "api_key"), allowBare: true },
+  { file: join(homedir(), ".zshrc"), allowBare: false },
+  { file: join(homedir(), ".bashrc"), allowBare: false },
+  { file: join(homedir(), ".bash_profile"), allowBare: false },
+  { file: join(homedir(), ".profile"), allowBare: false },
 ].filter(Boolean);
 const TEXT_MODEL_FILE =
   process.env.TYPESAFE_TEXT_MODEL_FILE || join(homedir(), ".config", "typesafe", "text_model.json");
 
-/** 解析凭证：参数 > 环境变量 > 凭证文件 */
+/**
+ * 从一个文件里取凭证：先找 `export TYPESAFE_API_KEY=…` / `TYPESAFE_API_KEY=…`；
+ * 找不到且 allowBare 时，把「整份文件就是一行裸 key」也接受（~/.config/typesafe/api_key 的既有形态）。
+ * 纯函数，便于单测；任何读取异常都当作「这个来源没有」。
+ */
+export function readCredential(file, allowBare) {
+  try {
+    if (!existsSync(file)) return undefined;
+    const text = readFileSync(file, "utf8");
+    for (const line of text.split(/\r?\n/)) {
+      const m = line.match(/^\s*(?:export\s+)?TYPESAFE_API_KEY\s*=\s*(.*)$/);
+      if (m) {
+        const value = m[1].trim().replace(/^["']|["']$/g, "");
+        if (value) return value;
+      }
+    }
+    if (allowBare) {
+      const first = text.trim().split(/\r?\n/)[0].trim();
+      // 裸 key 形态：首行不能含 `=` 或空白（否则那是赋值行/注释行，不该当凭证）
+      if (first && !first.includes("=") && !/\s/.test(first)) return first.replace(/^["']|["']$/g, "");
+    }
+    return undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+/** 解析凭证：参数 > 环境变量 > 文件链（见 CREDENTIAL_SOURCES） */
 export function loadApiKey(options = {}) {
   if (options.apiKey) return options.apiKey;
   if (process.env.TYPESAFE_API_KEY) return process.env.TYPESAFE_API_KEY;
-  for (const file of CREDENTIAL_FILES) {
-    try {
-      if (!existsSync(file)) continue;
-      const line = readFileSync(file, "utf8").trim().split(/\r?\n/)[0].trim();
-      if (!line) continue;
-      const value = line.replace(/^TYPESAFE_API_KEY\s*=\s*/, "").replace(/^["']|["']$/g, "");
-      if (value) return value;
-    } catch {
-      /* 凭证文件不可读时继续尝试下一个来源 */
-    }
+  for (const source of CREDENTIAL_SOURCES) {
+    const value = readCredential(source.file, source.allowBare);
+    if (value) return value;
   }
   return undefined;
 }
@@ -92,27 +127,47 @@ export async function askJev(state, questions, options = {}) {
     throw new Error(
       "未检测到 Jev API 凭证。请写入 " +
         join(homedir(), ".config", "typesafe", "api_key") +
-        "（内容为 API Key 一行），或通过 options.apiKey 传入。"
+        "（内容为 API Key 一行），或在 " +
+        join(homedir(), ".config", "ego-jev", "credentials") +
+        " 里写 `export TYPESAFE_API_KEY=…`，或通过 options.apiKey 传入。"
     );
   }
-  const endpoint = `${(options.baseUrl || BASE_URL).replace(/\/+$/, "")}/systemone`;
-  const res = await fetch(endpoint, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${key}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model: options.model || "jev-latest",
-      state: scrubLoneSurrogates(typeof state === "string" ? state : JSON.stringify(state)),
-      questions: scrubLoneSurrogates(questions),
-    }),
+  const body = JSON.stringify({
+    model: options.model || "jev-latest",
+    state: scrubLoneSurrogates(typeof state === "string" ? state : JSON.stringify(state)),
+    questions: scrubLoneSurrogates(questions),
   });
-  if (!res.ok) {
-    throw new Error(`Jev API Error (${res.status}): ${(await res.text()).slice(0, 500)}`);
+  // 后端可配置 + 可关闭的降级：主后端失败时再试 fallback（没配就只有一个端点）。
+  const primary = (options.baseUrl || BASE_URL).replace(/\/+$/, "");
+  const fallback = (options.fallbackBaseUrl || FALLBACK_BASE_URL).replace(/\/+$/, "");
+  const endpoints = [primary];
+  if (options.fallback !== false && fallback && fallback !== primary) endpoints.push(fallback);
+  let lastError = null;
+  for (const base of endpoints) {
+    try {
+      const res = await fetch(`${base}/systemone`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${key}`,
+          "Content-Type": "application/json",
+        },
+        body,
+      });
+      if (!res.ok) throw new Error(`Jev API Error (${res.status}): ${(await res.text()).slice(0, 500)}`);
+      const data = await res.json();
+      // 服务端实际服务的模型版本与用量：浮动别名 jev-latest 会随时间指向不同版本，
+      // 只记「跑通了」不记版本，事后无法判断数字是哪版模型测的。写进调用方给的 receipt（我们自己的载体）。
+      if (options.receipt && typeof options.receipt === "object") {
+        options.receipt.model = data.model ?? null;
+        options.receipt.usage = data.usage ?? null;
+        options.receipt.endpoint = base;
+      }
+      return data.answers;
+    } catch (err) {
+      lastError = err;
+    }
   }
-  const data = await res.json();
-  return data.answers;
+  throw lastError || new Error("Jev API Error: 没有可用的端点");
 }
 
 // ── 文本生成助手（可选，OpenAI 兼容端点）─────────────────────────────────────
@@ -275,6 +330,28 @@ function observeDom(payload) {
   const visible = (el) =>
     !el.closest('[aria-hidden="true"],[inert]') &&
     el.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true });
+  // 元素坐标要换算回「主文档视口」：同源 iframe 里的 el.getBoundingClientRect()
+  // 是相对该 frame 自己的视口，CDP 派发与命中测试用的却是主视口坐标。
+  // 沿 frameElement 链累加每一层 iframe 在主文档里的位置；不在 frame 里时循环不执行。
+  const offsetOf = (el) => {
+    let x = 0;
+    let y = 0;
+    let win = el.ownerDocument && el.ownerDocument.defaultView;
+    while (win && win !== window) {
+      let fe = null;
+      try {
+        fe = win.frameElement;
+      } catch {
+        fe = null;
+      }
+      if (!fe) break;
+      const r = fe.getBoundingClientRect();
+      x += r.left;
+      y += r.top;
+      win = fe.ownerDocument && fe.ownerDocument.defaultView;
+    }
+    return { x, y };
+  };
   const textOf = (el) =>
     [...el.childNodes]
       .map((n) =>
@@ -291,7 +368,7 @@ function observeDom(payload) {
     seen.add(el);
     const referenced = (el.getAttribute("aria-labelledby") || "")
       .split(/\s+/)
-      .map((id) => nameOf(document.getElementById(id), seen))
+      .map((id) => nameOf((el.ownerDocument || document).getElementById(id), seen))
       .filter(Boolean)
       .join(" ");
     return (
@@ -355,17 +432,17 @@ function observeDom(payload) {
   // 仍然有界，避免长页面把观测成本拉爆。对外元素表大小依旧 = limit（默认 60）。
   const budget = Math.min(Math.max(limit * 4, limit), 240);
   const candidates = [];
-  for (const el of document.querySelectorAll(selector)) {
-    if (candidates.length >= budget) break;
-    if (!safe(el) || !visible(el)) continue;
-    if (el.matches(":disabled") || el.closest('[aria-disabled="true"]')) continue;
-    const role = roleOf(el);
-    if (!role) continue;
+  // 只收「可见 + 视口内」的元素：元素表只覆盖当前视口，locate 要用真实坐标命中测试。
+  // 视口外的元素交给「有界滚动揭示」（runJevAutonomousLoop 的 reveal），不在这里放宽，
+  // 否则预算语义与表大小都会被改掉。坐标统一换算回主文档视口（见 offsetOf）。
+  const inViewport = (el) => {
     const rect = el.getBoundingClientRect();
-    const x = rect.x + rect.width / 2;
-    const y = rect.y + rect.height / 2;
-    if (rect.width <= 0 || rect.height <= 0 || x < 0 || y < 0 || x >= innerWidth || y >= innerHeight) continue;
-    if (role === "gridcell" && el.querySelector('button,[role="button"]')) continue;
+    const off = offsetOf(el);
+    const x = off.x + rect.x + rect.width / 2;
+    const y = off.y + rect.y + rect.height / 2;
+    return rect.width > 0 && rect.height > 0 && x >= 0 && y >= 0 && x < innerWidth && y < innerHeight;
+  };
+  const pushCandidate = (el, role) => {
     const kind = kindOf(role, el);
     const item = {
       ref: `ref=${identify(el)}`,
@@ -374,6 +451,9 @@ function observeDom(payload) {
       name: clip((nameOf(el) || "").replace(/\s+/g, " ").trim(), 60),
       guard: guardOf(el),
     };
+    // 跨 frame 的元素在主文档里没有 DOM 身份（elementFromPoint 只会命中 <iframe>），
+    // 打标让 locate 走「只信记录坐标 + 可见性」的路径，并跳过跨 frame 滚不动的 scrollIntoView。
+    if (el.ownerDocument !== document) item.frameOrigin = true;
     if (el.tagName === "A") item.url = el.href;
     if (kind === "checkable") {
       item.checked = typeof el.checked === "boolean" ? el.checked : el.getAttribute("aria-checked") === "true";
@@ -387,6 +467,152 @@ function observeDom(payload) {
       item.value = clip(String(el.value || ""), 60);
     }
     candidates.push({ id: Number(item.ref.slice(4)), item });
+  };
+
+  // 观测根：主文档 + 同源 iframe 文档 + 开放的 shadow root。
+  // document.querySelectorAll 既不进 iframe 也不穿透 shadow，必须自己遍历；
+  // 跨域 iframe 读 contentDocument 会抛，try/catch 跳过（那不是我们能操作的树）。
+  // 观测是有界操作。shadow host 不能用「前 2000 个节点」一刀切——那样第 2001 个之后的
+  // 开放 shadow root 永远进不了 roots。改用惰性 TreeWalker，并把一个全局元素预算按 root
+  // 公平分配（每个 root 至少一份），后面的 root 不会被前面的长文档饿死；root 总数也有上限。
+  const TREE_SCAN_CAP = 8000; // 所有 root 的 shadow-host 遍历合计上限
+  const TREE_MIN_PER_ROOT = 2000; // 每个 root 至少看这么多
+  const MAX_ROOTS = 32;
+  const roots = [];
+  const seenRoots = new Set();
+  const rootQueue = [{ root: document, frameEl: null }];
+  let treeScanned = 0;
+  while (rootQueue.length && roots.length < MAX_ROOTS) {
+    const { root, frameEl } = rootQueue.shift();
+    if (!root || seenRoots.has(root)) continue;
+    seenRoots.add(root);
+    roots.push({ root, frameEl });
+    // 公平份额：剩余预算按剩余 root 数分，但不低于 MIN，保证后面的 root 不被前面的长文档饿死
+    const remaining = Math.max(0, TREE_SCAN_CAP - treeScanned);
+    const quota = Math.max(TREE_MIN_PER_ROOT, Math.floor(remaining / (rootQueue.length + 1)));
+    let walker = null;
+    try {
+      walker = (root.ownerDocument || document).createTreeWalker(root, NodeFilter.SHOW_ELEMENT);
+    } catch {
+      walker = null;
+    }
+    let node = null;
+    let visited = 0;
+    while (walker && (node = walker.nextNode()) && visited < quota) {
+      visited += 1;
+      treeScanned += 1;
+      if (node.shadowRoot) rootQueue.push({ root: node.shadowRoot, frameEl: null });
+    }
+    // 同源 iframe 文档（跨域读 contentDocument 会抛，跳过）
+    let frames = [];
+    try {
+      frames = root.querySelectorAll("iframe,frame");
+    } catch {
+      frames = [];
+    }
+    for (const frame of frames) {
+      let doc = null;
+      try {
+        doc = frame.contentDocument;
+      } catch {
+        doc = null;
+      }
+      if (doc) rootQueue.push({ root: doc, frameEl: frame });
+    }
+  }
+
+  // 第一遍：原生交互标签 + role=…。它们语义最明确，**优先占预算**：
+  // 第二遍的容器型元素只能在剩余额度里补，不会把 a11y 元素挤出元素表。
+  const a11yEls = [];
+  for (const { root } of roots) {
+    if (candidates.length >= budget) break;
+    for (const el of root.querySelectorAll(selector)) {
+      if (candidates.length >= budget) break;
+      if (!safe(el) || !visible(el)) continue;
+      if (el.matches(":disabled") || el.closest('[aria-disabled="true"]')) continue;
+      const role = roleOf(el);
+      if (!role) continue;
+      if (!inViewport(el)) continue;
+      if (role === "gridcell" && el.querySelector('button,[role="button"]')) continue;
+      pushCandidate(el, role);
+      a11yEls.push(el);
+    }
+  }
+
+  // 第二遍：补全「可点但没有 role」的容器型元素。
+  // 真实站点里 <div onclick> 卡片/行、tabindex 区块、cursor:pointer 自定义控件占比很高，
+  // 而旧选择器只认原生交互标签与 role=…，它们在 roleOf 里拿不到角色就被整批丢掉。
+  // 这里给它们一个我们自己的角色名（clickable-region），映射到既有 kind=clickable，
+  // 于是自动进入 buildQuestions 的 click_targets 头——问题层与执行层都不用改。
+  // 注意 React 等框架用 addEventListener 挂监听，DOM 上没有 onclick 属性，
+  // 所以 cursor:pointer 是必须的兜底信号（无法用 CSS 选择器筛，只能逐个读 computed style）。
+  const REGION_ROLE = "clickable-region";
+  const REGION_SCAN_CAP = 2000; // 观测是有界操作：最多逐个看这么多节点的 computed style
+  // 只扫块级容器：纯 cursor:pointer 的 <span> 多半是卡片内部继承样式的文字/图标，
+  // 不是独立可点区域；带 onclick/tabindex 的 span 仍会由属性选择器收进来。
+  const REGION_POOL_SELECTOR =
+    '[onclick],[tabindex],div,li,label,td,tr,section,article,header,footer,nav';
+  const areaOf = (el) => {
+    const r = el.getBoundingClientRect();
+    return Math.max(1, r.width * r.height);
+  };
+  const regionEls = [];
+  // 按 root **轮转**扫描：每个 root 每轮取一个候选，小 root 先扫完就退出，大 root 接着用剩余额度。
+  // 这样总额度仍然是 REGION_SCAN_CAP（有界），但不会让主文档前 2000 个不可点 div 把后面的 root 饿死。
+  const regionPools = roots.map(({ root }) => {
+    try {
+      return root.querySelectorAll(REGION_POOL_SELECTOR);
+    } catch {
+      return [];
+    }
+  });
+  const regionCursor = regionPools.map(() => 0);
+  let regionScanned = 0;
+  let regionProgress = true;
+  while (regionProgress && regionScanned < REGION_SCAN_CAP) {
+    regionProgress = false;
+    for (let r = 0; r < regionPools.length && regionScanned < REGION_SCAN_CAP; r++) {
+      const pool = regionPools[r];
+      if (regionCursor[r] >= pool.length) continue;
+      regionProgress = true;
+      const el = pool[regionCursor[r]++];
+      regionScanned += 1;
+      if (el.getAttribute("role")) continue; // 有显式 role 的不算「无 role」容器
+      if (!visible(el)) continue;
+      if (el.matches(":disabled") || el.closest('[aria-disabled="true"]')) continue;
+      const tabIndex = el.getAttribute("tabindex");
+      const explicit = el.hasAttribute("onclick") || (tabIndex !== null && tabIndex !== "-1");
+      if (!explicit) {
+        // cursor:pointer 会沿 DOM 继承：纯 cursor 且无可读名称的元素（卡片内部的图标/空占位）
+        // 对 Jev 也不可识别，直接跳过；有 onclick/tabindex 的显式区域不受此限。
+        if (getComputedStyle(el).cursor !== "pointer") continue;
+        if (!(nameOf(el) || "").replace(/\s+/g, " ").trim()) continue;
+      }
+      // 与已收集的 a11y 元素去重（同一块可点区域不要又当 a11y 元素又当容器收一次）：
+      //  * 区域本身就是 a11y 元素 → 已收
+      //  * 区域在某个 a11y 元素内部 → 那个 a11y 元素是更精确的目标，跳过
+      //  * 区域包住 a11y 元素 → 只有当被包住的 a11y 元素占了区域一半以上面积时才跳过；
+      //    否则区域补出了额外可点面积（大卡片里的小链接），应当保留
+      const covered = a11yEls.some((n) => {
+        if (n === el || n.contains(el)) return true;
+        return el.contains(n) && areaOf(n) / areaOf(el) >= 0.5;
+      });
+      if (covered) continue;
+      // <label for=…> 指向的控件已经收走：再收 label 等于把同一个控件收两遍
+      if (el.tagName === "LABEL" && el.control && a11yEls.includes(el.control)) continue;
+      if (!inViewport(el)) continue;
+      regionEls.push(el);
+    }
+  }
+  // 嵌套的可点容器只保留最内层：点击会冒泡到外层，收外层反而让中心坐标落到别的子元素上。
+  // 用「删掉所有已收集区域的祖先」实现，避免两两比较的 O(n²)。
+  const innermost = new Set(regionEls);
+  for (const el of regionEls) {
+    for (let p = el.parentElement; p; p = p.parentElement) innermost.delete(p);
+  }
+  for (const el of regionEls) {
+    if (candidates.length >= budget) break;
+    if (innermost.has(el)) pushCandidate(el, REGION_ROLE);
   }
 
   // 候选多于预算时：**没展示过的优先**（各自保持 DOM 顺序），再拿展示过的补位。
@@ -476,13 +702,57 @@ function locateForInput(payload) {
   }
   if (payload.kind === "selectable" && el.tagName !== "SELECT") return { ok: false, reason: "not_select" };
   const rect = el.getBoundingClientRect();
-  const x = rect.x + rect.width / 2;
-  const y = rect.y + rect.height / 2;
-  if (!rect.width || !rect.height || x < 0 || y < 0 || x >= innerWidth || y >= innerHeight) {
-    return { ok: false, reason: "offscreen" };
+  if (!rect.width || !rect.height) return { ok: false, reason: "offscreen" };
+  let x = rect.x + rect.width / 2;
+  let y = rect.y + rect.height / 2;
+
+  if (payload.frameOrigin) {
+    // 同源 iframe 里的元素：getBoundingClientRect 是相对它自己 frame 的视口，必须沿 frameElement
+    // 链把每层 iframe 的内容区偏移（clientLeft/clientTop，即边框宽）与位置加回来。
+    // 每换一层都要在该层做命中测试：命中的必须是承载下一层的 <iframe>（或包含它），
+    // 否则就是被主文档 overlay / frame 边框遮挡 → covered，不派发。
+    // 任何一层解析不了（defaultView 为 null / frame 链断）或外层 frame 有非 identity 的
+    // transform/zoom，都直接拒绝——不猜坐标、不退化成 {0,0}。
+    let win = el.ownerDocument && el.ownerDocument.defaultView;
+    if (!win) return { ok: false, reason: "frame_unresolved" };
+    // 元素不能被它自己 frame 的视口裁掉
+    if (x < 0 || y < 0 || x >= win.innerWidth || y >= win.innerHeight) return { ok: false, reason: "offscreen" };
+    const doc = el.ownerDocument;
+    const ownHit = doc.elementFromPoint(x, y);
+    if (!ownHit || !(el === ownHit || el.contains(ownHit) || ownHit.contains(el))) {
+      return { ok: false, reason: "covered" };
+    }
+    while (win && win !== window) {
+      let fe = null;
+      try {
+        fe = win.frameElement;
+      } catch {
+        fe = null;
+      }
+      if (!fe) return { ok: false, reason: "frame_unresolved" };
+      const cs = getComputedStyle(fe);
+      if ((cs.transform && cs.transform !== "none") || (cs.zoom && cs.zoom !== "1" && cs.zoom !== "normal")) {
+        return { ok: false, reason: "frame_transformed" };
+      }
+      const fr = fe.getBoundingClientRect();
+      x = fr.left + fe.clientLeft + x;
+      y = fr.top + fe.clientTop + y;
+      const parentDoc = fe.ownerDocument;
+      const hit = parentDoc.elementFromPoint(x, y);
+      if (!hit || !(fe === hit || fe.contains(hit) || hit.contains(fe))) return { ok: false, reason: "covered" };
+      win = parentDoc.defaultView;
+      if (!win) return { ok: false, reason: "frame_unresolved" };
+    }
+    if (x < 0 || y < 0 || x >= innerWidth || y >= innerHeight) return { ok: false, reason: "offscreen" };
+  } else {
+    if (x < 0 || y < 0 || x >= innerWidth || y >= innerHeight) return { ok: false, reason: "offscreen" };
+    // 命中测试要在元素自己的 root 里做：open shadow root 里的节点，主文档的 elementFromPoint
+    // 只会返回 shadow host，身份对不上会被误判成 covered；ShadowRoot.elementFromPoint 能穿透它。
+    const root = el.getRootNode && el.getRootNode();
+    const hit =
+      root && typeof root.elementFromPoint === "function" ? root.elementFromPoint(x, y) : document.elementFromPoint(x, y);
+    if (!hit || !(el === hit || el.contains(hit) || hit.contains(el))) return { ok: false, reason: "covered" };
   }
-  const hit = document.elementFromPoint(x, y);
-  if (!hit || !(el === hit || el.contains(hit) || hit.contains(el))) return { ok: false, reason: "covered" };
   return {
     ok: true,
     x,
@@ -1050,6 +1320,50 @@ async function settle(page, options = {}, urlBefore = null) {
   }
 }
 
+// ── 危险动作前置拦截 ────────────────────────────────────────────────────────
+// 执行期护栏只管「能不能点」（陈旧/遮挡/不可用），不管「该不该点」。命中支付/删除这类目标时，
+// 之前完全靠 Jev 自评，而 README 里「不替你付款/删除」是承诺不是机制。这里按目标名称/选项文本
+// 做一道语义前置判断，命中即不执行，仍走既有 guardRejected 归类（不新增状态机）。
+// 词表按我们真实用到的站点/语言拟（中文 + 英文）；options.dangerGuard === false 可整体关闭。
+const DANGER_RULES = [
+  {
+    kind: "payment",
+    words: ["支付", "付款", "立即购买", "购买", "下单", "结算", "充值", "转账", "提现",
+      "pay", "payment", "purchase", "checkout", "place order", "buy now", "transfer", "withdraw"],
+  },
+  {
+    kind: "deletion",
+    words: ["删除", "移除", "注销", "清空", "抹除", "delete", "remove", "erase", "deactivate",
+      "close account", "delete account"],
+  },
+  {
+    kind: "unsubscribe",
+    words: ["退订", "取消订阅", "解绑", "unsubscribe", "cancel subscription"],
+  },
+];
+// 英文按单词边界匹配（避免误伤 "PayPal"/"remover" 这类）；中文没有词边界，用子串命中。
+const DANGER_RES = DANGER_RULES.map((rule) => {
+  const en = rule.words.filter((w) => /^[a-z][a-z ]*$/i.test(w));
+  return {
+    kind: rule.kind,
+    cn: rule.words.filter((w) => !en.includes(w)),
+    re: en.length
+      ? new RegExp(`\\b(?:${en.map((w) => w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|")})\\b`, "i")
+      : null,
+  };
+});
+
+/** 目标名称/当前值/选项文本是否命中危险动作词表；命中返回 {kind, word}，否则 null。 */
+export function assessDanger(target, optionLabel) {
+  const text = `${target?.name || ""} ${target?.value || ""} ${optionLabel || ""}`.toLowerCase();
+  for (const rule of DANGER_RES) {
+    for (const word of rule.cn) if (text.includes(word.toLowerCase())) return { kind: rule.kind, word };
+    const hit = rule.re ? text.match(rule.re) : null;
+    if (hit) return { kind: rule.kind, word: hit[0] };
+  }
+  return null;
+}
+
 /** 单步 Jev 决策 + 执行 */
 export async function runJevStep(page, goal, options = {}) {
   const started = Date.now();
@@ -1059,6 +1373,14 @@ export async function runJevStep(page, goal, options = {}) {
   // 显式传入 textModel: null 表示“本次禁用它”，而不是回退到配置文件
   const textModel = "textModel" in options ? options.textModel : loadTextModelConfig();
   const metrics = options.metrics;
+  // 分阶段耗时：观测 / 决策 / 执行 / 校验。verify 取「其余」——响应校验、目标解析、
+  // 执行前守卫（已从 execute 里扣出）、文本取值与结果组装都归它，四个阶段之和恒等于 stepDurationMs。
+  const phases = { observeMs: 0, decideMs: 0, executeMs: 0, verifyMs: 0 };
+  const receipt = {}; // 服务端实际 model / usage 的载体（askJev 写入；注入的 ask 可忽略）
+  const phaseReport = () => {
+    phases.verifyMs = Math.max(0, Date.now() - started - phases.observeMs - phases.decideMs - phases.executeMs);
+    return { ...phases };
+  };
 
   // ── 观测：默认走自建 DOM 元素表（一次 evaluate）；失败或为空时回退到 a11y 快照 ──
   let targets = null;
@@ -1073,6 +1395,7 @@ export async function runJevStep(page, goal, options = {}) {
   // 视口外目标：先滚动一屏再观测（调用方已保证有界）。
   // 不调大 maxTargets 默认值 —— 元素表大小不变，只是“看哪一批”改为未展示过的优先。
   let revealed = null;
+  const observeStarted = Date.now();
   if (options.reveal && options.observe !== "snapshot") {
     try {
       bump(metrics, "page.evaluate");
@@ -1127,11 +1450,15 @@ export async function runJevStep(page, goal, options = {}) {
     targets = options.enrich === false ? parsed : await enrichTargets(page, parsed, options);
     if (targets.length) elementTable = buildActionMenu(targets);
   }
+  phases.observeMs = Date.now() - observeStarted;
 
   if (!targets || !targets.length) {
     // 常见于导航刚提交、页面还在加载：交给调用方决定重试还是放弃
     return {
       stepDurationMs: Date.now() - started,
+      phases: phaseReport(),
+      serverModel: receipt.model ?? null,
+      serverUsage: receipt.usage ?? null,
       action: "wait",
       target: null,
       isDone: false,
@@ -1176,7 +1503,12 @@ export async function runJevStep(page, goal, options = {}) {
     hasTextSource,
     rules: options.rules !== false,
   });
-  const answers = await askJev(state.join("\n"), questions, options);
+  // 决策来源可注入：默认走 askJev（TypeSafe System One）；options.ask 与它同签名
+  // （state 文本 + questions 对象），用于离线端到端自测（about:blank + 注入 DOM，不联网、不需要凭证）。
+  // receipt 是可选出参：askJev 把服务端实际 model / usage 写进去，注入的 ask 可忽略。
+  const decideStarted = Date.now();
+  const answers = await (options.ask || askJev)(state.join("\n"), questions, { ...options, receipt });
+  phases.decideMs = Date.now() - decideStarted;
 
   // ── 响应校验：不合格直接拒绝执行（而不是猜一个动作） ──
   const checkEnabled = options.validate !== false;
@@ -1186,6 +1518,7 @@ export async function runJevStep(page, goal, options = {}) {
   if (invalid) {
     return {
       stepDurationMs: Date.now() - started,
+      phases: phaseReport(), serverModel: receipt.model ?? null, serverUsage: receipt.usage ?? null,
       action: null, target: null, isDone: false, blocked: false, changed: false,
       invalidResponse: invalid, invalidHead: "operation", observeMode,
       urlBefore, urlAfter: urlBefore,
@@ -1205,6 +1538,7 @@ export async function runJevStep(page, goal, options = {}) {
     if (targetInvalid) {
       return {
         stepDurationMs: Date.now() - started,
+        phases: phaseReport(), serverModel: receipt.model ?? null, serverUsage: receipt.usage ?? null,
         action, target: null, isDone: false, blocked: false, changed: false,
         invalidResponse: targetInvalid, invalidHead: targetHead, observeMode,
         urlBefore, urlAfter: urlBefore,
@@ -1219,6 +1553,13 @@ export async function runJevStep(page, goal, options = {}) {
   const validTarget = chosen && targets.some((t) => t.ref === refOf(chosen)) ? chosen : null;
   const staleTarget = chosen && !validTarget ? chosen : null;
   const chosenTarget = targets.find((t) => t.ref === refOf(validTarget));
+
+  // 危险动作前置拦截：在文本生成之前判定，命中就不再浪费一次模型调用。
+  const dangerOption =
+    action === "select" && chosenTarget?.options?.[Number(chosen?.split("#")[1])] !== undefined
+      ? chosenTarget.options[Number(chosen.split("#")[1])]
+      : null;
+  const danger = options.dangerGuard === false || !chosenTarget ? null : assessDanger(chosenTarget, dangerOption);
 
   // 文本来源：调用方候选优先，否则向文本模型索取（严格校验，失败即报错不猜值）
   // options.textModel 可以是配置对象，也可以是自定义生成函数（便于接入任意模型或测试）
@@ -1236,6 +1577,7 @@ export async function runJevStep(page, goal, options = {}) {
         elementTable,
         recentActions: options.progress,
       };
+      const textStarted = Date.now();
       try {
         text =
           typeof textModel === "function"
@@ -1244,6 +1586,7 @@ export async function runJevStep(page, goal, options = {}) {
       } catch {
         text = null;
       }
+      phases.decideMs += Date.now() - textStarted; // 文本生成也是模型决策，归入 decide
       if (typeof text !== "string" || !text.trim()) {
         textError = "text_model_failed";
         text = undefined; // 关键：必须清空，否则非空白的空白串会被真的填进去
@@ -1261,10 +1604,12 @@ export async function runJevStep(page, goal, options = {}) {
   let executed = null;
   let error = null;
   let guardRejected = null;
+  let optionStale = false; // 下拉的「选中项不在当前 options 里」：交给循环做一次带新选项的重问
   // 滚动动作是否真的移动了视口：滚动不改 URL，光看 URL 无法判断「滚动有没有进展」
   let scrollMoved = null;
   // A 机制实际生效次数（目标被自动滚入视口后重新命中）：用于区分是哪个机制在起作用
   let intoViewCount = 0;
+  let guardMs = 0; // 执行前守卫/命中测试耗时：从 execute 里扣出，归入 verify
   const domIdOf = (value) => {
     const clean = refOf(value); // select 的 ref=1#2 要先去选项后缀，否则 Number("1#2") = NaN
     const found = targets.find((t) => t.ref === clean);
@@ -1274,7 +1619,7 @@ export async function runJevStep(page, goal, options = {}) {
   };
   const locate = async (target, kind) => {
     bump(metrics, "page.evaluate");
-    return page.evaluate(locateForInput, { id: domIdOf(target.ref), kind });
+    return page.evaluate(locateForInput, { id: domIdOf(target.ref), kind, frameOrigin: target.frameOrigin === true });
   };
   const guardMatches = (target, live) => {
     // target.guard = [id, role, name, disabled, aria-disabled, href]
@@ -1294,20 +1639,31 @@ export async function runJevStep(page, goal, options = {}) {
   //   * 只用代码持有的 DOM 身份滚动，不把选择器交给模型；
   //   * 滚动后必须重新做命中测试取新坐标，不拿旧坐标硬点；每步最多一次，不会成环。
   const locateReady = async (target, kind) => {
-    let live = await locate(target, kind);
-    if (live && !live.ok && live.reason === "offscreen") {
-      bump(metrics, "page.evaluate");
-      const moved = await page.evaluate(scrollNodeIntoView, { id: domIdOf(target.ref) });
-      if (moved?.ok) {
-        intoViewCount += 1;
-        await sleep(options.intoViewSettleMs ?? 60);
-        live = await locate(target, kind);
+    const guardStarted = Date.now();
+    try {
+      let live = await locate(target, kind);
+      // 跨 frame 目标不做 scrollIntoView：主文档的滚动动不了 frame 内部的滚动容器，
+      // 而 frame 内坐标已经换算成主视口坐标，硬滚只会把主文档滚跑。
+      if (live && !live.ok && live.reason === "offscreen" && !target.frameOrigin) {
+        bump(metrics, "page.evaluate");
+        const moved = await page.evaluate(scrollNodeIntoView, { id: domIdOf(target.ref) });
+        if (moved?.ok) {
+          intoViewCount += 1;
+          await sleep(options.intoViewSettleMs ?? 60);
+          live = await locate(target, kind);
+        }
       }
+      return live;
+    } finally {
+      guardMs += Date.now() - guardStarted;
     }
-    return live;
   };
+  const executeStarted = Date.now();
   try {
-    if (action === "click" && validTarget) {
+    if (danger) {
+      // 命中危险词表：不派发任何动作，走既有 guardRejected 归类（循环会直接停，不重试）
+      guardRejected = "dangerous_action";
+    } else if (action === "click" && validTarget) {
       if (observeMode === "dom") {
         const live = await locateReady(chosenTarget, chosenTarget.kind);
         if (!live?.ok) guardRejected = live?.reason || "locate_failed";
@@ -1347,15 +1703,20 @@ export async function runJevStep(page, goal, options = {}) {
     } else if (action === "select" && validTarget) {
       const index = Number(chosen.split("#")[1]);
       const value = chosenTarget?.optionValues?.[index] ?? chosenTarget?.options?.[index];
-      if (observeMode === "dom" && value !== undefined) {
-        const live = await locateReady(chosenTarget, "selectable");
-        if (!live?.ok) guardRejected = live?.reason || "locate_failed";
-        else if (!guardMatches(chosenTarget, live)) guardRejected = "stale_guard";
-        else {
-          bump(metrics, "page.evaluate");
-          const result = await page.evaluate(selectInPage, { id: domIdOf(validTarget), value });
-          if (!result?.ok) error = `select_failed:${result?.reason || "unknown"}`;
-          else executed = validTarget;
+      if (observeMode === "dom") {
+        if (value === undefined) {
+          optionStale = true; // 选中项不在当前 options 里（索引越界）
+        } else {
+          const live = await locateReady(chosenTarget, "selectable");
+          if (!live?.ok) guardRejected = live?.reason || "locate_failed";
+          else if (!guardMatches(chosenTarget, live)) guardRejected = "stale_guard";
+          else {
+            bump(metrics, "page.evaluate");
+            const result = await page.evaluate(selectInPage, { id: domIdOf(validTarget), value });
+            if (result?.ok) executed = validTarget;
+            else if (result?.reason === "option_unavailable") optionStale = true; // 选中项已不在 DOM 的 options 里
+            else error = `select_failed:${result?.reason || "unknown"}`;
+          }
         }
       } else {
         await page.selectOption(refOf(validTarget), { index });
@@ -1400,11 +1761,13 @@ export async function runJevStep(page, goal, options = {}) {
   }
   const urlAfter = executed && executed !== "wait" ? await page.url() : urlBefore;
   if (executed && executed !== "wait") bump(metrics, "page.url");
+  // 执行 = 派发 + 稳定等待；守卫/命中测试已经计入 verify（guardMs），这里扣掉避免重复
+  phases.executeMs = Math.max(0, Date.now() - executeStarted - guardMs);
 
   // 选了需要目标的动作却没解析出可执行目标：报错，不静默空转
   const needsTarget =
     action === "click" || action === "select" || action === "type_text" || action === "type_text_submit";
-  const targetMissing = Boolean(needsTarget && !executed && !error && !textError && !guardRejected);
+  const targetMissing = Boolean(needsTarget && !executed && !error && !textError && !guardRejected && !optionStale);
 
   const targetLabel = chosenTarget ? describeTarget(chosenTarget, { withValue: true }) : validTarget || "";
   const optionLabel =
@@ -1416,6 +1779,10 @@ export async function runJevStep(page, goal, options = {}) {
 
   return {
     stepDurationMs: Date.now() - started,
+    phases: phaseReport(),
+    serverModel: receipt.model ?? null,
+    serverUsage: receipt.usage ?? null,
+    serverEndpoint: receipt.endpoint ?? null,
     action,
     target: validTarget,
     targetLabel,
@@ -1426,6 +1793,9 @@ export async function runJevStep(page, goal, options = {}) {
     blocked: action === "blocked",
     staleTarget,
     guardRejected,
+    optionStale,
+    dangerousMatch: danger?.word ?? null,
+    dangerousKind: danger?.kind ?? null,
     targetMissing,
     revealed,
     newTargetCount,
@@ -1464,6 +1834,19 @@ export async function runJevAutonomousLoop(page, goal, options = {}) {
   const maxNoTargets = options.maxNoTargets ?? 3;
   const maxNoProgress = options.maxNoProgress ?? 3;
   const history = [];
+  // 分阶段耗时与服务端实际模型按步累计：浮动别名 jev-latest 会随时间换版本，
+  // 只记「跑通了」不记版本，事后无法判断这些数字是哪版模型测的。
+  const phases = { observeMs: 0, decideMs: 0, executeMs: 0, verifyMs: 0 };
+  const serverModels = new Set();
+  const serverEndpoints = new Set();
+  const usage = { input_tokens: 0, output_tokens: 0 };
+  const done = (result) => ({
+    ...result,
+    phases: { ...phases },
+    serverModels: [...serverModels],
+    serverEndpoints: [...serverEndpoints],
+    usage: { ...usage },
+  });
   let noTargetStreak = 0;
   let noProgressStreak = 0;
   let targetMissingStreak = 0;
@@ -1474,6 +1857,7 @@ export async function runJevAutonomousLoop(page, goal, options = {}) {
   let invalidStreak = 0;
   let sameActionStreak = 0;
   let lastAction = null;
+  let optionRetryStreak = 0; // 「选中项不在当前 options 里」的重问计数（我们自己的）
   const progress = [];
 
   for (let step = 1; step <= maxSteps; step++) {
@@ -1481,7 +1865,7 @@ export async function runJevAutonomousLoop(page, goal, options = {}) {
       try {
         if (await options.check(page, step)) {
           log(`✅ [Ego-Jev] check() 在第 ${step} 步确认目标已达成`);
-          return { success: true, steps: step - 1, reason: "check_passed", history };
+          return done({ success: true, steps: step - 1, reason: "check_passed", history });
         }
       } catch {
         /* check 抛错不阻塞主循环 */
@@ -1491,6 +1875,13 @@ export async function runJevAutonomousLoop(page, goal, options = {}) {
     const revealForStep = nextReveal;
     nextReveal = null;
     const result = await runJevStep(page, goal, { ...options, progress, reveal: revealForStep });
+    if (result.phases) for (const key of Object.keys(phases)) phases[key] += result.phases[key] || 0;
+    if (result.serverModel) serverModels.add(result.serverModel);
+    if (result.serverEndpoint) serverEndpoints.add(result.serverEndpoint);
+    if (result.serverUsage) {
+      usage.input_tokens += result.serverUsage.input_tokens || 0;
+      usage.output_tokens += result.serverUsage.output_tokens || 0;
+    }
     log(
       `  └─ [Step ${step}] ${result.stepDurationMs}ms | ${result.action}` +
         (result.target ? ` → ${result.target}` : "") +
@@ -1499,7 +1890,8 @@ export async function runJevAutonomousLoop(page, goal, options = {}) {
         (result.observeMode ? ` | 观测:${result.observeMode}` : "") +
         (result.intoViewCount ? ` | 目标已滚入视口${result.intoViewCount}次` : "") +
         (result.staleTarget ? ` | ⚠️ ${result.staleTarget} 已过期，未执行` : "") +
-        (result.guardRejected ? ` | ⚠️ 执行前守卫拒绝: ${result.guardRejected}` : "") +
+        (result.guardRejected ? ` | ⚠️ 执行前守卫拒绝: ${result.guardRejected}${result.dangerousMatch ? `(${result.dangerousMatch})` : ""}` : "") +
+        (result.optionStale ? " | ⚠️ 下拉选中项不在当前 options 里" : "") +
         (result.invalidResponse ? ` | ⚠️ 响应校验失败(${result.invalidHead}): ${result.invalidResponse}，未执行` : "") +
         (result.targetMissing ? " | ⚠️ 选了需要目标的动作但未解析出可执行目标" : "") +
         (result.textError ? ` | ⚠️ ${result.textError}` : "") +
@@ -1510,12 +1902,29 @@ export async function runJevAutonomousLoop(page, goal, options = {}) {
     if (result.invalidResponse) {
       invalidStreak += 1;
       if (invalidStreak >= (options.maxInvalidResponses ?? 2)) {
-        return { success: false, steps: step, reason: "invalid_response", history };
+        return done({ success: false, steps: step, reason: "invalid_response", history });
       }
       await sleep(options.invalidRetryDelayMs ?? 150);
       continue;
     }
     invalidStreak = 0;
+
+    // 下拉的「选中项不在当前 options 里」：不当陈旧守卫、也不算无进展；
+    // 用一次带新选项的重问（下一次 runJevStep 会重新观测，新 options 自然进候选），
+    // 重问仍失败 → 显式报 stuck（不静默、不无限循环）。
+    if (result.optionStale) {
+      optionRetryStreak += 1;
+      history.push(result);
+      if (optionRetryStreak > (options.maxOptionRetries ?? 1)) {
+        return done({ success: false, steps: step, reason: "stuck", history });
+      }
+      log(
+        `  └─ [Step ${step}] 下拉选中项不在当前 options 里：带新选项重问` +
+          `（第 ${optionRetryStreak}/${options.maxOptionRetries ?? 1} 次）`
+      );
+      continue;
+    }
+    optionRetryStreak = 0;
 
     // 动作刚执行完就复查一次成功条件：导航（尤其是重定向链）可能刚好在 settle 之后才落地，
     // 不等下一轮才能发现，可以省掉一整步 Jev 请求。
@@ -1524,7 +1933,7 @@ export async function runJevAutonomousLoop(page, goal, options = {}) {
         if (await options.check(page, step)) {
           log(`✅ [Ego-Jev] check() 在第 ${step} 步动作后确认目标已达成`);
           history.push(result);
-          return { success: true, steps: step, reason: "check_passed_after_step", history };
+          return done({ success: true, steps: step, reason: "check_passed_after_step", history });
         }
       } catch {
         /* check 抛错不阻塞主循环 */
@@ -1591,7 +2000,7 @@ export async function runJevAutonomousLoop(page, goal, options = {}) {
     if (result.reason === "no_targets") {
       noTargetStreak += 1;
       if (noTargetStreak >= maxNoTargets) {
-        return { success: false, steps: step, reason: "no_targets", history };
+        return done({ success: false, steps: step, reason: "no_targets", history });
       }
       log(`  └─ [Step ${step}] 页面暂无可交互元素（可能仍在加载），等待后重试`);
       await sleep(options.noTargetsDelay ?? 700);
@@ -1600,26 +2009,31 @@ export async function runJevAutonomousLoop(page, goal, options = {}) {
     noTargetStreak = 0;
 
     history.push(result);
-    if (result.error) return { success: false, steps: step, reason: "action_failed", history };
-    if (result.textError) return { success: false, steps: step, reason: result.textError, history };
-    if (result.isDone) return { success: true, steps: step, reason: "jev_done", history };
-    if (result.blocked) return { success: false, steps: step, reason: "blocked", history };
+    if (result.error) return done({ success: false, steps: step, reason: "action_failed", history });
+    if (result.textError) return done({ success: false, steps: step, reason: result.textError, history });
+    if (result.isDone) return done({ success: true, steps: step, reason: "jev_done", history });
+    if (result.blocked) return done({ success: false, steps: step, reason: "blocked", history });
 
     // 选了动作却没有可执行目标：连续 2 次就停，不要静默空转到最大步数
     if (result.targetMissing) {
       targetMissingStreak += 1;
       if (targetMissingStreak >= (options.maxTargetMissing ?? 2)) {
-        return { success: false, steps: step, reason: "target_missing", history };
+        return done({ success: false, steps: step, reason: "target_missing", history });
       }
     } else {
       targetMissingStreak = 0;
+    }
+
+    // 危险动作拦截：重试不会让它变安全，直接停（仍用既有 guard_rejected 归类，不新增状态机）
+    if (result.guardRejected === "dangerous_action") {
+      return done({ success: false, steps: step, reason: "guard_rejected", history });
     }
 
     // 执行前守卫拒绝（节点消失/被遮挡/已禁用/指纹变化）：重新观察即可，但不能无限重试
     if (result.guardRejected) {
       guardRejectedStreak += 1;
       if (guardRejectedStreak >= (options.maxGuardRejected ?? 3)) {
-        return { success: false, steps: step, reason: "guard_rejected", history };
+        return done({ success: false, steps: step, reason: "guard_rejected", history });
       }
     } else {
       guardRejectedStreak = 0;
@@ -1640,7 +2054,7 @@ export async function runJevAutonomousLoop(page, goal, options = {}) {
     sameActionStreak = result.action === lastAction && !progressed ? sameActionStreak + 1 : 0;
     lastAction = result.action;
     if (sameActionStreak >= (options.maxSameAction ?? 3)) {
-      return { success: false, steps: step, reason: "stuck", history };
+      return done({ success: false, steps: step, reason: "stuck", history });
     }
 
     // 死循环保护：连续多步点击/输入执行成功但页面毫无变化
@@ -1656,10 +2070,36 @@ export async function runJevAutonomousLoop(page, goal, options = {}) {
     } else {
       noProgressStreak += 1;
       if (noProgressStreak >= maxNoProgress) {
-        return { success: false, steps: step, reason: "no_progress", history };
+        return done({ success: false, steps: step, reason: "no_progress", history });
       }
     }
   }
 
-  return { success: false, steps: maxSteps, reason: "max_steps_reached", history };
+  return done({ success: false, steps: maxSteps, reason: "max_steps_reached", history });
+}
+
+/**
+ * 把一次 runJevAutonomousLoop 的结果渲染成给人看的摘要：分阶段耗时 + 服务端实际模型/用量。
+ *
+ * 为什么要有它：只报「成功/失败」看不出时间花在哪；只报耗时又不知道当时服务的是哪版模型——
+ * 请求里写的是浮动别名 jev-latest，服务端实际服务哪个版本只有响应里的 model 字段能回答。
+ * CLI 收尾时打印一次，让每条结果都带上「哪版模型、各阶段各花多少」。
+ */
+export function renderJevSummary(result = {}) {
+  const p = result.phases || {};
+  const total = (p.observeMs || 0) + (p.decideMs || 0) + (p.executeMs || 0) + (p.verifyMs || 0);
+  const lines = [
+    `阶段耗时: 观测 ${p.observeMs ?? 0}ms | 决策 ${p.decideMs ?? 0}ms | 执行 ${p.executeMs ?? 0}ms | 校验 ${p.verifyMs ?? 0}ms（合计 ${total}ms）`,
+  ];
+  const models = Array.isArray(result.serverModels) ? result.serverModels.filter(Boolean) : [];
+  const endpoints = Array.isArray(result.serverEndpoints) ? result.serverEndpoints.filter(Boolean) : [];
+  const usage = result.usage || {};
+  lines.push(
+    `服务端模型: ${models.length ? models.join(", ") : "未取到（本次响应没有 model 字段）"}` +
+      (endpoints.length ? ` | 端点 ${endpoints.join(", ")}` : "") +
+      (usage.input_tokens || usage.output_tokens
+        ? ` | 用量 input ${usage.input_tokens ?? 0} / output ${usage.output_tokens ?? 0}`
+        : "")
+  );
+  return lines.join("\n");
 }

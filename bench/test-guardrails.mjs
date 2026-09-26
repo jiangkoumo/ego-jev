@@ -5,7 +5,7 @@ const { dirname, join } = await import("node:path");
 const { fileURLToPath } = await import("node:url");
 // 相对自身定位，不要写死绝对路径——CI 与别人的机器上都要能跑
 const JE = join(dirname(fileURLToPath(import.meta.url)), "..", "scripts", "ego-jev.mjs");
-const { validateChoice, runJevStep, runJevAutonomousLoop } = await import(JE);
+const { validateChoice, runJevStep, runJevAutonomousLoop, assessDanger } = await import(JE);
 
 let pass = 0, fail = 0;
 const check = (name, ok, detail = "") => {
@@ -184,6 +184,65 @@ console.log("\n[5] 不合格响应重试上限");
   const r = await runJevAutonomousLoop(page, "点 Next", { apiKey: "stub", metrics: {}, maxSteps: 10, onStep: () => {} });
   check("连续不合格 → reason=invalid_response", r.reason === "invalid_response", JSON.stringify(r.reason));
   check("始终没有执行动作", page.calls.click === 0 && page.calls.cdp === 0);
+}
+
+// ── 6) 危险动作词表（我们自己的词表，中文 + 英文） ─────────────────────────
+console.log("\n[6] assessDanger 词表（中文/英文/安全词/选项文本）");
+{
+  const hit = (name, opt) => assessDanger({ name }, opt);
+  check("中文「删除账号」→ deletion", hit("删除账号")?.kind === "deletion", JSON.stringify(hit("删除账号")));
+  check("中文「立即支付」→ payment", hit("立即支付")?.kind === "payment", JSON.stringify(hit("立即支付")));
+  check("英文「Delete account」→ deletion", hit("Delete account")?.kind === "deletion", JSON.stringify(hit("Delete account")));
+  check("英文「Checkout」→ payment", hit("Checkout")?.kind === "payment", JSON.stringify(hit("Checkout")));
+  check("下拉选项文本也参与判定", hit("操作", "永久删除")?.kind === "deletion", JSON.stringify(hit("操作", "永久删除")));
+  check("安全词「Next」不命中", hit("Next") === null, JSON.stringify(hit("Next")));
+  check("安全词「new」/「comments」不命中", hit("new") === null && hit("comments") === null, "");
+  check("「PayPal」不命中（英文按单词边界）", hit("PayPal") === null, JSON.stringify(hit("PayPal")));
+  check("「remover」不命中（英文按单词边界）", hit("remover") === null, JSON.stringify(hit("remover")));
+}
+
+// ── 7) 危险动作前置拦截：命中即不执行 ────────────────────────────────────────
+console.log("\n[7] 危险动作前置拦截");
+{
+  const dangerObs = {
+    url: "https://example.com/",
+    title: "Example",
+    text: "",
+    targets: [
+      { ref: "ref=1", role: "button", kind: "clickable", name: "删除账号", guard: [1, "button", "删除账号", false, null, null] },
+    ],
+  };
+  const dangerPage = () =>
+    makePage({
+      async evaluate(fn, arg) {
+        const src = String(fn);
+        if (src.includes("observeDom")) return dangerObs;
+        if (src.includes("locateForInput")) return { ok: true, x: 10, y: 20, url: dangerObs.url, disabled: false, ariaDisabled: null, href: null };
+        if (src.includes("readyState")) return [dangerObs.url, "complete"]; // settle 立刻返回
+        if (src.includes("location.href")) return dangerObs.url;
+        return null;
+      },
+    });
+
+  const page = dangerPage();
+  stubJev({ prefer: { operation: "click", click_target: "ref=1" } });
+  const r = await runJevStep(page, "删除账号", { apiKey: "stub", metrics: {} });
+  check("命中 → guardRejected=dangerous_action", r.guardRejected === "dangerous_action", JSON.stringify(r.guardRejected));
+  check("命中 → 没有派发任何鼠标事件", page.calls.cdp === 0, JSON.stringify(page.calls));
+  check("命中 → 暴露命中的词与类别", r.dangerousMatch === "删除" && r.dangerousKind === "deletion", JSON.stringify({ w: r.dangerousMatch, k: r.dangerousKind }));
+
+  const loopPage = dangerPage();
+  stubJev({ prefer: { operation: "click", click_target: "ref=1" } });
+  const loop = await runJevAutonomousLoop(loopPage, "删除账号", { apiKey: "stub", metrics: {}, maxSteps: 6, onStep: () => {} });
+  check("循环 → reason=guard_rejected", loop.reason === "guard_rejected", JSON.stringify(loop.reason));
+  check("循环 → 第 1 步就停（不重试危险动作）", loop.steps === 1, `steps=${loop.steps}`);
+  check("循环 → 始终没有派发", loopPage.calls.cdp === 0, `cdp=${loopPage.calls.cdp}`);
+
+  // 整体关闭开关：dangerGuard=false 时照常执行
+  const offPage = dangerPage();
+  stubJev({ prefer: { operation: "click", click_target: "ref=1" } });
+  const off = await runJevStep(offPage, "删除账号", { apiKey: "stub", metrics: {}, dangerGuard: false });
+  check("dangerGuard=false 时不拦截（照常派发 2 个 CDP 事件）", !off.guardRejected && offPage.calls.cdp === 2, JSON.stringify({ guardRejected: off.guardRejected, cdp: offPage.calls.cdp }));
 }
 
 globalThis.fetch = realFetch;
