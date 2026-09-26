@@ -194,6 +194,38 @@ ego-decision-layer --route-status        # 只读 JSON：接管情况 / always-o
 不起浏览器、不需要凭证、不建 TaskSpace。同一份信息也会作为 `route` 段写进每次任务的结果 JSON，
 `renderJevSummary` 收尾还会带一行：`路由: 已接管 2 / 无需 1 / 漂移 0 · always-on 1`。
 
+### 让 Agent 真的用上它：三档手段与实测差异
+
+「装了就真的被用上」是**分层**的，到这一版也没法一刀切。用全新会话做决策探针（中立 cwd、
+只让它报「打算怎么做」、不许执行），三档的实测差异如下（n 很小，只说明方向）：
+
+| 手段 | 覆盖谁 | 实测（决策探针：计划里是否走本技能） |
+| --- | --- | --- |
+| 接管 + 自身技能（默认安装） | 交互式会话 | **5/5** 主动走本技能（含两条不含「点击/翻页」字眼的问法） |
+| **显式指派 `--handoff-prompt`** | 子代理 / 一次性无会话上下文 | 不指派 **0/6**；这类上下文里既没有技能清单、也没有任何 AGENTS.md 内容，`--always-on` 那行也到不了它们——**必须显式点名** |
+| 常驻兜底 `--always-on <file>` | 读常驻指令文件的会话 | 开 always-on 后交互式复测 **2/2**，无回归；对子代理仍无效 |
+
+**子代理怎么点名**：把 `--handoff-prompt` 的整段输出贴进派活消息即可（路由判据 + 解析后的技能目录、
+CLI、SKILL.md 真实路径 + 可照抄的命令模板 + 收尾的 `--route-status` 核对）：
+
+```bash
+ego-decision-layer --handoff-prompt              # 纯文本，直接粘贴给子代理
+ego-decision-layer --handoff-prompt --json       # 机器可读：{prompt, skillDir, cliPath, skillMdPath}
+```
+
+只读选项：不起浏览器、不需要凭证、不写任何文件，也不触发首跑接管。
+
+**边界（如实）**：
+
+- **不读技能的 Agent 绕不过去**：上面三档都不改变「Agent 是否愿意读技能 / 常驻指令文件」这件事；
+  探针只测「计划里是否走本技能」，不是真实执行成功率。
+- **个人作用域技能在 Cowork / 云会话里不加载**（会话类型限制，不是配置问题）；`--always-on` 写进
+  常驻指令文件的那行也一样受会话类型限制。
+- 个人作用域同名技能可以替换内置命令，但**替换不了它的别名**；插件作用域技能是命名空间的，
+  所以插件渠道天然不会覆盖内置技能。
+- hooks（`SessionStart` / `UserPromptSubmit` 注入 `additionalContext`）是唯一「必须发生」的强制层，
+  **本轮没做**——它要写用户的 Agent settings。
+
 ### 方式 4：把这段 prompt 丢给你的 Agent
 
 > 帮我安装 https://github.com/jiangkoumo/ego-decision-layer ：

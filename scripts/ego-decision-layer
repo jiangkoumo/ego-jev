@@ -48,6 +48,10 @@ USAGE() {
   --model <name>     覆盖模型名（默认 jev-latest）
   --route-status     只读打印路由状态 JSON（接管情况 / always-on / 官方技能路径），
                      不起浏览器、不需要凭证
+  --handoff-prompt   只读打印一段可直接粘贴给子代理 / 父代理的指派块：路由判据、
+                     解析后的真实路径（技能目录 / CLI / SKILL.md）、可照抄的命令模板。
+                     不起浏览器、不需要凭证
+  --json             与 --handoff-prompt 一起用：输出 JSON {prompt, skillDir, cliPath, skillMdPath}
   --help, -h         显示帮助
 
 环境变量:
@@ -98,6 +102,77 @@ heal_skill_entry() {
   return 0
 }
 
+# 解析真实路径（逐个解析软链；不依赖 readlink -f，兼容 macOS）
+resolve_real() {
+  local p="$1" d n=0
+  while [ -L "$p" ] && [ "$n" -lt 40 ]; do
+    d="$(cd -P "$(dirname "$p")" 2>/dev/null && pwd)" || break
+    p="$(readlink "$p")"
+    case "$p" in /*) ;; *) p="$d/$p" ;; esac
+    n=$((n + 1))
+  done
+  if [ -d "$p" ]; then (cd -P "$p" && pwd); else
+    if d="$(cd -P "$(dirname "$p")" 2>/dev/null && pwd)"; then printf '%s/%s' "$d" "$(basename "$p")"; else printf '%s' "$p"; fi
+  fi
+}
+
+# 技能目录 / CLI / SKILL.md 的真实路径。候选顺序与 wire-agent-skills.sh 的
+# decision_layer_skill_path 一致（同目录 → 个人技能目录 → 旧安装位置），不硬编码 ~。
+handoff_resolve_paths() {
+  HANDOFF_CLI="$(resolve_real "$SCRIPT_DIR/$(basename "$SOURCE")")"
+  HANDOFF_SKILL_DIR="$(resolve_real "$SCRIPT_DIR/..")"
+  local cand
+  for cand in "$HANDOFF_SKILL_DIR/SKILL.md" \
+              "$HOME/.agents/skills/ego-decision-layer/SKILL.md" \
+              "$HOME/.agents/skills/ego-jev/SKILL.md"; do   # 最后一个兼容旧安装位置
+    if [ -f "$cand" ]; then HANDOFF_SKILL_MD="$(resolve_real "$cand")"; return 0; fi
+  done
+  HANDOFF_SKILL_MD="$HANDOFF_SKILL_DIR/SKILL.md"
+}
+
+# 指派块正文（确定性：无时间戳/随机数，重复运行逐字节一致）
+emit_handoff_prompt() {  # <cli> <skill-dir> <skill-md>
+  local cli="$1" skdir="$2" skmd="$3" line
+  while IFS= read -r line || [ -n "$line" ]; do
+    line="${line//'{{CLI}}'/$cli}"
+    line="${line//'{{SKILL_DIR}}'/$skdir}"
+    line="${line//'{{SKILL_MD}}'/$skmd}"
+    printf '%s\n' "$line"
+  done <<'HANDOFF'
+[ego-decision-layer] 指派块（要派浏览器任务给子代理时，整段复制给它，别只丢一句「做个浏览器任务」）
+
+先读 SKILL.md 再动手：{{SKILL_MD}}
+本技能目录：{{SKILL_DIR}}
+CLI（解析后的真实路径，命令里直接照抄）：{{CLI}}
+
+路由判据（按任务形状二选一，别混）：
+- 多步线性浏览器任务（连续点击、翻页、搜索表单提交、多字段填写、导航跳转）→ 用上面这个 CLI
+  一条命令闭环；不要每步退出浏览器、不要写逐步脚本。
+- 单步动作、精确 DOM/选择器、批量抓取、截图、文件与网络请求 → 用 ego-browser 原生 API。
+
+命令模板（把尖括号替换成真实值）：
+  "{{CLI}}" --url "<起始网址>" --until "<成功时页面 URL 必含的子串>" \
+    --steps <最大步数，默认 10> "<用一句自然语言写清楚的目标>"
+  # 需要填入固定文本时追加（可重复）：--text "<候选文本>"
+
+纪律：
+- 强烈建议带 --until：URL 包含该子串即判成功，是确定性退出条件，比让模型自评「完成」可靠。
+- 退出码：0 达成 / 1 未达成（taskSpace 会保留供排查）/ 2 参数错误 / 3 缺凭证。
+- 完成后用 "{{CLI}}" --route-status 核对路由状态（只读 JSON，不起浏览器、不需要凭证）。
+HANDOFF
+}
+
+# JSON 字符串字面量（纯 shell，不依赖 node）
+json_string() {  # <text>
+  local s="$1"
+  s="${s//\\/\\\\}"
+  s="${s//\"/\\\"}"
+  s="${s//$'\n'/\\n}"
+  s="${s//$'\t'/\\t}"
+  s="${s//$'\r'/}"
+  printf '"%s"' "$s"
+}
+
 # 路由状态（只读、纯 shell，不起浏览器、不要凭证）；失败降级为 null，绝不影响任务
 write_route_status() {  # <out-file>
   local out="$1" wire
@@ -107,7 +182,7 @@ write_route_status() {  # <out-file>
   printf 'null\n' > "$out"
 }
 
-TARGET_URL=""; SPACE_ID=""; MAX_STEPS="10"; UNTIL=""; KEEP=""; KEEP_SPACE="0"; API_KEY_OVERRIDE=""; GOAL=""; TEXTS=(); ROUTE_STATUS=0
+TARGET_URL=""; SPACE_ID=""; MAX_STEPS="10"; UNTIL=""; KEEP=""; KEEP_SPACE="0"; API_KEY_OVERRIDE=""; GOAL=""; TEXTS=(); ROUTE_STATUS=0; HANDOFF=0; HANDOFF_JSON=0
 DECIDER_KIND=""; DECIDER_BASE_URL=""; DECIDER_MODEL=""
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -122,6 +197,8 @@ while [[ $# -gt 0 ]]; do
     --base-url) DECIDER_BASE_URL="$2"; shift 2 ;;
     --model) DECIDER_MODEL="$2"; shift 2 ;;
     --route-status) ROUTE_STATUS=1; shift ;;
+    --handoff-prompt) HANDOFF=1; shift ;;
+    --json) HANDOFF_JSON=1; shift ;;
     --text) TEXTS+=("$2"); shift 2 ;;
     -h|--help) USAGE; exit 0 ;;
     --) shift; GOAL="${GOAL:+$GOAL }$*"; break ;;
@@ -129,6 +206,23 @@ while [[ $# -gt 0 ]]; do
     *) GOAL="${GOAL:+$GOAL }$1"; shift ;;
   esac
 done
+
+# --handoff-prompt / --json：只读指派块，不要求目标 / 凭证 / 浏览器（也不触发首跑接管）
+if [[ "$HANDOFF_JSON" == "1" && "$HANDOFF" != "1" ]]; then
+  echo "错误: --json 需要和 --handoff-prompt 一起用" >&2; exit 2
+fi
+if [[ "$HANDOFF" == "1" ]]; then
+  handoff_resolve_paths
+  HANDOFF_TEXT="$(emit_handoff_prompt "$HANDOFF_CLI" "$HANDOFF_SKILL_DIR" "$HANDOFF_SKILL_MD")"
+  if [[ "$HANDOFF_JSON" == "1" ]]; then
+    printf '{\n  "prompt": %s,\n  "skillDir": %s,\n  "cliPath": %s,\n  "skillMdPath": %s\n}\n' \
+      "$(json_string "$HANDOFF_TEXT")" "$(json_string "$HANDOFF_SKILL_DIR")" \
+      "$(json_string "$HANDOFF_CLI")" "$(json_string "$HANDOFF_SKILL_MD")"
+  else
+    printf '%s\n' "$HANDOFF_TEXT"
+  fi
+  exit 0
+fi
 
 # --route-status：只读状态，不要求目标 / 凭证 / 浏览器
 if [[ "$ROUTE_STATUS" == "1" ]]; then

@@ -51,3 +51,5 @@ sed "s|__REPO__|$PWD|g" docs/make-social-preview.mjs | ego-browser nodejs
 | `demo.gif` / `demo.mp4` | 由上面的帧合成 |
 | `make-social-preview.mjs` | 社交预览图脚本（1280×640） |
 | `social-preview.png` | GitHub 社交预览图 |
+| `WHY.md` | 为什么是「可插拔决策层」：三组可复算证据 + 复算命令 + 未验证边界 |
+| `ECOSYSTEM.md` | 同类项目与上游的中立清单（只引用各项目自己的公开自述与可复算计数） |

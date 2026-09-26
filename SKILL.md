@@ -2,7 +2,7 @@
 name: ego-decision-layer
 description: 多步线性浏览器任务（连续点击、翻页、搜索表单提交、导航跳转）的默认入口：用 `ego-decision-layer` 一条命令让决策层在单个 ego-browser 进程内闭环决策（默认 System One / Jev，可换本地 OpenAI 兼容后端；browser automation / multi-step click chain / form submit / navigation），不再每步退回大模型思考。单步动作、精确 DOM/选择器、批量抓取仍走 ego-browser 原生 API；也可把官方 ego-browser 技能入口接管成路由层。当任务涉及浏览器多步操作、要写 ego-browser nodejs 脚本（await import / fetch / 凭证落盘）时读它。
 metadata:
-  version: "0.4.0"
+  version: "0.4.1"
   date: "2026-09-26"
   requires: ego-browser
 ---
@@ -59,6 +59,12 @@ bash scripts/wire-agent-skills.sh --restore  # 还原成官方软链（启用标
 想让它**在读技能之前**就知道路由：`bash scripts/wire-agent-skills.sh --always-on AGENTS.md`
 （显式开关，默认不写任何用户文件；块带标记、幂等、可 `--restore` 精确移除）。
 路由状态可事后审计：`ego-decision-layer --route-status`（只读 JSON，不起浏览器、不要凭证）。
+
+**派浏览器任务给子代理时必须显式点名**：实测子代理 / 一次性无会话上下文的上下文里既没有技能清单、
+也没有任何 AGENTS.md 内容，接管与 always-on 都到不了它们。`ego-decision-layer --handoff-prompt`
+打印一段可直接粘贴的指派块（路由判据 + 解析后的技能目录 / CLI / SKILL.md 真实路径 + 可照抄的命令模板，
+结尾提示用 `--route-status` 核对）；`--handoff-prompt --json` 给机器可读的
+`{prompt, skillDir, cliPath, skillMdPath}`。只读选项，不起浏览器、不需要凭证。
 
 ## 加速能力
 
