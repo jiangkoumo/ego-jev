@@ -213,11 +213,13 @@ console.log(result); // { success, reason, steps, history }
   且占了它一半以上面积）、`<a href>` 里的容器、`<label for>` 都不与 a11y 元素双收。
   观测根除主文档外还包括**同源 iframe 文档与开放的 shadow root**；frame 内目标打 `frameOrigin` 标，
   `locate` 对它们做**逐层命中校验**：每层把点换算到该层坐标系（含 `clientLeft/clientTop`），
-  断言该层 `elementFromPoint` 命中的是承载下一层的 `<iframe>`（或包含它）；任一层不成立即 `covered`，
-  不派发。任何一层解析不了（`defaultView` 为 null / frame 链断）记 `frame_unresolved`，外层 frame 有
-  非 identity 的 transform/zoom 记 `frame_transformed`，两者都直接拒绝（不猜坐标、不退化成 {0,0}）；
+  断言该层 `elementFromPoint` **严格命中承载下一层的 `<iframe>` 自身**（iframe 没有可命中的后代）；
+  任一层不成立即 `covered`，不派发。命中测试在元素**自己的 root** 里做（frame 内也可能有 shadow root）。
+  任何一层解析不了（`defaultView` 为 null / frame 链断）记 `frame_unresolved`；frame 元素到其所在文档根的
+  **祖先链**上只要有非 identity 的 2D 线性变换（scale/rotate/skew）或 `zoom !== 1` 记 `frame_transformed`
+  （纯平移、`translateZ(0)` 这类只影响合成的写法放行），两者都直接拒绝（不猜坐标、不退化成 {0,0}）；
   同时校验元素没被 frame 自身视口裁掉（`offscreen`），并跳过跨 frame 滚不动的 `scrollIntoView`。
-  shadow 内目标在它自己的 root 里做完整命中测试。跨域 iframe 不处理。
+  跨域 iframe 不处理。
   定位不交给选择器：引擎掌握节点身份，动作走裸 CDP
   （`Input.dispatchMouseEvent`）。两层陈旧防护：① **陈旧校验**：只执行与本次元素表一致的 `ref`，
   不一致记为 `staleTarget` 跳过；② **执行前守卫**：命中测试 + 可见/可用性检查，失败记为

@@ -299,6 +299,138 @@ try {
       check("transform frame 目标进表", false, tableLines(JSON.parse(lastBody).state).join(" / "));
     }
   }
+  // ── [10] iframe 设 pointer-events:none + 可点击 wrapper：严格命中 iframe 自身 → covered，0 派发 ──
+  console.log("\n[10] pointer-events:none 的 iframe → covered，不派发");
+  {
+    await page.evaluate((payload) => {
+      document.body.innerHTML = "";
+      // wrapper 是 iframe 的**祖先**：iframe 设 pointer-events:none 后，父文档 elementFromPoint 会返回 wrapper，
+      // 旧写法 `hit.contains(fe)` 会因此通过校验并派发（点到 wrapper 却记成功）。
+      const wrap = document.createElement("div");
+      wrap.id = "pewrap";
+      wrap.style.cssText = "position:absolute;left:0;top:0;width:460px;height:240px;background:#eee";
+      wrap.setAttribute("onclick", "window.__wrap=1");
+      document.body.appendChild(wrap);
+      const f = document.createElement("iframe");
+      f.id = "fpe";
+      f.style.cssText = "width:420px;height:200px;border:0;pointer-events:none";
+      f.srcdoc = payload.frame;
+      wrap.appendChild(f);
+    }, { frame: FRAME_HTML });
+    await page.waitForTimeout(400);
+    stubJev();
+    prefer = { operation: "wait" };
+    await runJevStep(page, "看一眼", { apiKey: "stub", metrics: {}, maxText: 0 });
+    const cardRef = findRef(JSON.parse(lastBody).state, "clickable-region", "frame 卡片");
+    check("pointer-events:none 的 frame 目标仍进元素表", Boolean(cardRef), tableLines(JSON.parse(lastBody).state).join(" / "));
+    if (cardRef) {
+      stubJev();
+      prefer = { operation: "click", click_target: `ref=${cardRef}` };
+      const r = await runJevStep(page, "点 frame 卡片", { apiKey: "stub", metrics: {}, maxText: 0 });
+      const wrap = await page.evaluate(() => window.__wrap || 0);
+      const hit = await page.evaluate(() => document.getElementById("fpe").contentWindow.__hit || 0);
+      check("pointer-events:none → guardRejected=covered", r.guardRejected === "covered", JSON.stringify(r.guardRejected));
+      check("pointer-events:none → 0 次派发（wrapper 与 frame 都没被点到）", wrap === 0 && hit === 0, JSON.stringify({ wrap, hit }));
+    }
+  }
+
+  // ── [11] 祖先 transform:scale(2)：坐标会失真 → frame_transformed，0 派发 ──
+  console.log("\n[11] 祖先 scale(2) → frame_transformed，不派发");
+  {
+    await page.evaluate((payload) => {
+      document.body.innerHTML = "";
+      const scaler = document.createElement("div");
+      scaler.id = "scaler";
+      scaler.style.cssText = "position:absolute;left:0;top:0;width:900px;height:440px;transform:scale(2);transform-origin:top left";
+      document.body.appendChild(scaler);
+      const f = document.createElement("iframe");
+      f.id = "fscaled";
+      f.style.cssText = "width:420px;height:200px;border:0";
+      f.srcdoc = payload.frame;
+      scaler.appendChild(f);
+    }, { frame: FRAME_HTML });
+    await page.waitForTimeout(400);
+    stubJev();
+    prefer = { operation: "wait" };
+    await runJevStep(page, "看一眼", { apiKey: "stub", metrics: {}, maxText: 0 });
+    const cardRef = findRef(JSON.parse(lastBody).state, "clickable-region", "frame 卡片");
+    if (cardRef) {
+      stubJev();
+      prefer = { operation: "click", click_target: `ref=${cardRef}` };
+      const r = await runJevStep(page, "点 frame 卡片", { apiKey: "stub", metrics: {}, maxText: 0 });
+      const hit = await page.evaluate(() => document.getElementById("fscaled").contentWindow.__hit || 0);
+      check("祖先 scale(2) → guardRejected=frame_transformed", r.guardRejected === "frame_transformed", JSON.stringify(r.guardRejected));
+      check("祖先 scale(2) → 0 次派发", hit === 0, `hit=${hit}`);
+    } else {
+      check("祖先 scale(2) 的 frame 目标进表", false, tableLines(JSON.parse(lastBody).state).join(" / "));
+    }
+  }
+
+  // ── [12] 祖先仅 translateZ(0)：只影响合成，必须放行（防过度拒绝） ──
+  console.log("\n[12] 祖先 translateZ(0) → 仍能正常点击");
+  {
+    await page.evaluate((payload) => {
+      document.body.innerHTML = "";
+      const gpu = document.createElement("div");
+      gpu.id = "gpu";
+      gpu.style.cssText = "position:absolute;left:0;top:0;width:420px;height:200px;transform:translateZ(0)";
+      document.body.appendChild(gpu);
+      const f = document.createElement("iframe");
+      f.id = "fgpu";
+      f.style.cssText = "width:420px;height:200px;border:0";
+      f.srcdoc = payload.frame;
+      gpu.appendChild(f);
+    }, { frame: FRAME_HTML });
+    await page.waitForTimeout(400);
+    stubJev();
+    prefer = { operation: "wait" };
+    await runJevStep(page, "看一眼", { apiKey: "stub", metrics: {}, maxText: 0 });
+    const cardRef = findRef(JSON.parse(lastBody).state, "clickable-region", "frame 卡片");
+    if (cardRef) {
+      stubJev();
+      prefer = { operation: "click", click_target: `ref=${cardRef}` };
+      const r = await runJevStep(page, "点 frame 卡片", { apiKey: "stub", metrics: {}, maxText: 0 });
+      const hit = await page.evaluate(() => document.getElementById("fgpu").contentWindow.__hit || 0);
+      check("translateZ(0) 未被过度拒绝", !r.guardRejected, JSON.stringify(r.guardRejected));
+      check("translateZ(0)：window.__hit === 1（点击真的生效）", hit === 1, `hit=${hit}`);
+    } else {
+      check("translateZ(0) 的 frame 目标进表", false, tableLines(JSON.parse(lastBody).state).join(" / "));
+    }
+  }
+
+  // ── [13] frame 内的 shadow root：命中测试要用元素自己的 root，否则恒 covered ──
+  console.log("\n[13] frame 内 shadow root 里的可点元素 → 能观测并点击");
+  {
+    await page.evaluate((payload) => {
+      document.body.innerHTML = "";
+      const f = document.createElement("iframe");
+      f.id = "fshadow";
+      f.style.cssText = "position:absolute;left:0;top:0;width:320px;height:140px;border:0";
+      f.srcdoc = payload.frame;
+      document.body.appendChild(f);
+    }, { frame: '<html><body style="margin:0"><div id="fshost" style="width:260px;height:60px"></div></body></html>' });
+    await page.waitForTimeout(500);
+    await page.evaluate(() => {
+      const fdoc = document.getElementById("fshadow").contentDocument;
+      const host = fdoc.getElementById("fshost");
+      const sr = host.attachShadow({ mode: "open" });
+      sr.innerHTML = '<div id="fscard" style="cursor:pointer;width:220px;height:44px;background:#ffe" onclick="window.__fshit=1">frame 内 shadow 卡片</div>';
+    });
+    await page.waitForTimeout(200);
+    stubJev();
+    prefer = { operation: "wait" };
+    await runJevStep(page, "看一眼", { apiKey: "stub", metrics: {}, maxText: 0 });
+    const cardRef = findRef(JSON.parse(lastBody).state, "clickable-region", "frame 内 shadow 卡片");
+    check("frame 内 shadow 里的区域进表", Boolean(cardRef), tableLines(JSON.parse(lastBody).state).join(" / "));
+    if (cardRef) {
+      stubJev();
+      prefer = { operation: "click", click_target: `ref=${cardRef}` };
+      const r = await runJevStep(page, "点 frame 内 shadow 卡片", { apiKey: "stub", metrics: {}, maxText: 0 });
+      const hit = await page.evaluate(() => document.getElementById("fshadow").contentWindow.__fshit || 0);
+      check("frame 内 shadow 目标未被误拒", !r.guardRejected, JSON.stringify(r.guardRejected));
+      check("frame 内 shadow 卡片点击生效（window.__fshit === 1）", hit === 1, `hit=${hit}`);
+    }
+  }
 } catch (e) {
   check("跨 frame 用例执行完成", false, String(e).slice(0, 400));
 } finally {

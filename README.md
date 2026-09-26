@@ -327,10 +327,11 @@ mkdir -p ~/.agents/skills/ego-jev && ln -sfn "$PWD/SKILL.md" ~/.agents/skills/eg
   a11y 元素优先占预算。视口外的元素仍由「有界滚动揭示」处理（元素表只覆盖当前视口）。
 - **跨 frame / shadow 的可点元素**：同源 iframe 与开放 shadow root 里的元素也进元素表。
   frame 内节点在主文档里没有 DOM 身份，因此打 `frameOrigin` 标：`locate` 做**逐层命中校验**
-  （每层把点换算到该层坐标系，含 `clientLeft/clientTop`，断言该层 `elementFromPoint` 命中承载下一层的
-  `<iframe>`）；任一层被遮挡即 `covered`、不派发。frame 链断 / `defaultView` 为 null → `frame_unresolved`，
-  外层 frame 有 transform/zoom → `frame_transformed`，两者都直接拒绝（不猜坐标、不退化成 {0,0}）。
-  shadow 内节点在它自己的 root 里做完整命中测试。跨域 iframe 不处理。
+  （每层把点换算到该层坐标系，含 `clientLeft/clientTop`，断言该层 `elementFromPoint` **严格命中
+  `<iframe>` 自身**）；任一层被遮挡即 `covered`、不派发，命中测试在元素自己的 root 里做。
+  frame 链断 / `defaultView` 为 null → `frame_unresolved`；frame 元素到文档根的祖先链上有非 identity 的
+  2D 线性变换（scale/rotate/skew）或 `zoom !== 1` → `frame_transformed`（纯平移、`translateZ(0)` 放行），
+  两者都直接拒绝（不猜坐标、不退化成 {0,0}）。跨域 iframe 不处理。
 - **危险动作前置拦截**：命中「支付/删除/退订」一类目标（中文 + 英文词表，我们自己的）时**不执行**，
   记为 `guardRejected=dangerous_action` 并**直接停**（不重试，重试不会让它变安全）。
   这是机制不是承诺——「不替你付款/删除」不再只靠 Jev 自评；`dangerGuard: false` 可整体关闭。

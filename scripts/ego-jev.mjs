@@ -472,37 +472,25 @@ function observeDom(payload) {
   // 观测根：主文档 + 同源 iframe 文档 + 开放的 shadow root。
   // document.querySelectorAll 既不进 iframe 也不穿透 shadow，必须自己遍历；
   // 跨域 iframe 读 contentDocument 会抛，try/catch 跳过（那不是我们能操作的树）。
-  // 观测是有界操作。shadow host 不能用「前 2000 个节点」一刀切——那样第 2001 个之后的
-  // 开放 shadow root 永远进不了 roots。改用惰性 TreeWalker，并把一个全局元素预算按 root
-  // 公平分配（每个 root 至少一份），后面的 root 不会被前面的长文档饿死；root 总数也有上限。
-  const TREE_SCAN_CAP = 8000; // 所有 root 的 shadow-host 遍历合计上限
-  const TREE_MIN_PER_ROOT = 2000; // 每个 root 至少看这么多
-  const MAX_ROOTS = 32;
+  // 观测是有界操作。shadow host 不能用「前 N 个节点」一刀切——那样靠后的开放 shadow root 永远
+  // 进不了 roots。改用惰性 TreeWalker，并**跨 root 轮转**推进（与 region 扫描同款）：每个 root
+  // 每轮取一个节点，单个巨大 root 不能独占额度；TREE_SCAN_CAP 是**所有 root 的合计硬上限**。
+  const TREE_SCAN_CAP = 8000;
+  const MAX_ROOTS = 32; // root 总数上限（防病态嵌套）
   const roots = [];
   const seenRoots = new Set();
-  const rootQueue = [{ root: document, frameEl: null }];
-  let treeScanned = 0;
-  while (rootQueue.length && roots.length < MAX_ROOTS) {
-    const { root, frameEl } = rootQueue.shift();
-    if (!root || seenRoots.has(root)) continue;
+  const walkers = []; // 每个 root 一个惰性 walker
+  const addRoot = (root, frameEl) => {
+    if (!root || seenRoots.has(root) || roots.length >= MAX_ROOTS) return;
     seenRoots.add(root);
-    roots.push({ root, frameEl });
-    // 公平份额：剩余预算按剩余 root 数分，但不低于 MIN，保证后面的 root 不被前面的长文档饿死
-    const remaining = Math.max(0, TREE_SCAN_CAP - treeScanned);
-    const quota = Math.max(TREE_MIN_PER_ROOT, Math.floor(remaining / (rootQueue.length + 1)));
+    roots.push({ root, frameEl: frameEl || null });
     let walker = null;
     try {
       walker = (root.ownerDocument || document).createTreeWalker(root, NodeFilter.SHOW_ELEMENT);
     } catch {
       walker = null;
     }
-    let node = null;
-    let visited = 0;
-    while (walker && (node = walker.nextNode()) && visited < quota) {
-      visited += 1;
-      treeScanned += 1;
-      if (node.shadowRoot) rootQueue.push({ root: node.shadowRoot, frameEl: null });
-    }
+    if (walker) walkers.push(walker);
     // 同源 iframe 文档（跨域读 contentDocument 会抛，跳过）
     let frames = [];
     try {
@@ -517,7 +505,21 @@ function observeDom(payload) {
       } catch {
         doc = null;
       }
-      if (doc) rootQueue.push({ root: doc, frameEl: frame });
+      if (doc) addRoot(doc, frame);
+    }
+  };
+  addRoot(document, null);
+  let treeScanned = 0;
+  let treeProgress = true;
+  while (treeProgress && treeScanned < TREE_SCAN_CAP) {
+    treeProgress = false;
+    for (let i = 0; i < walkers.length && treeScanned < TREE_SCAN_CAP; i++) {
+      const node = walkers[i].nextNode();
+      if (!node) continue;
+      treeProgress = true;
+      treeScanned += 1;
+      // 新发现的 root 会把它的 walker 追加进 walkers，同一轮就能被推进（公平）
+      if (node.shadowRoot) addRoot(node.shadowRoot, null);
     }
   }
 
@@ -709,19 +711,41 @@ function locateForInput(payload) {
   if (payload.frameOrigin) {
     // 同源 iframe 里的元素：getBoundingClientRect 是相对它自己 frame 的视口，必须沿 frameElement
     // 链把每层 iframe 的内容区偏移（clientLeft/clientTop，即边框宽）与位置加回来。
-    // 每换一层都要在该层做命中测试：命中的必须是承载下一层的 <iframe>（或包含它），
-    // 否则就是被主文档 overlay / frame 边框遮挡 → covered，不派发。
-    // 任何一层解析不了（defaultView 为 null / frame 链断）或外层 frame 有非 identity 的
-    // transform/zoom，都直接拒绝——不猜坐标、不退化成 {0,0}。
+    // 每换一层都要在该层做命中测试：**必须严格命中承载下一层的 <iframe> 自身**（iframe 没有
+    // 可命中的后代）——否则就是被 overlay / 祖先 wrapper 遮挡，或 iframe 设了 pointer-events:none，
+    // 一律 covered、不派发。
+    // 任何一层解析不了（defaultView 为 null / frame 链断）记 frame_unresolved；frame 元素到其所在
+    // 文档根的祖先链上只要有非 identity 的 2D 线性变换（scale/rotate/skew）或 zoom !== 1，就记
+    // frame_transformed——坐标换算会失真，不猜、不退化成 {0,0}。
+    // 只影响合成的写法（纯平移、translateZ(0)）必须放行，否则会误拒真实站点。
     let win = el.ownerDocument && el.ownerDocument.defaultView;
     if (!win) return { ok: false, reason: "frame_unresolved" };
     // 元素不能被它自己 frame 的视口裁掉
     if (x < 0 || y < 0 || x >= win.innerWidth || y >= win.innerHeight) return { ok: false, reason: "offscreen" };
     const doc = el.ownerDocument;
-    const ownHit = doc.elementFromPoint(x, y);
+    // 命中测试在元素**自己的 root** 里做：frame 内也可能有 shadow root，Document.elementFromPoint
+    // 只会返回 shadow host，身份对不上会被误判成 covered。
+    const ownRoot = el.getRootNode && el.getRootNode();
+    const ownHit =
+      ownRoot && typeof ownRoot.elementFromPoint === "function" ? ownRoot.elementFromPoint(x, y) : doc.elementFromPoint(x, y);
     if (!ownHit || !(el === ownHit || el.contains(ownHit) || ownHit.contains(el))) {
       return { ok: false, reason: "covered" };
     }
+    // 解析 transform 的 2D 线性部分：a≈1、d≈1、b≈0、c≈0 才算 identity（纯平移放行）。
+    // matrix(a,b,c,d,…) 取 [0],[1],[2],[3]；matrix3d(…) 的 2D 部分取 [0],[1],[4],[5]。
+    const linearIdentity = (node) => {
+      const cs = getComputedStyle(node);
+      const zoom = parseFloat(cs.zoom);
+      if (!Number.isNaN(zoom) && zoom !== 1) return false;
+      const t = cs.transform;
+      if (!t || t === "none") return true;
+      const m2 = t.match(/^matrix\(([^)]+)\)$/);
+      const m3 = t.match(/^matrix3d\(([^)]+)\)$/);
+      const v = m2 ? m2[1].split(",").map(Number) : m3 ? m3[1].split(",").map(Number) : null;
+      if (!v || v.some((n) => !Number.isFinite(n))) return false; // 解析不了 → 保守拒绝
+      const [a, b, c, d] = m2 ? v : [v[0], v[1], v[4], v[5]];
+      return Math.abs(a - 1) < 1e-4 && Math.abs(d - 1) < 1e-4 && Math.abs(b) < 1e-4 && Math.abs(c) < 1e-4;
+    };
     while (win && win !== window) {
       let fe = null;
       try {
@@ -730,16 +754,16 @@ function locateForInput(payload) {
         fe = null;
       }
       if (!fe) return { ok: false, reason: "frame_unresolved" };
-      const cs = getComputedStyle(fe);
-      if ((cs.transform && cs.transform !== "none") || (cs.zoom && cs.zoom !== "1" && cs.zoom !== "normal")) {
-        return { ok: false, reason: "frame_transformed" };
+      // frame 元素及其祖先链上任何非 identity 的 2D 线性变换都会让坐标换算失真
+      for (let node = fe; node; node = node.parentElement) {
+        if (!linearIdentity(node)) return { ok: false, reason: "frame_transformed" };
       }
       const fr = fe.getBoundingClientRect();
       x = fr.left + fe.clientLeft + x;
       y = fr.top + fe.clientTop + y;
       const parentDoc = fe.ownerDocument;
       const hit = parentDoc.elementFromPoint(x, y);
-      if (!hit || !(fe === hit || fe.contains(hit) || hit.contains(fe))) return { ok: false, reason: "covered" };
+      if (hit !== fe) return { ok: false, reason: "covered" }; // 严格命中 iframe 自身
       win = parentDoc.defaultView;
       if (!win) return { ok: false, reason: "frame_unresolved" };
     }
