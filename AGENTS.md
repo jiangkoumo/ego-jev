@@ -43,7 +43,11 @@ bash "<技能目录>/scripts/wire-agent-skills.sh" --check   # 期望 exit 0
   （`~/.agents/skills/ego-browser` 等），并在升级时重建。要加路由就改包外那一层，
   用 `scripts/wire-agent-skills.sh`（幂等、可 `--restore`），别改包内 SKILL.md。
 - **凭证必须落盘成文件**：`ego-browser nodejs` 内嵌运行时只继承最小化登录环境，
-  `TYPESAFE_API_KEY` 之类的**自定义环境变量不会传进去**。写到 `~/.config/typesafe/api_key`（600）。
+  `TYPESAFE_API_KEY` 之类的**自定义环境变量不会传进去**。查找链：`--api-key` > 环境变量 >
+  `TYPESAFE_API_KEY_FILE` > `~/.config/ego-jev/credentials` > `~/.config/typesafe/api_key` >
+  rc 文件里的 `export TYPESAFE_API_KEY=…`。后端地址 `TYPESAFE_BASE_URL` 可覆盖，主后端失败时的
+  降级端点 `TYPESAFE_FALLBACK_BASE_URL`（不设即不降级）；**这两个后端变量由 CLI 在父进程读取后写进
+  配置传给子进程**（ego 运行时读不到自定义环境变量）。
 - 不要提交任何密钥；文本模型配置可用 `apiKeyJson` 按路径引用已有凭证，不要复制。
 - 保持可被 `npx skills add` 安装：`SKILL.md` 必须在仓库根，且只用相对路径引用 `scripts/…`。
 
@@ -78,6 +82,20 @@ update.sh                一键更新（接管过则自动重接管）
   `buildQuestions`、`runJevStep`、`runJevAutonomousLoop`、`generateText`、`loadTextModelConfig`、
   `resolveTextApiKey`、`loadApiKey`。
 - 改完引擎要重跑上面的冒烟测试**和** `./examples/bench/run-pair.sh A`。
+- 改 `observeDom` 的元素收集（候选选择器、去重、预算）要重跑 `bench/test-clickable-regions.mjs`
+  （离线、无需凭证）与 `bench/test-ddg-toggles.mjs`（需网络，复现 DuckDuckGo 那条旧限制）。
+- 改 `clickable-region` 的 role 词元或候选行格式要重跑 `bench/test-realjev-region.mjs`：它用**真实 Jev**
+  验证 Jev 能选中该词元（需网络 + 凭证，缺一 SKIP 且不伪装通过）。
+- 改 `observeDom` 的观测根（iframe / shadow 遍历）或 `locateForInput` 的命中测试要重跑
+  `bench/test-frame-targets.mjs`（离线，覆盖 frame fill/click、shadow fill/click 与 covered 对照）。
+- 改判定器调用点 / `options.ask` 契约 / 分阶段耗时或 `renderJevSummary` 要重跑
+  `bench/test-offline-e2e.mjs`（离线、无需凭证：注入 ask，但观测 + 裸 CDP 派发 + 真实 DOM 断言全走真实路径，
+  并断言整个用例不碰网络）。
+- 改凭证查找链 / `loadApiKey` / `readCredential` 要重跑 `node bench/test-credential-chain.mjs`；
+  改后端地址或降级路径要重跑 `node bench/test-backend-fallback.mjs`（两者都无需浏览器/网络）。
+- 改危险动作词表或 `assessDanger` 要重跑 `node bench/test-guardrails.mjs`（[6]/[7] 段覆盖）。
+- 改 `select` 执行分支 / `optionStale` / `maxOptionRetries` 要重跑 `node bench/test-select-reask.mjs`
+  （离线）；真实站点成功率测量用 `bench/test-native-select.mjs`（需网络 + 凭证，缺一 SKIP）。
 - 改 `scripts/wire-agent-skills.sh` / `overlay/` 要重跑 `node bench/test-wire-skill.mjs`
   （用临时 HOME 造官方软链，无需浏览器与凭证），并在真机上 `--check` 一次。
 - `scripts/ego-jev` 启动时会调 `wire-agent-skills.sh --if-enabled` 自愈（只在有启用标记时动手，失败静默，

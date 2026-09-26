@@ -46,11 +46,13 @@ A = `ego-jev` 单进程闭环；B = 经典循环（**每步一个独立进程** 
 
 省在哪里（实测分解）：
 
-- ✅ **决策往返**：Jev 约 1.0–1.5s/次，可用大模型 1.6–4.5s/次
+- ✅ **决策往返**：Jev 决策请求约 **0.35–0.52s/次**（整步合计约 1.0–1.4s），可用大模型 1.6–4.5s/次
   （实测 `kimi-k3` 1.8s、`minimax-m3` 1.6s、`glm-5.3` 3.2s、`qwen3.8-max` 3.5s、`deepseek-v4-pro` 4.5s）
+  —— 2026-09-26 实测，服务端 `jev-1.13.0`；分阶段数字由 `renderJevSummary` 打印。
+  旧文档的「单步决策约 1.0–1.5s」实为**整步耗时**，不是决策请求本身。
 - ✅ **每步退出浏览器上下文**：B 每步一个新进程，A 全程 1 个（进程启动实测仅 250–350ms/次，不是主要成本）
 - ✅ **省浏览器动作**（引擎重建后新增，现在是最大收益项）：默认观测是**一次 `page.evaluate`**
-  自建 DOM 元素表（约 **2ms / 1.8k 字符**），动作走**裸 CDP**（**13–16ms**）；
+  自建 DOM 元素表（约 **2–4ms / ~2k 字符**），动作走**裸 CDP**（**13–16ms**）；
   旧路径是 `page.snapshot()` **110–130ms / 27484 字符**、`page.click(ref)` **788–1005ms**
 
 > ⚠️ 上表是**引擎重建前**的测量（2026-09-19，3 对/任务，方差大）。重建后的数字见下。
@@ -204,6 +206,19 @@ chmod 600 ~/.config/typesafe/api_key
 从 [TypeSafe](https://docs.typesafe.ai) 获取 API Key。也可用 `TYPESAFE_API_KEY_FILE` 指定别的路径，
 或 `--api-key` 直接传入。
 
+查找顺序（全部是文件，因为 ego 运行时拿不到父进程环境变量）：
+`--api-key` > `TYPESAFE_API_KEY`（仅普通 node 进程可见）> `TYPESAFE_API_KEY_FILE` >
+`~/.config/ego-jev/credentials` > `~/.config/typesafe/api_key` >
+`~/.zshrc` / `~/.bashrc` / `~/.bash_profile` / `~/.profile` 里的 `export TYPESAFE_API_KEY=…`。
+所以已经 export 过 key 的机器不必再落盘一次。后端地址可用 `TYPESAFE_BASE_URL` 覆盖，
+主后端失败时的降级端点用 `TYPESAFE_FALLBACK_BASE_URL`（不设即不降级，`fallback: false` 可关）——
+**CLI 会在父进程读这两个变量并写进配置传给子进程**（ego 运行时自身读不到自定义环境变量）；
+直接写 `ego-browser nodejs` 脚本时请改用 `options.baseUrl` / `options.fallbackBaseUrl`。
+
+**没凭证也能先自测**：`ego-browser nodejs < bench/test-offline-e2e.mjs` 在 `about:blank` 上注入 DOM，
+用 `options.ask` 注入确定性判定器（不联网、不需要 key），但观测、`locate`、裸 CDP 派发、结果断言
+全走真实路径；失败时能分清是引擎坏了还是凭证/网络问题。
+
 ## 用法
 
 命令行：
@@ -286,6 +301,7 @@ mkdir -p ~/.agents/skills/ego-jev && ln -sfn "$PWD/SKILL.md" ~/.agents/skills/eg
 | `stuck` | 同一动作连续 3 次无变化（含反复滚动） |
 | `target_missing` | 选了需要目标的动作却没解析出目标（连续 2 次） |
 | `no_targets` | 连续 3 次空快照（页面可能仍在加载） |
+| `guard_rejected` | 执行前守卫拒绝（陈旧/遮挡/不可用，或命中危险动作词表 `dangerous_action`），该步未执行 |
 | `text_model_failed` / `no_text_source` | 输入操作拿不到文本，**不会猜一个值填进去** |
 | `action_failed` / `max_steps_reached` | 执行异常 / 超出步数预算 |
 
@@ -293,13 +309,31 @@ mkdir -p ~/.agents/skills/ego-jev && ln -sfn "$PWD/SKILL.md" ~/.agents/skills/eg
 
 ## 已知限制（实测）
 
-- **改选后需再点确认按钮的原生下拉**不稳定：Jev 可能重复改选同一选项而被 `stuck` 拦住。
-  实测带 `--until` + `--steps ≥6` 约 2/3 成功，失败时明确报 `stuck` 而非静默错误。
-  这类任务要么给 `--until`，要么把两步动作写死。
-- **并非所有控件都进快照**：实测 DuckDuckGo 设置页 DOM 有 18 个复选框，快照里 0 个
-  （自定义样式的隐藏 input 不进辅助树）——这类元素引擎无从感知。
-  而部分站点的复选框在快照里既无定位器也无名称，只能按**文档顺序**兜底补齐；
+- **原生下拉的「选中项不在当前 options 里」有了一次重问**：选项在观测与执行之间被 JS 重建/重排时，
+  不再当失败/无进展，而是**一次**带新选项的重问（`maxOptionRetries` 默认 1），重问仍失败才报 `stuck`。
+- **旧的「维基语言选择器 2/3」基线元素已变**：`www.wikipedia.org` 的 77 项 `#searchLanguage`
+  现在是 `opacity:0`（被自定义语言列表 UI 取代），引擎按可见性规则跳过它。同类任务在 DDG 设置页
+  语言下拉实测 **6/6**（`bench/test-native-select.mjs`）。
+- **默认的自建 DOM 元素表覆盖自定义控件，旧快照路径不覆盖**：实测 DuckDuckGo 设置页 DOM 有
+  18 个复选框，默认 `observe: "dom"` 路径下 18 个全部进元素表（视口内 5 个；拉高视口后 18 个）；
+  `observe: "snapshot"` 路径仍是 0 个（1×1 的自定义样式 input 不进辅助树）。
+  部分站点的复选框在快照里既无定位器也无名称，只能按**文档顺序**兜底补齐；
   仅当数量完全一致时才敢用，否则显示「勾选态未知」而不会谎报。
+- **无 role 的容器型可点元素已覆盖**：`<div onclick>` 卡片/行、`tabindex` 区块、`cursor:pointer`
+  块级容器会被补成 `clickable-region`（映射到 `kind: clickable`，进同一套点击决策）。
+  实测 YouTube 首页 3 个、X 首页 5 个；**真实 Jev 能选中它**（YouTube 视频元数据块 → `/watch`，
+  见 `bench/test-realjev-region.mjs`）。与已收集的 a11y 元素做节点身份 + 祖先去重
+  （嵌套容器只收最内层；被占满的容器、`<a href>` 内的容器、`<label for>` 都不与 a11y 元素双收），
+  a11y 元素优先占预算。视口外的元素仍由「有界滚动揭示」处理（元素表只覆盖当前视口）。
+- **跨 frame / shadow 的可点元素**：同源 iframe 与开放 shadow root 里的元素也进元素表。
+  frame 内节点在主文档里没有 DOM 身份，因此打 `frameOrigin` 标：`locate` 做**逐层命中校验**
+  （每层把点换算到该层坐标系，含 `clientLeft/clientTop`，断言该层 `elementFromPoint` 命中承载下一层的
+  `<iframe>`）；任一层被遮挡即 `covered`、不派发。frame 链断 / `defaultView` 为 null → `frame_unresolved`，
+  外层 frame 有 transform/zoom → `frame_transformed`，两者都直接拒绝（不猜坐标、不退化成 {0,0}）。
+  shadow 内节点在它自己的 root 里做完整命中测试。跨域 iframe 不处理。
+- **危险动作前置拦截**：命中「支付/删除/退订」一类目标（中文 + 英文词表，我们自己的）时**不执行**，
+  记为 `guardRejected=dangerous_action` 并**直接停**（不重试，重试不会让它变安全）。
+  这是机制不是承诺——「不替你付款/删除」不再只靠 Jev 自评；`dangerGuard: false` 可整体关闭。
 - **浏览器自动翻译会影响判断**：实测页面被译成中文后，元素名与选项名与目标语言不一致。
   Jev 跨语言选择正常，但 `--until` / `check` 用 UI 字符串比较会误判——请比对 URL 路径或 DOM 状态。
 - **ego 运行时会静默吞掉两件事**（排查时很坑）：

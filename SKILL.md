@@ -59,7 +59,10 @@ bash scripts/wire-agent-skills.sh --restore  # 还原成官方软链
 多步按钮点击、翻页、搜索表单、导航跳转这类「下一步做什么很明确」的线性任务，不要每走一步都
 退出来交给大模型慢思考。可以让 Jev（TypeSafe System One）在单个进程内闭环决策执行。
 
-实测（2026-09-19, jev-1.13）：单步决策约 1.0–1.5s。**对照实测**（同任务、同元素表、同验证器，
+实测（2026-09-26, 服务端 `jev-1.13.0`，维基百科搜索任务）：单步（观测+决策+执行+校验）约
+**1.0–1.4s**，其中**决策请求本身约 0.35–0.52s**（10 次采样 352–524ms，中位 434ms；分阶段数字由
+`renderJevSummary` 打印）。旧文档的「单步决策约 1.0–1.5s」实为**整步耗时**，不是决策请求本身。
+**对照实测**（同任务、同元素表、同验证器，
 交替 3 轮取中位数）：
 
 | 任务 | Jev 单进程闭环 | 经典循环（每步一进程 + 大模型思考） | 结果 |
@@ -67,7 +70,7 @@ bash scripts/wire-agent-skills.sh --restore  # 还原成官方软链
 | HN 两步复合导航 | 中位 **4.9s**（1 进程，12 次浏览器调用） | 中位 **9.7s**（3 进程） | Jev 快 **~2.0×** |
 | 维基百科搜索（两组都要生成文本） | 中位 **5.4s**（1 步） | 中位 **10.1s**（2 进程） | Jev 快 **~1.9×** |
 
-差异主要来自**决策延迟**：Jev 约 1.0–1.5s/次，而可用大模型 1.6–4.5s/次（实测 kimi-k3 1.8s、
+差异主要来自**决策延迟**：Jev 决策请求约 0.35–0.52s/次（整步合计约 1.0–1.4s），而可用大模型 1.6–4.5s/次（实测 kimi-k3 1.8s、
 minimax-m3 1.6s、glm-5.3 3.2s、qwen3.8-max 3.5s、deepseek-v4-pro 4.5s；gpt-5.6-luna 与
 grok-4.6 端点 503 不可用）。进程启动实测只占约 250–350ms/次，**不是**主要成本。
 
@@ -75,15 +78,27 @@ grok-4.6 端点 503 不可用）。进程启动实测只占约 250–350ms/次�
 不构成基准；只能说量级上 Jev 闭环约为经典循环的一半时间。基准脚本在 仓库的 `examples/bench/`
 （`run-pair.sh` + `arm-a.js` / `arm-b-step.js`）。
 
-**Jev 快在哪里、不快在哪里**：省的是**决策往返**（Jev 1.0–1.5s/次 vs 大模型 1.6–4.5s/次）
+测量纪律：请求里写的是浮动别名 `jev-latest`，**服务端实际服务哪个版本只有响应里的 `model` 字段能回答**
+——每次测量都要记下它（`renderJevSummary` 会打印），否则事后无法判断数字属于哪版模型。
+2026-09-26 曾出现约 5 分钟的 `403 RBAC: access denied`（凭证文件完好，随后自愈）：环境本身会变，
+只记「能跑通」不够。
+
+**Jev 快在哪里、不快在哪里**：省的是**决策往返**（Jev 决策请求 0.35–0.52s/次 vs 大模型 1.6–4.5s/次）
 和**每步退出浏览器上下文**的开销。引擎自身也已重构（详见仓库 `PORT-REPORT.md`）：观测改成一次
-`page.evaluate` 自建 DOM 元素表（约 2ms，替代 110–130ms 的 `page.snapshot()`），动作改成**裸 CDP
+`page.evaluate` 自建 DOM 元素表（约 2–4ms，替代 110–130ms 的 `page.snapshot()`），动作改成**裸 CDP
 `Input.dispatchMouseEvent`**（13–16ms，替代 788–1005ms 的 `page.click`），等待改成可观察条件。
 HN 两步导航端到端因此从 4569ms 降到 1675ms。目标能用选择器写死时，直接写代码仍比两者都快。
 
 **凭证**：`ego-browser nodejs` 内嵌运行时只继承最小化登录环境（HOME/PATH 等），shell 里
-export 的变量不会传进去。所以 API Key 必须落盘到 `~/.config/typesafe/api_key`
-（或 `TYPESAFE_API_KEY_FILE` 指向的文件，内容为 Key 一行，权限 600）。文件缺失时会直接报错。
+export 的变量不会传进去，所以凭证只能来自文件。查找顺序：
+`--api-key` > `TYPESAFE_API_KEY`（仅普通 node 进程可见）> `TYPESAFE_API_KEY_FILE` >
+`~/.config/ego-jev/credentials` > `~/.config/typesafe/api_key` > rc 文件（`~/.zshrc`/`~/.bashrc`/
+`~/.bash_profile`/`~/.profile`）里的 `export TYPESAFE_API_KEY=…`。所以已经 export 过 key 的机器
+不必再落盘一次。`~/.config/typesafe/api_key` 仍是「一行裸 Key」的既有形态（权限 600）；
+文件都找不到时 CLI 直接报错 exit 3。后端地址 `TYPESAFE_BASE_URL` 可覆盖，主后端失败时的
+降级端点 `TYPESAFE_FALLBACK_BASE_URL`（不设即不降级，`fallback: false` 可关）；**这两个变量由
+CLI 在父进程读取后写进配置传给子进程**（ego 运行时自身读不到自定义环境变量），直接写
+`ego-browser nodejs` 脚本时用 `options.baseUrl` / `options.fallbackBaseUrl`。
 
 **决策结构**（对齐 [browser-use/jev-ultrafast](https://github.com/browser-use/jev-ultrafast) 的
 dynamic operation + target）：每次观测产出「索引化元素表」，每个可交互元素一个 `ref`，并携带
@@ -191,11 +206,26 @@ console.log(result); // { success, reason, steps, history }
 - Jev 只发一次并行判断、**无跨请求记忆**：复合目标（A 然后 B）依赖引擎回填的「已完成步骤」，
   已内置并已验证（两步导航、已填字段改写、下拉改选、勾选均通过）。更长链路未做专项评估。
 - 元素表由**一次 `page.evaluate` 在页面内自建**（默认 `maxTargets` 60 项、可见文本 `maxText` 2500
-  字符），元素每次观测都会**重新编号**。定位不交给选择器：引擎掌握节点身份，动作走裸 CDP
+  字符），元素每次观测都会**重新编号**。候选分两遍收集：原生交互标签与 `role=…`（a11y 类，
+  **优先占预算**）先收；再把**无 role 的容器型可点元素**（`<div onclick>`、`tabindex`、
+  `cursor:pointer` 块级容器）补成 `clickable-region`（映射到 `kind: clickable`，自动进入同一套
+  点击决策）。去重：节点身份 + 祖先去重（嵌套容器只收最内层）；被占满的容器（内含 a11y 元素
+  且占了它一半以上面积）、`<a href>` 里的容器、`<label for>` 都不与 a11y 元素双收。
+  观测根除主文档外还包括**同源 iframe 文档与开放的 shadow root**；frame 内目标打 `frameOrigin` 标，
+  `locate` 对它们做**逐层命中校验**：每层把点换算到该层坐标系（含 `clientLeft/clientTop`），
+  断言该层 `elementFromPoint` 命中的是承载下一层的 `<iframe>`（或包含它）；任一层不成立即 `covered`，
+  不派发。任何一层解析不了（`defaultView` 为 null / frame 链断）记 `frame_unresolved`，外层 frame 有
+  非 identity 的 transform/zoom 记 `frame_transformed`，两者都直接拒绝（不猜坐标、不退化成 {0,0}）；
+  同时校验元素没被 frame 自身视口裁掉（`offscreen`），并跳过跨 frame 滚不动的 `scrollIntoView`。
+  shadow 内目标在它自己的 root 里做完整命中测试。跨域 iframe 不处理。
+  定位不交给选择器：引擎掌握节点身份，动作走裸 CDP
   （`Input.dispatchMouseEvent`）。两层陈旧防护：① **陈旧校验**：只执行与本次元素表一致的 `ref`，
   不一致记为 `staleTarget` 跳过；② **执行前守卫**：命中测试 + 可见/可用性检查，失败记为
   `guardRejected`（原因有 `node_gone`/`disconnected`/`disabled`/`invisible`/`readonly`/
-  `offscreen`/`covered`/`not_select`/`option_unavailable`）。
+  `offscreen`/`covered`/`not_select`/`option_unavailable`/`dangerous_action`/
+  `frame_unresolved`/`frame_transformed`）。
+  `dangerous_action` 是**危险动作前置拦截**：目标名称/选项命中「支付/删除/退订」词表（我们自己的
+  中文 + 英文词表）时**不执行**并直接停（不重试）；`options.dangerGuard === false` 可整体关闭。
 - **视口外目标（有界滚动揭示）**：元素表只覆盖当前视口，目标可能在下方。当某步“选了需目标的
   动作却没解析出目标”（或元素表为空）时，引擎会**滚动约一屏后重新观测**（默认最多 4 次，
   `maxReveals` 可调），并在候选多于预算时**优先列出本次尚未展示过的元素**，因此滚动总能露出
@@ -220,18 +250,25 @@ console.log(result); // { success, reason, steps, history }
 - 比较「页面是否变化」时忽略 URL 的 `#hash`：点锚点链接不算有进展。
 - 每步浏览器调用：默认 **1 次 `page.evaluate`**（在页面内自建元素表）+ url/title；
   `page.snapshot()` 仅在显式 `observe: "snapshot"` 时使用。实测（HN 首页）：自建元素表约
-  **2ms / ~1.8k 字符**，`page.snapshot()` **110–130ms / 27484 字符**。
+  **2–4ms / ~2k 字符**（其中容器型可点元素扫描约 1–2ms），`page.snapshot()` **110–130ms / 27484 字符**。
 - 下面两条关于「快照」的实测限制（下拉选项、复选框覆盖）适用于 `observe: "snapshot"` 这条旧路径。
-- 真实站点实测：原生下拉能读到全选项（wikipedia.org 语言选择器 77 项，1 步改选成功）；
-  但**并非所有控件都进快照**——DuckDuckGo 设置页 DOM 有 18 个复选框，快照里是 0 个，
-  这类元素引擎无从感知。httpbin 表单的复选框在快照里既无 loc 也无名称，靠「文档顺序」
+- 真实站点实测：原生下拉能读到全选项（wikipedia.org 语言选择器 77 项，1 步改选成功）。
+  DuckDuckGo 设置页 DOM 有 18 个复选框：默认自建元素表路径 18 个全部覆盖（视口内 5 个，
+  拉高视口后 18 个），而 `observe: "snapshot"` 路径仍是 0 个（1×1 的自定义样式 input 不进辅助树）。
+  无 role 的容器型可点元素实测 YouTube 首页 3 个、X 首页 5 个；真实 Jev 能选中它
+  （YouTube 视频元数据块 → `/watch`，见 `bench/test-realjev-region.mjs`）。
+  httpbin 表单的复选框在快照里既无 loc 也无名称，靠「文档顺序」
   兜底补齐名称与勾选态；仅当数量完全一致时才敢用，否则显示「勾选态未知」而不会谎报。
 - 动作后不用固定延迟：先短静默，再用 `waitForLoadState("load")` 兜底捕捉**延迟导航**
   （实测下拉改选触发的跳转会晚于 400ms，若只用固定延迟会把“已跳转”误判成“未变化”，
   导致 Jev 重复执行同一动作）。
-- **已知弱点：改选后需再点确认按钮的原生下拉**（如 wikipedia.org 语言选择器）不稳定：
-  Jev 可能重复改选同一选项，被 `stuck` 拦住。实测带 `--until` + 足够 `--steps`（≥6）时
-  约 2/3 成功，失败时报 `stuck` 而非静默错误。这类任务要么给 `--until`，要么把两步动作写死。
+- **原生下拉的「选中项不在当前 options 里」有了一次重问**：观测时选中的 option 到执行时可能
+  已经不在 DOM 的 options 里（选项被 JS 重建/重排）。旧实现把它当失败/无进展，最后 `stuck`；
+  现在改为**一次**带新选项的重问（`maxOptionRetries` 默认 1），重问仍失败才显式报 `stuck`。
+- **旧的「维基语言选择器」基线元素已变**：`www.wikipedia.org` 上那个 77 项的 `#searchLanguage`
+  现在是 `opacity:0`（被自定义语言列表 UI 取代），引擎按可见性规则跳过它——「约 2/3 成功」
+  那条基线已无法在原元素上复现。同类「原生下拉改选」任务在 DuckDuckGo 设置页（语言下拉 80 项、
+  含 Dansk）实测 **6/6**（`bench/test-native-select.mjs`）。
 - Jev 走完不等于业务正确：仍要按本 Skill 的观察纪律复核最终页面状态。
 - 该站可能开启自动翻译（实测 Chrome 把注入的英文表单译成中文，`Switzerland`→`瑞士`），
   元素名与选项名可能与目标语言不一致；Jev 跨语言选择正常，但用**字符串比较**做 `--until` 或
@@ -251,7 +288,8 @@ console.log(result); // { success, reason, steps, history }
 配套的两条环境事实：
 
 - **自定义环境变量一律不传入**（不止 `TYPESAFE_API_KEY`）：`export FOO=bar` 在运行时里读不到。
-  需要传配置时，在**父进程把值替换进脚本文本**再送进去（`ego-jev` CLI 就是这么处理凭证的）。
+  需要传配置时，在**父进程把值替换进脚本文本**再送进去（`ego-jev` CLI 就是这么传 goal/url 等配置的）；
+  凭证走上面的文件链，不靠环境变量。
 - **`process.cwd()` 是 `/`**，不是 shell 的工作目录。脚本里不要依赖相对路径。
 
 ## 不要改应用包里的文件
