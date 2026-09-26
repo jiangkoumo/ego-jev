@@ -4,9 +4,9 @@
 > 后续所有原始数据落在 `bench/raw/verify-*.jsonl`，若与本文件不符，以本文件为准并需在报告中说明偏离。
 >
 > **环境前置（2026-09-26 补注）**：B 栈需要 `browser-harness`（`bh`）与 `JEV_ULTRAFAST_DIR`；
-> 本机已移除 bh，因此 B 栈目前**不可重跑**（已采样本与报告不受影响）。只跑 A 栈：
-> `bash bench/verify.sh <轮数> --a-only`（先 `bash bench/verify.sh --check-env` 看环境）；
-> 不加 `--a-only` 时缺 bh 会直接 exit 2，不会静默产出 `no_output`。
+> 本机已移除 bh，B 臂驱动脚本（`run-b.py`/`verify-run-b.py`/`reveal-run-b.py`/`vs-bstack.sh`）
+> 已随之撤出仓库（在 git 历史 `599a49b` 之前）；已采样本与报告不受影响，数字仍由 `bench/raw/` 复算。
+> 现在只跑 A 栈：`bash bench/verify.sh <轮数>`（先 `bash bench/verify.sh --check-env` 预检）。
 
 ## 1. 被测对象（冻结版本）
 

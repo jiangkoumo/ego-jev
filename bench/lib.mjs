@@ -22,7 +22,7 @@ if (BENCH.includes("/.agents/skills/")) {
 }
 
 // 注意：脚本头部注释里那条手工 sed 命令里的路径含 `&` / `|` / `\` 时需要自行转义；
-// 本仓库的 bash 包装器（bench/verify.sh、bench/vs-bstack.sh）已经做了转义。
+// 本仓库的 bash 包装器（bench/verify.sh）已经做了转义。
 
 /**
  * Jev 凭证：用引擎自己的解析链（TYPESAFE_API_KEY → ~/.config/typesafe/api_key）。

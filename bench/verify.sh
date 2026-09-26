@@ -1,63 +1,51 @@
 #!/usr/bin/env bash
-# 大样本验证编排（预登记协议 §3/§4）：
-#   5 任务 × 2 栈 × 10 轮 = 100 轮；A/B 交替，且奇轮 A→B、偶轮 B→A（控制同轮内先后顺序）。
-#   harness 级失败（无输出行）最多重试到 attempts=3；任务级失败保留不重试。
+# A 臂验证编排（预登记协议 bench/verify-protocol.md 的 A 臂部分）：
+#   5 任务 × N 轮；harness 级失败（脚本无任何输出行）最多重试到 attempts=3；任务级失败保留不重试。
 #
-# 用法: bash bench/verify.sh [轮数] [--a-only] [--check-env]
-#   --a-only     只跑 A 臂（ego-jev）；B 臂需要 browser-harness，机器上没有 bh 时用这个
-#   --check-env  只做环境预检就退出（0 = A 臂可用；B 臂缺失只算警告）
-# 注：产品路径（CLI / 路由层）与 A 臂都不依赖 browser-harness；B 臂脚本是历史对照的复现工具。
+# 用法: bash bench/verify.sh [轮数] [--check-env] [--a-only]
+#   [轮数]        默认 10
+#   --check-env   只做环境预检就退出（0 = 可用）
+#   --a-only      兼容旧命令：B 臂驱动已撤出仓库，现在只有 A 臂，等价于默认
+#
+# 环境变量:
+#   BENCH_OUT_DIR  结果目录（默认 bench/raw）
+#
+# 注意：第 5 个任务 select-native 访问 http://127.0.0.1:8099/c.html，需要你自己先在 8099 起一个
+#       静态服务（c.html / d.html 两个固定件不在仓库里）；没起就会记成 harness_error。
+#
+# 注：B 臂（browser-harness + jev-ultrafast）的驱动脚本已从仓库移除——它的引擎早已移植进
+#     scripts/ego-jev.mjs，产品路径、CLI、路由层从不依赖 browser-harness。
+#     历史脚本在 git 历史里（如 git show 599a49b:bench/run-b.py），
+#     报告里的 B 栈数字由 bench/raw/ 的原始数据复算（bench/analyze-*.mjs）。
 set -uo pipefail
+
 ROUNDS=10
-A_ONLY=0
 CHECK_ENV=0
 for arg in "$@"; do
   case "$arg" in
-    --a-only) A_ONLY=1 ;;
+    --a-only) : ;;                      # 兼容旧命令
     --check-env) CHECK_ENV=1 ;;
     ''|*[!0-9]*) echo "未知参数: ${arg}" >&2; exit 2 ;;
     *) ROUNDS="$arg" ;;
   esac
 done
+
 BENCH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$(cd "${BENCH}/.." && pwd)"
-# B 臂对照需要 jev-ultrafast 仓库（不在本仓库里）——用环境变量显式给出，本来就不写死本机路径
-JEVDIR="${JEV_ULTRAFAST_DIR:-}"
-
-b_stack_blockers() {   # 逐行输出 B 臂缺什么（没有输出 = 可用）
-  command -v bh >/dev/null 2>&1 || echo "bh 不在 PATH（browser-harness 已移除？）"
-  [ -n "$JEVDIR" ] || echo "JEV_ULTRAFAST_DIR 未设置（B 臂需要 jev-ultrafast 仓库路径）"
-  [[ -z "$JEVDIR" || -d "$JEVDIR" ]] || echo "JEV_ULTRAFAST_DIR 不是目录: ${JEVDIR}"
-}
 
 if [ "$CHECK_ENV" = "1" ]; then
-  rc=0
   if command -v ego-browser >/dev/null 2>&1; then
     echo "A 臂（ego-jev）: 可用（$(ego-browser --version 2>&1 | head -1)）"
-  else
-    echo "A 臂（ego-jev）: 不可用——找不到 ego-browser"
-    rc=1
+    exit 0
   fi
-  blockers="$(b_stack_blockers)"
-  if [ -z "$blockers" ]; then
-    echo "B 臂（browser-harness + jev-ultrafast）: 可用"
-  else
-    echo "B 臂（browser-harness + jev-ultrafast）: 不可用"
-    while IFS= read -r b; do printf '  - %s\n' "$b"; done <<< "$blockers"
-    echo "  （B 臂只是历史对照的复现工具；A 臂与产品路径都不依赖它）"
-  fi
-  exit $rc
+  echo "A 臂（ego-jev）: 不可用——找不到 ego-browser（先装 ego lite 并让它在 PATH 里）" >&2
+  exit 1
 fi
 
-if [ "$A_ONLY" != "1" ]; then
-  blockers="$(b_stack_blockers)"
-  if [ -n "$blockers" ]; then
-    echo "B 臂不可用，先不跑了（不加 --a-only 就需要 B 臂）:" >&2
-    while IFS= read -r b; do printf '  - %s\n' "$b" >&2; done <<< "$blockers"
-    echo "  A 臂单独跑: bash bench/verify.sh ${ROUNDS} --a-only" >&2
-    echo "  先看环境: bash bench/verify.sh --check-env" >&2
-    exit 2
-  fi
+command -v ego-browser >/dev/null 2>&1 || { echo "error: 找不到 ego-browser（ego lite 是否已安装？）" >&2; exit 2; }
+
+if command -v curl >/dev/null 2>&1 && ! curl -sf --max-time 2 http://127.0.0.1:8099/c.html >/dev/null 2>&1; then
+  echo "注意: 127.0.0.1:8099 上的固定件服务不在——select-native 这一格会记成 harness_error（其余四格不受影响）" >&2
 fi
 
 # 路径里可能带 & | \，直接当 sed 替换串会出错（& 会展开成匹配到的占位符），先转义
@@ -72,17 +60,9 @@ LOG="${OUTDIR}/verify-${STAMP}.log"
 TASKS=(hn-nav hn-page2 wiki-search httpbin-form select-native)
 MAX_ATTEMPTS=3
 
-BU_CDP_WS=""
-if [ "$A_ONLY" != "1" ]; then
-  BU_CDP_WS="$(bh ensure 2>/dev/null)"
-  if [ -z "$BU_CDP_WS" ]; then echo "bh ensure 没给出 CDP 端点（BU_CDP_WS 为空）——B 臂跑不了，先查 bh" >&2; exit 2; fi
-fi
-export BU_CDP_WS
 {
   echo "PROTOCOL: ${BENCH}/verify-protocol.md"
-  echo "ENGINE_MD5_PRE: $(md5 -q "${BENCH}/../scripts/ego-jev.mjs")"
-  echo "BU_CDP_WS=$BU_CDP_WS"
-  echo "A_ONLY=$A_ONLY"
+  echo "ENGINE_MD5_PRE: $(md5 -q "${BENCH}/../scripts/ego-jev.mjs" 2>/dev/null || echo '(md5 不可用)')"
   echo "OUT=$OUT"
   echo "ROUNDS=$ROUNDS"
 } | tee -a "$LOG"
@@ -90,41 +70,31 @@ export BU_CDP_WS
 extract() { grep -o '^{"stack".*' <<<"$1" | tail -1; }
 
 run_once() {
-  local stack="$1" task="$2"
-  if [ "$stack" = "A" ]; then
-    sed -e "s/__TASK__/${task}/" -e "s|__REPO__|${REPO_SED}|g" "${BENCH}/verify-run-a.tpl.js" | timeout 240 ego-browser nodejs 2>&1
-  else
-    (cd "$JEVDIR" && timeout 240 uv run --env-file .env python "${BENCH}/verify-run-b.py" "$task" 2>&1)
-  fi
+  local task="$1"
+  sed -e "s/__TASK__/${task}/" -e "s|__REPO__|${REPO_SED}|g" "${BENCH}/verify-run-a.tpl.js" |
+    timeout 240 ego-browser nodejs 2>&1
 }
 
 for round in $(seq 1 "$ROUNDS"); do
-  # 奇轮 A→B，偶轮 B→A；--a-only 就只有 A
-  if [ "$A_ONLY" = "1" ]; then ORDER=(A);
-  elif [ $((round % 2)) -eq 1 ]; then ORDER=(A B);
-  else ORDER=(B A); fi
-  order_tag="$(printf '%s' "${ORDER[@]}")"   # AB / BA / A（--a-only 时数组只有 1 项）
   for task in "${TASKS[@]}"; do
-    for stack in "${ORDER[@]}"; do
-      line=""; attempts=0
-      while [ "$attempts" -lt "$MAX_ATTEMPTS" ]; do
-        attempts=$((attempts + 1))
-        raw="$(run_once "$stack" "$task")"
-        printf '%s\n' "$raw" >> "$LOG"
-        line="$(extract "$raw")"
-        [ -n "$line" ] && break
-        sleep 2
-      done
-      if [ -z "$line" ]; then
-        line="{\"stack\":\"${stack}\",\"task\":\"${task}\",\"success\":false,\"reason\":\"no_output\",\"elapsedMs\":null,\"steps\":null}"
-      fi
-      line="$(sed "s/^{/{\"round\":${round},\"order\":\"${order_tag}\",\"attempts\":${attempts},/" <<<"$line")"
-      echo "$line" >> "$OUT"
-      echo "$line"
-      sleep 1
+    line=""; attempts=0
+    while [ "$attempts" -lt "$MAX_ATTEMPTS" ]; do
+      attempts=$((attempts + 1))
+      raw="$(run_once "$task")"
+      printf '%s\n' "$raw" >> "$LOG"
+      line="$(extract "$raw")"
+      [ -n "$line" ] && break
+      sleep 2
     done
+    if [ -z "$line" ]; then
+      line="{\"stack\":\"A\",\"task\":\"${task}\",\"success\":false,\"reason\":\"no_output\",\"elapsedMs\":null,\"steps\":null}"
+    fi
+    line="$(sed "s/^{/{\"round\":${round},\"order\":\"A\",\"attempts\":${attempts},/" <<<"$line")"
+    echo "$line" >> "$OUT"
+    echo "$line"
+    sleep 1
   done
 done
 
-echo "ENGINE_MD5_POST: $(md5 -q "${BENCH}/../scripts/ego-jev.mjs")" | tee -a "$LOG"
+echo "ENGINE_MD5_POST: $(md5 -q "${BENCH}/../scripts/ego-jev.mjs" 2>/dev/null || echo '(md5 不可用)')" | tee -a "$LOG"
 echo "DONE: $OUT"

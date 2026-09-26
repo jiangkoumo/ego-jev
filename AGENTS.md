@@ -87,7 +87,7 @@ update.sh                一键更新（接管过则自动重接管）
 - 接管层只在 Agent 技能目录里写：`SKILL.md` 是生成的，`references/`、`scripts/`、`learnings/`
   是软链——不要把正文拷进去（会跟 App 版本脱节）。
 - 只用真实命令输出和退出码宣称完成；不确定就明说哪一步失败。
-- 基准的 B 臂（`bench/*-run-b.py`、`bench/vs-bstack.sh`）依赖 browser-harness：机器上可能没有 `bh`。
-  跑 A 臂用 `bash bench/verify.sh <轮数> --a-only`（先 `--check-env` 看环境）；产品路径与 A 臂都不依赖它，
-  报告里的 B 栈数字仍然有效（有原始数据），只是不再能重跑。
+- 基准的 B 臂（browser-harness + jev-ultrafast）的驱动脚本已撤出仓库（引擎已移植进 `scripts/ego-jev.mjs`），
+  报告里的 B 栈数字由 `bench/raw/` 原始数据复算，旧脚本在 git 历史里。改 benchmark 后跑
+  `node bench/test-no-bh-dependency.mjs`（不变量：可执行脚本里不许出现 browser-harness 调用面）。
 - 报基准数字必须带上产生它的脚本。

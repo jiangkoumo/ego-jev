@@ -49,4 +49,4 @@ jobs:
           node bench/test-scroll-progress.mjs
           node bench/test-guardrails.mjs
           node bench/test-wire-skill.mjs
-          node bench/test-bench-guard.mjs
+          node bench/test-no-bh-dependency.mjs

@@ -321,18 +321,22 @@ cd examples/bench
 
 基准脚本需要 OpenCode Go（或任何 OpenAI 兼容网关）的凭证，路径写在脚本里，按需修改。
 
-历史 A/B 对照（`bench/verify.sh`、`bench/vs-bstack.sh`、`bench/*-run-b.py`）里的 **B 臂**是
-`browser-harness + jev-ultrafast`：它们需要 `bh` 和 `JEV_ULTRAFAST_DIR` 才能跑，
-只为了复现已发布的报告（`VERIFY-REPORT.md` / `BH-PORT-REPORT.md`）而保留。**产品路径、CLI、路由层、A 臂都不依赖它。**
-本机已没有 `bh` 时：
+历史 A/B 对照的报告（`VERIFY-REPORT.md`、`PORT-REPORT.md`、`REVEAL-REPORT.md`、`BH-PORT-REPORT.md`）里，
+**B 臂**是 `browser-harness + jev-ultrafast`。它的引擎已经移植进 `scripts/ego-jev.mjs`，宿主 `bh` 也已移除，
+所以**驱动脚本已撤出仓库**（在 git 历史里，如 `git show 599a49b:bench/run-b.py`）。
+已发布的 B 栈数字仍可复算：原始数据在 `bench/raw/`，`bench/analyze-*.mjs` 会从它重算表格。
+
+现在只剩 A 臂，编排脚本与它自带的预检：
 
 ```bash
-bash bench/verify.sh --check-env        # 先看环境（A 臂可用则 exit 0；B 臂缺失只算警告）
-bash bench/verify.sh 10 --a-only        # 只跑 A 臂（不碰 bh），结果落 bench/raw/
-BENCH_OUT_DIR=/tmp/x bash bench/verify.sh 1 --a-only   # 或写到别处，不污染仓库
+bash bench/verify.sh --check-env        # 预检（0 = ego-browser 就绪）
+bash bench/verify.sh 10                 # 5 任务 × 10 轮，结果落 bench/raw/
+--a-only                               # 旧命令，仍接受（现在只有 A 臂）
+BENCH_OUT_DIR=/tmp/x bash bench/verify.sh 1   # 或写到别处，不污染仓库
 ```
 
-缺 `bh` 时默认（不加 `--a-only`）会直接 exit 2 并说明原因，不会静默跑出一堆 `no_output`。
+仓库里有一条不变量测试守着这件事：`node bench/test-no-bh-dependency.mjs`（可执行脚本中不许出现
+browser-harness 的调用面；驱动脚本不得回流；`--check-env` 契约成立）。
 
 ## 仓库结构
 
@@ -344,8 +348,8 @@ scripts/ego-jev          CLI（自动在 同目录 / 仓库根 / ~/.agents/lib �
 scripts/wire-agent-skills.sh   把官方 ego-browser 入口接管成路由层（--check / --restore）
 overlay/ego-browser/     路由层的模板（接管时渲染到 Agent 技能目录）
 examples/bench/          A/B 对照基准脚本（CLI 闭环 vs 每步大模型）
-bench/verify.sh          大样本验证编排（--check-env 看环境；--a-only 只跑 A 臂）
-bench/*-run-b.py         B 臂（browser-harness + jev-ultrafast）复现工具：需要 bh，产品路径不依赖
+bench/verify.sh          A 臂验证编排（--check-env 预检；结果落 bench/raw/ 或 BENCH_OUT_DIR）
+bench/test-no-bh-dependency.mjs  「不依赖 browser-harness」的不变量测试
 install.sh               手工安装（接 CLI 进 PATH、准备凭证；`--wire` 顺便接管入口）
 update.sh                一键更新（幂等；自动识别克隆/拷贝两种安装方式，并重接管入口）
 ```

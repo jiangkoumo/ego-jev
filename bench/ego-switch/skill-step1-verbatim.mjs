@@ -2,7 +2,7 @@ const space = await taskSpace(`x-trending-${Date.now()}`);
 const page = space.page("p1");
 const ev = (fn, ...rest) => (rest.length ? page.evaluate(fn, rest[0]) : page.evaluate(fn));
 try {
-  // 1) 打开基础页。ego 的 goto 用 domcontentloaded 实测直接成功（bh 的 goto_url 必然超时）；
+  // 1) 打开基础页。ego 的 goto 用 domcontentloaded 实测直接成功（对照栈的 goto_url 必然超时）；
   //    仍建议 try/catch 兜底：吞掉超时后导航其实已生效。
   try { await page.goto("https://www.tl1.com/trending", { waitUntil: "domcontentloaded", timeout: 20000 }); } catch {}
 
