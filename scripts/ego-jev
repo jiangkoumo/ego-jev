@@ -30,7 +30,7 @@ USAGE() {
 
 示例:
   ego-jev --url "https://example.com" "点击登录按钮并聚焦输入框"
-  ego-jev --url "https://en.wikipedia.org/wiki/Main_Page" --until "/wiki/JEV" \
+  ego-jev --url "https://en.wikipedia.org/wiki/Main_Page" --until "/wiki/Jev" \
     --text "Jev" "在顶部搜索框输入并提交"
   ego-jev --space 3 --keep-space --steps 15 "点击未发送帖子并保存"
 

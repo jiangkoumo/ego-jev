@@ -124,8 +124,34 @@ npx skills add jiangkoumo/ego-jev
 git clone https://github.com/jiangkoumo/ego-jev.git
 cd ego-jev
 ./install.sh          # 链接 CLI 进 ~/.local/bin，并准备凭证文件
+./install.sh --wire   # 顺便接管官方 ego-browser 入口（见下）
 ./install.sh --test   # 顺带跑一次端到端冒烟测试
 ```
+
+### 让 Agent 默认走 ego-jev（`--wire`）
+
+ego lite 会把**官方** `ego-browser` 技能写进每个 Agent 的技能目录
+（`~/.agents/skills/ego-browser`、`~/.claude/skills/ego-browser` …，由 App 在安装/升级时重建），
+而官方正文不知道 ego-jev 存在——不管的话，Agent 默认照它写逐步脚本，ego-jev 根本不会被启动。
+
+`scripts/wire-agent-skills.sh` 把这个入口接管成一层**路由层**（包外）：Agent 先看到的
+「先路由、再决定写不写脚本」那一节是本技能加的，技能正文仍然软链到 App 的当前版本（升级自动跟随）：
+
+```bash
+bash scripts/wire-agent-skills.sh            # 接管 / 刷新（幂等；只写 Agent 技能目录，不碰应用包）
+bash scripts/wire-agent-skills.sh --check     # 只读检查：入口还在不在、生成物是否过期（exit 1 = 需重跑）
+bash scripts/wire-agent-skills.sh --restore   # 还原成官方软链（启用标记一并清掉）
+```
+
+退出码：`0` 正常 / `1` 需要处理（`--check` 发现漂移；或本次一个都没接管到）/ `2` 用法或环境错误。
+`--vendor`（或 `EGO_JEV_VENDOR`）显式指定时就是权威：目录里没有 `SKILL.md` 直接报错，不回退自动探测。
+`--check` 不只看生成物过期，也管「入口被 App 升回官方软链」「软链断向被删的旧版本目录」「入口直接不见了」，
+并会提醒「官方技能是拷贝目录时脚本不覆盖」。`--restore` 不需要 ego lite 还在（不会自锁）。
+
+接管会在 `~/.config/ego-jev/wire-enabled.json` 留下启用标记（含接管过的目录列表）；之后跑 `./update.sh` 会
+自动重接管/刷新（ego lite 升级会把入口重建回官方软链，甚至短时间变成断链）；目录被记在标记里、入口又不见了时，
+会按启用意图把路由层重建回去。指向别处的软链不会被碰，普通目录（官方技能的一份拷贝）不会被覆盖。
+路由只影响**新开的** Agent 会话（技能列表是启动时快照的）。
 
 ### 方式 3：把这段 prompt 丢给你的 Agent
 
@@ -133,7 +159,9 @@ cd ego-jev
 > 1. 执行 `npx skills add jiangkoumo/ego-jev`（skills CLI 不可用就改成克隆仓库跑 `./install.sh`）；
 > 2. 确认 `ego-browser --version` 正常，没有 ego lite 就先让我装；
 > 3. 确认 `~/.config/typesafe/api_key` 存在且权限 600，缺了就问我要 Key——**不要自己编，也不要回显它**；
-> 4. 跑下面「验证安装」里的命令，把真实输出和退出码报给我。
+> 4. 跑下面「验证安装」里的命令，把真实输出和退出码报给我；
+> 5. 接管官方 ego-browser 入口（让多步任务默认走 ego-jev）：`bash scripts/wire-agent-skills.sh`，
+>    再用 `--check` 确认 exit 0。**只写 Agent 技能目录，不要改 `/Applications/ego lite.app` 里的任何文件。**
 
 ### 更新
 
@@ -153,9 +181,13 @@ skills CLI 装的是拷贝、会提示你重跑那条 `npx skills add`。**工�
 ego-browser --version                                        # 前置条件
 "<技能目录>/scripts/ego-jev" \
   --url "https://en.wikipedia.org/wiki/Main_Page" \
-  --text "Jev" --until "/wiki/JEV" --steps 5 \
+  --text "Jev" --until "/wiki/Jev" --steps 5 \
   "在搜索框输入 Jev 并提交"
 # 期望：exit 0，且输出里 "success": true
+
+# 接管过官方入口的话（--wire），看它是否还生效：
+bash "<技能目录>/scripts/wire-agent-skills.sh" --check   # 期望：exit 0（漂移则 exit 1）
+grep -l "先路由" ~/.agents/skills/ego-browser/SKILL.md     # 期望：打印出路径
 ```
 
 ### 凭证：必须落盘成文件
@@ -185,7 +217,7 @@ ego-jev --url "https://news.ycombinator.com" --until "/newcomments" \
 
 # 需要输入文本：候选由调用方给，Jev 只选字段和选哪段文本
 ego-jev --url "https://en.wikipedia.org/wiki/Main_Page" --text "Jev" \
-  --until "/wiki/JEV" "在顶部搜索框输入 Jev 并提交"
+  --until "/wiki/Jev" "在顶部搜索框输入 Jev 并提交"
 
 # 复用已有 taskSpace，完成后保留供人工检查
 ego-jev --space 3 --keep-space --steps 15 "点击未发送帖子并保存"
@@ -295,9 +327,11 @@ SKILL.md                 技能本体（刻意放在根目录——`npx skills a
 AGENTS.md                给其他 Agent 的安装/验证指令（可直接粘贴的 prompt 在里面）
 scripts/ego-jev.mjs      引擎
 scripts/ego-jev          CLI（自动在 同目录 / 仓库根 / ~/.agents/lib 里找引擎）
+scripts/wire-agent-skills.sh   把官方 ego-browser 入口接管成路由层（--check / --restore）
+overlay/ego-browser/     路由层的模板（接管时渲染到 Agent 技能目录）
 examples/bench/          A/B 对照基准脚本
-install.sh               手工安装（不装技能，只把 CLI 接进 PATH 并准备凭证）
-update.sh                一键更新（幂等；自动识别克隆/拷贝两种安装方式）
+install.sh               手工安装（接 CLI 进 PATH、准备凭证；`--wire` 顺便接管入口）
+update.sh                一键更新（幂等；自动识别克隆/拷贝两种安装方式，并重接管入口）
 ```
 
 ## 致谢

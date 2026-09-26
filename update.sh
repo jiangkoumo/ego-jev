@@ -6,7 +6,9 @@
 #   1. git 克隆安装 → `git pull --ff-only` 拉最新（软链会自动跟随，无需重装）
 #   2. skills CLI 安装（技能是**拷贝**）→ 提示重跑 `npx skills add` 覆盖
 #   3. 刷新 CLI 软链（幂等），打印更新前后版本
-#   4. `--test` 顺带跑一次端到端冒烟
+#   4. 如果之前用 wire-agent-skills.sh 接管过官方 ego-browser 入口，重新接管/刷新
+#      （ego lite 升级会把那个入口重建回官方软链；没启用过则什么都不做）
+#   5. `--test` 顺带跑一次端到端冒烟
 #
 # 不改任何应用包内文件，不动凭证，不删任何东西。
 
@@ -20,7 +22,7 @@ RUN_TEST=0
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --test) RUN_TEST=1; shift ;;
-    -h|--help) sed -n '2,11p' "$0"; exit 0 ;;
+    -h|--help) sed -n '2,12p' "$0"; exit 0 ;;
     *) echo "未知参数: $1" >&2; exit 2 ;;
   esac
 done
@@ -35,7 +37,7 @@ info "仓库: $REPO_DIR"
 info "当前版本: $BEFORE"
 
 echo
-echo "==> 1/3 拉取最新"
+echo "==> 1/4 拉取最新"
 if [ -d "$REPO_DIR/.git" ]; then
   if [ -n "$(git -C "$REPO_DIR" status --porcelain 2>/dev/null)" ]; then
     warn "工作区有未提交改动，跳过 git pull（免得覆盖你的改动）"
@@ -58,7 +60,7 @@ else
 fi
 
 echo
-echo "==> 2/3 刷新 CLI 软链"
+echo "==> 2/4 刷新 CLI 软链"
 mkdir -p "$BINDIR"
 ln -sfn "$REPO_DIR/scripts/ego-jev" "$BINDIR/ego-jev"
 info "$BINDIR/ego-jev -> $REPO_DIR/scripts/ego-jev"
@@ -68,7 +70,7 @@ case ":$PATH:" in
 esac
 
 echo
-echo "==> 3/3 技能目录"
+echo "==> 3/4 技能目录"
 SKILL_LINK="$SKILLS_DIR/ego-jev"
 if [ -L "$SKILL_LINK" ]; then
   info "$SKILL_LINK 是软链 → 已随仓库一起更新，无需额外操作"
@@ -81,11 +83,23 @@ else
   info "  或链接：mkdir -p \"$SKILL_LINK\" && ln -sfn \"$REPO_DIR/SKILL.md\" \"$SKILL_LINK/SKILL.md\""
 fi
 
+echo
+WIRE_FAILED=0
+echo "==> 4/4 官方 ego-browser 入口（接管过就重接管）"
+if [ -f "$REPO_DIR/scripts/wire-agent-skills.sh" ]; then
+  if ! bash "$REPO_DIR/scripts/wire-agent-skills.sh" --if-enabled; then
+    WIRE_FAILED=1
+    warn "重接管没完成——上面是原因；修好后重跑：bash \"$REPO_DIR/scripts/wire-agent-skills.sh\""
+  fi
+else
+  info "未找到 scripts/wire-agent-skills.sh（老版本仓库？）——跳过"
+fi
+
 if [ "$RUN_TEST" = "1" ]; then
   echo
   echo "==> 冒烟测试（会打开一个浏览器 Space）"
   if "$BINDIR/ego-jev" --url "https://en.wikipedia.org/wiki/Main_Page" \
-      --text "Jev" --until "/wiki/Japanese_encephalitis" --steps 5 \
+      --text "Jev" --until "/wiki/Jev" --steps 5 \
       "type Jev into the search box and submit"; then
     echo "==> 冒烟测试通过"
   else
@@ -96,3 +110,4 @@ fi
 
 echo
 echo "完成。当前版本: $(version)"
+exit "$WIRE_FAILED"

@@ -1,6 +1,6 @@
 ---
 name: ego-jev
-description: 用 Jev（TypeSafe System One）给 ego-browser 的浏览器操作加速的**附加技能**。多步点击、翻页、搜索表单、导航跳转这类线性任务，可在单个进程内由 Jev 闭环决策，不再每走一步都退回大模型慢思考。同时记录了 ego 内嵌运行时的两条静默失败限制（静态 import 内置模块会无声退出、不能起服务也不能访问 loopback）、凭证为何必须落盘、实测对照数据与失效边界。当任务涉及 ego-browser 多步操作，或要写 ego-browser nodejs 脚本（尤其用到 await import / fetch）时读它。
+description: 浏览器任务的默认入口（配合 ego-browser）：多步线性任务（连续点击、翻页、搜索表单、导航跳转）用 `ego-jev` 一条命令让 Jev（TypeSafe System One）在单进程内闭环决策，不再每步退回大模型慢思考；也能把官方 ego-browser 技能的入口接管成路由层，让每个 Agent 默认走它。同时记录了 ego 内嵌运行时的两条静默失败限制（静态 import 内置模块会无声退出、不能起服务也不能访问 loopback）、凭证为何必须落盘、实测对照数据与失效边界。当任务涉及浏览器多步操作、要写 ego-browser nodejs 脚本（尤其用到 await import / fetch）、或发现 Agent 还在照官方技能写逐步脚本时读它。
 metadata:
   version: "1.0.0"
   date: "2026-09-19"
@@ -17,6 +17,8 @@ metadata:
 | --- | --- |
 | `scripts/ego-jev.mjs` | 引擎（Jev 决策闭环、元素表解析、退出判定） |
 | `scripts/ego-jev` | 命令行入口（会自动在 同目录 / 仓库根 / `~/.agents/lib/` 里找引擎） |
+| `scripts/wire-agent-skills.sh` | 把 Agent 技能目录里的官方 `ego-browser` 入口接管成**路由层**（见下节） |
+| `overlay/ego-browser/SKILL.md.in` | 路由层的模板（接管时生成，正文仍指向 App 当前版本） |
 | `examples/bench/` | 对照基准脚本（A 组 Jev 闭环 vs B 组经典循环） |
 
 命令行两种调用方式，任选其一：
@@ -27,6 +29,29 @@ ego-jev --url "…" "目标"                        # 已链接进 PATH 时
 ```
 
 基础用法、Space/Page/选择器/收尾纪律仍以 `ego-browser` 技能为准；本技能只负责「让 Jev 加速」这件事。
+
+## 路由：什么时候用我
+
+| 任务形状 | 走哪条路 |
+| --- | --- |
+| **多步线性**：连续点击、翻页/下一页、搜索框输入并提交、多字段表单、导航到目标页 | **本技能**（`ego-jev` CLI 或 `runJevAutonomousLoop`） |
+| 单个动作；需要精确选择器/DOM、批量抽取、截图、文件、网络请求、CDP | `ego-browser` 原生 API（读官方技能） |
+| 内容生成、业务判断（回什么话、选哪个商品、写哪段文案） | 大模型决定，把决定喂给上面两条 |
+
+**但「默认用哪个」不能只靠这段表格**：ego lite 会把官方 `ego-browser` 技能写进每个 Agent 的技能目录
+（`~/.agents/skills/ego-browser`、`~/.claude/skills/ego-browser` …，由 App 在安装/升级时重建），
+而官方正文不知道 ego-jev 存在 —— 于是 Agent 默认照它写逐步脚本。用本技能的接管脚本把这个入口换成
+**路由层**，Agent 先看到的就是上面的路由规则：
+
+```bash
+bash scripts/wire-agent-skills.sh            # 接管/刷新（幂等；只写 Agent 技能目录，不碰应用包）
+bash scripts/wire-agent-skills.sh --check    # 只读检查是否已接管 / 是否漂移（exit 1 = 需要重跑）
+bash scripts/wire-agent-skills.sh --restore  # 还原成官方软链
+```
+
+接管后：入口是包外的一层 `SKILL.md`，正文仍软链到 App 当前版本的官方技能（升级自动跟随），
+只有「先路由、再决定写不写脚本」那一段是本技能加的。`update.sh` 会在接管过的情况下自动重接管
+（ego lite 升级可能把入口还原）。**应用包内任何文件都没动。**
 
 ## 加速能力
 
@@ -88,7 +113,7 @@ ego-jev --url "https://example.com" "点击登录按钮并聚焦输入框"
 
 # 需要输入文本：候选由调用方给，Jev 只负责选字段和选哪段文本
 ego-jev --url "https://en.wikipedia.org/wiki/Main_Page" --text "Jev" \
-  --until "/wiki/JEV" "在页面顶部的搜索框中输入并提交搜索"
+  --until "/wiki/Jev" "在页面顶部的搜索框中输入并提交搜索"
 
 # 让模型自己写文本（已配置好，无需 --text）
 ego-jev --url "https://en.wikipedia.org/wiki/Main_Page" "在维基百科搜索框里搜索哥德尔不完备定理"
@@ -234,3 +259,6 @@ console.log(result); // { success, reason, steps, history }
 `/Applications/ego lite.app/Contents/Frameworks/ego Framework.framework/Versions/*/Resources/ego-skills/ego-browser/SKILL.md`
 里加内容：那是供应商受签名的应用包，升级会替换该目录（`Versions/0.5.0.32` → 新版本号），
 改动会丢失。要扩展就放到包外的 `~/.agents/skills/<自己的技能>/`。
+
+想改的其实是「官方技能开头那段路由」时，也别去改包内文件：用 `scripts/wire-agent-skills.sh`
+接管包外的 `…/skills/ego-browser` 入口（路由层 + 软链回包内正文），`--restore` 可撤销。
