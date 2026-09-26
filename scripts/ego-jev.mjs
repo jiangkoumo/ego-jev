@@ -170,6 +170,226 @@ export async function askJev(state, questions, options = {}) {
   throw lastError || new Error("Jev API Error: 没有可用的端点");
 }
 
+// ── 决策后端（decider）：把「谁来回答 questions」抽成正式的一层 ────────────────
+// 契约（与 askJev 同源）：decide({ state, questions, options }) → { answers, meta }
+//   answers  与 questions 同形（每个问题头给出 { choice }，值必须来自该头的 criteria 键）
+//   meta     { model, usage, endpoint, kind }
+// 默认后端是现有 System One（kind: "systemone"，capabilities.confidence = true）；
+// 可选后端是本地/自建的 OpenAI 兼容端点（kind: "openai-compatible"，例如 llama.cpp /
+// ollama / vLLM / LM Studio 的 /v1/chat/completions）。文本 LLM 没有**校准过的**概率，
+// 因此适配器声明 confidence: false；引擎据此跳过基于置信度的阈值判断，但保留候选合法性
+// 校验与全部执行层护栏（陈旧校验 / guardRejected / 跨 frame fail-closed / 危险动作拦截）。
+// 适配器绝不伪造概率或置信度数字。
+
+const DECIDER_CAPABILITIES = {
+  systemone: { confidence: true, probabilities: true },
+  "openai-compatible": { confidence: false, probabilities: false },
+  injected: { confidence: true, probabilities: true },
+};
+
+/** decider.json 默认路径（与路由层同一配置目录；本轮不改目录名） */
+function deciderFilePath() {
+  return process.env.EGO_JEV_DECIDER_FILE || join(homedir(), ".config", "ego-jev", "decider.json");
+}
+
+/**
+ * 读「决策后端」配置（文件式；ego 运行时拿不到自定义环境变量）。
+ * 未配置 / 非法 JSON / 未知 kind → null，调用方回退到默认 System One（行为与从前一致）。
+ * 纯读，不写盘，便于单测。
+ */
+export function loadDeciderConfig(options = {}) {
+  const file = options.file || deciderFilePath();
+  try {
+    if (!existsSync(file)) return null;
+    const cfg = JSON.parse(readFileSync(file, "utf8"));
+    if (!cfg || typeof cfg !== "object" || Array.isArray(cfg)) return null;
+    if (cfg.kind !== "systemone" && cfg.kind !== "openai-compatible") return null;
+    return cfg;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * 解析本地后端凭证：apiKey > apiKeyFile；都没有也允许（本地端点常不校验）。
+ * 刻意**不**回退到 TypeSafe 凭证链——绝不把云端 key 发给本地端点。
+ */
+export function resolveDeciderApiKey(cfg) {
+  if (cfg?.apiKey) return cfg.apiKey;
+  if (cfg?.apiKeyFile) {
+    const p = String(cfg.apiKeyFile).replace(/^~(?=\/|$)/, homedir());
+    try {
+      if (existsSync(p)) {
+        const first = readFileSync(p, "utf8").trim().split(/\r?\n/)[0].trim();
+        if (first) return first;
+      }
+    } catch {
+      /* 读不到就当没有 */
+    }
+  }
+  return undefined;
+}
+
+/**
+ * 把 questions 确定性地渲染成一段文本提示：问题头按 questions 自身顺序、候选按 criteria 自身顺序，
+ * 不掺时间戳/随机数（否则同一次观测每次请求都不同，缓存与调试都失效）。
+ * 所有问题与全部候选都会出现在提示里——本地模型没有概率，只能靠这份候选清单约束它。
+ */
+export function renderQuestionsForText(state, questions) {
+  const lines = [
+    "You are choosing the next browser action. Answer with JSON only.",
+    "",
+    "Page state:",
+    String(state ?? ""),
+    "",
+    "Questions. For each question, pick exactly one candidate id from its list.",
+  ];
+  for (const [head, question] of Object.entries(questions || {})) {
+    lines.push("", `## ${head}`);
+    if (question?.instructions) lines.push(`instructions: ${question.instructions}`);
+    lines.push("candidates:");
+    for (const [id, description] of Object.entries(question?.criteria || {})) {
+      lines.push(`- ${id}: ${description}`);
+    }
+  }
+  const shape = Object.keys(questions || {}).map((h) => `"${h}": "<one candidate id>"`).join(", ");
+  lines.push(
+    "",
+    "Return exactly one JSON object, no markdown, no extra keys:",
+    `{${shape}}`,
+    "Every value must be one of the candidate ids listed for that question."
+  );
+  return lines.join("\n");
+}
+
+/** 本地后端解析失败统一走既有的 invalid_response 语义：不猜、不执行。 */
+const invalidResponseError = (reason, head) =>
+  Object.assign(new Error(`decider invalid response: ${reason}${head ? ` (${head})` : ""}`), {
+    invalidResponse: reason,
+    invalidHead: head ?? null,
+  });
+
+/**
+ * 严格解析 OpenAI 兼容响应：非 JSON / 非对象 / 缺问题头 / 值不是非空字符串 → 抛 invalid_response。
+ * 候选是否合法（choice 是否在本头 criteria 里）留给引擎的 validateAnswer 统一判定。
+ */
+export function parseDeciderAnswers(payload, questions) {
+  const raw = payload?.choices?.[0]?.message?.content;
+  if (typeof raw !== "string" || !raw.trim()) throw invalidResponseError("empty_content", null);
+  let parsed;
+  try {
+    parsed = JSON.parse(raw.trim().replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, ""));
+  } catch {
+    throw invalidResponseError("invalid_json", null);
+  }
+  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+    throw invalidResponseError("invalid_json_shape", null);
+  }
+  const answers = {};
+  for (const head of Object.keys(questions || {})) {
+    const value = parsed[head];
+    if (typeof value !== "string" || !value) throw invalidResponseError("missing_field", head);
+    answers[head] = { choice: value };
+  }
+  return { answers, usage: payload?.usage ?? null };
+}
+
+/** 内置后端：本地 / 自建的 OpenAI 兼容端点（POST {baseUrl}/chat/completions） */
+export function createOpenAICompatibleDecider(cfg = {}) {
+  const baseUrl = String(cfg.baseUrl || "").replace(/\/+$/, "");
+  if (!baseUrl) throw new Error("openai-compatible 决策后端缺少 baseUrl");
+  if (!cfg.model) throw new Error("openai-compatible 决策后端缺少 model");
+  const kind = "openai-compatible";
+  return {
+    kind,
+    capabilities: { ...DECIDER_CAPABILITIES[kind] },
+    async decide({ state, questions, options = {} }) {
+      const apiKey = resolveDeciderApiKey(cfg);
+      const headers = { "Content-Type": "application/json", ...(cfg.headers || {}) };
+      if (apiKey) headers.Authorization = `Bearer ${apiKey}`;
+      const body = {
+        model: cfg.model,
+        messages: [
+          { role: "system", content: "You output JSON only. No markdown, no explanation." },
+          { role: "user", content: renderQuestionsForText(state, questions) },
+        ],
+        temperature: 0,
+        response_format: { type: "json_object" },
+      };
+      const res = await fetch(`${baseUrl}/chat/completions`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify(body),
+        signal: AbortSignal.timeout(cfg.timeoutMs ?? 30_000),
+      });
+      if (!res.ok) throw new Error(`decider API Error (${res.status}): ${(await res.text()).slice(0, 500)}`);
+      const payload = await res.json();
+      const { answers, usage } = parseDeciderAnswers(payload, questions);
+      const meta = { kind, model: cfg.model, usage, endpoint: baseUrl };
+      if (options.receipt && typeof options.receipt === "object") {
+        options.receipt.model = meta.model;
+        options.receipt.usage = meta.usage;
+        options.receipt.endpoint = meta.endpoint;
+      }
+      return { answers, meta };
+    },
+  };
+}
+
+/** 内置后端：默认 System One（现有 askJev，语义不变） */
+function createSystemOneDecider(cfg, options = {}) {
+  return {
+    kind: "systemone",
+    capabilities: { ...DECIDER_CAPABILITIES.systemone },
+    async decide({ state, questions, options: o = {} }) {
+      const receipt = o.receipt || {};
+      const answers = await askJev(state, questions, {
+        ...o,
+        // 显式 decider 配置优先于环境/旧参数；都缺时不传，交给 askJev 自己的默认值
+        baseUrl: cfg?.baseUrl || o.baseUrl || options.baseUrl || undefined,
+        model: cfg?.model || o.model || options.model || undefined,
+        receipt,
+      });
+      return {
+        answers,
+        meta: { kind: "systemone", model: receipt.model ?? null, usage: receipt.usage ?? null, endpoint: receipt.endpoint ?? null },
+      };
+    },
+  };
+}
+
+/**
+ * 解析本次要用的决策后端（优先级从高到低）：
+ *   1) options.ask（注入的自定义实现，优先级最高，语义与从前完全一致）
+ *   2) options.decider（已构造好的 decider 对象）
+ *   3) options.deciderConfig（显式配置，CLI 用它传 --decider/--base-url/--model）
+ *   4) ~/.config/ego-jev/decider.json
+ *   5) 默认 System One
+ */
+export function resolveDecider(options = {}) {
+  if (typeof options.ask === "function") {
+    const capabilities =
+      options.askCapabilities?.confidence === false
+        ? { confidence: false, probabilities: false }
+        : { ...DECIDER_CAPABILITIES.injected };
+    return {
+      kind: "injected",
+      capabilities,
+      async decide({ state, questions, options: o = {} }) {
+        return {
+          answers: await options.ask(state, questions, o),
+          meta: { kind: "injected", model: null, usage: null, endpoint: null },
+        };
+      },
+    };
+  }
+  if (options.decider && typeof options.decider.decide === "function") return options.decider;
+  const cfg = { ...(loadDeciderConfig() || {}), ...(options.deciderConfig || {}) };
+  if (cfg.kind === "openai-compatible") return createOpenAICompatibleDecider(cfg);
+  if (cfg.kind === "systemone" || Object.keys(cfg).length) return createSystemOneDecider(cfg, options);
+  return createSystemOneDecider(null, options);
+}
+
 // ── 文本生成助手（可选，OpenAI 兼容端点）─────────────────────────────────────
 // 与 jev-ultrafast 一致：Jev 只做选择，需要生成文本时才调用小 LLM，且只接受恰好一个
 // 合法 text 字段的 JSON；代码不去抽取引号字面量。未配置时该能力关闭（type_text 不提供）。
@@ -1218,6 +1438,47 @@ export function validateChoice(answer, ids) {
   return null;
 }
 
+/**
+ * 能力感知的答案校验：先确认「选的是不是在本次候选集合里」（候选合法性，任何后端都必须过），
+ * 再按后端能力决定要不要做概率/置信度校验。
+ * confidence=false 的本地文本后端没有校准概率，跳过概率 / argmax / 归一化校验，
+ * 但 no_answer 与 choice_not_offered 一律保留。
+ */
+export function validateAnswer(answer, ids, capabilities = {}) {
+  if (!answer || typeof answer !== "object") return "no_answer";
+  const wanted = new Set(ids);
+  if (typeof answer.choice !== "string" || !wanted.has(answer.choice)) return "choice_not_offered";
+  if (capabilities.confidence === false) return null;
+  return validateChoice(answer, ids);
+}
+
+/**
+ * 基于置信度的阈值升级 gate：只有声明了**校准置信度**的后端才启用。
+ * confidence=false（本地文本模型）→ 整个 gate 关闭，四个阈值全部被忽略（不伪造概率）。
+ * 四个阈值都是 [0,1] 的置信度下限，默认 null（关）：
+ *   minOpConfidence / minTargetConfidence / doneThreshold 低于即拒绝执行并重问；
+ *   stuckThreshold 低于即记一次「含糊」，循环里连续多次则判 stuck（stuck 熔断由循环负责）。
+ */
+export function confidenceGate(capabilities = {}, options = {}) {
+  const off = {
+    enabled: false,
+    reason: "decider_has_no_calibrated_confidence",
+    minOpConfidence: null,
+    minTargetConfidence: null,
+    doneThreshold: null,
+    stuckThreshold: null,
+  };
+  if (capabilities.confidence === false) return off;
+  const num = (v) => (typeof v === "number" && Number.isFinite(v) ? v : null);
+  return {
+    enabled: true,
+    minOpConfidence: num(options.minOpConfidence),
+    minTargetConfidence: num(options.minTargetConfidence),
+    doneThreshold: num(options.doneThreshold),
+    stuckThreshold: num(options.stuckThreshold),
+  };
+}
+
 // ── 提示词规则（移植 jev-ultrafast questions.py::NEXT_ACTION / TARGET）────────
 // 原文照搬会带英文术语，这里保留语义、改写为与现有中文提问一致的表述。
 const NEXT_ACTION_RULES =
@@ -1527,28 +1788,71 @@ export async function runJevStep(page, goal, options = {}) {
     hasTextSource,
     rules: options.rules !== false,
   });
-  // 决策来源可注入：默认走 askJev（TypeSafe System One）；options.ask 与它同签名
-  // （state 文本 + questions 对象），用于离线端到端自测（about:blank + 注入 DOM，不联网、不需要凭证）。
-  // receipt 是可选出参：askJev 把服务端实际 model / usage 写进去，注入的 ask 可忽略。
+  // 决策来源可注入：options.ask 优先（与 askJev 旧签名一致）；否则按配置选后端。
+  // 默认仍是 System One（askJev）；本地 OpenAI 兼容后端见 createOpenAICompatibleDecider。
+  // receipt 是可选出参：后端把实际 model / usage / endpoint 写进去。
+  const decider = resolveDecider(options);
+  const capabilities = decider.capabilities || {};
+  const gate = confidenceGate(capabilities, options);
   const decideStarted = Date.now();
-  const answers = await (options.ask || askJev)(state.join("\n"), questions, { ...options, receipt });
+  let answers;
+  try {
+    const decision = await decider.decide({ state: state.join("\n"), questions, options: { ...options, receipt } });
+    answers = decision.answers;
+    const meta = decision.meta || {};
+    if (receipt.model == null && meta.model != null) receipt.model = meta.model;
+    if (receipt.usage == null && meta.usage != null) receipt.usage = meta.usage;
+    if (receipt.endpoint == null && meta.endpoint != null) receipt.endpoint = meta.endpoint;
+  } catch (err) {
+    // 本地后端解析不出可用答案：走既有 invalid_response 语义，不猜、不执行
+    if (err && err.invalidResponse) {
+      return {
+        stepDurationMs: Date.now() - started,
+        phases: phaseReport(), serverModel: receipt.model ?? null, serverUsage: receipt.usage ?? null,
+        action: null, target: null, isDone: false, blocked: false, changed: false,
+        invalidResponse: err.invalidResponse, invalidHead: err.invalidHead || null,
+        deciderKind: decider.kind, observeMode,
+        urlBefore, urlAfter: urlBefore,
+      };
+    }
+    throw err;
+  }
   phases.decideMs = Date.now() - decideStarted;
 
   // ── 响应校验：不合格直接拒绝执行（而不是猜一个动作） ──
+  // 候选合法性（choice ∈ 本次键集合）任何后端都要过；概率/置信度校验只在有校准概率的后端上做。
   const checkEnabled = options.validate !== false;
   const invalid = checkEnabled
-    ? validateChoice(answers.operation, Object.keys(questions.operation.criteria))
+    ? validateAnswer(answers.operation, Object.keys(questions.operation.criteria), capabilities)
     : null;
   if (invalid) {
     return {
       stepDurationMs: Date.now() - started,
       phases: phaseReport(), serverModel: receipt.model ?? null, serverUsage: receipt.usage ?? null,
       action: null, target: null, isDone: false, blocked: false, changed: false,
-      invalidResponse: invalid, invalidHead: "operation", observeMode,
+      invalidResponse: invalid, invalidHead: "operation", deciderKind: decider.kind, observeMode,
       urlBefore, urlAfter: urlBefore,
     };
   }
   const action = answers.operation.choice;
+
+  // 置信度阈值升级：仅在有校准置信度的后端上启用；本地后端 gate.enabled === false → 全部跳过。
+  if (gate.enabled && typeof answers.operation?.confidence === "number") {
+    const opConfidence = answers.operation.confidence;
+    const low =
+      gate.doneThreshold != null && action === "done" && opConfidence < gate.doneThreshold ? "low_confidence_done" :
+      gate.minOpConfidence != null && opConfidence < gate.minOpConfidence ? "low_confidence" : null;
+    if (low) {
+      return {
+        stepDurationMs: Date.now() - started,
+        phases: phaseReport(), serverModel: receipt.model ?? null, serverUsage: receipt.usage ?? null,
+        action, target: null, isDone: false, blocked: false, changed: false,
+        invalidResponse: low, invalidHead: "operation", deciderKind: decider.kind, observeMode,
+        operationConfidence: opConfidence, confidenceGateEnabled: true,
+        urlBefore, urlAfter: urlBefore,
+      };
+    }
+  }
 
   // executor 只消费与选中 operation 对应的那个 target 头
   const targetHead =
@@ -1557,14 +1861,27 @@ export async function runJevStep(page, goal, options = {}) {
     action === "select" ? "select_target" : null;
   if (targetHead) {
     const targetInvalid = checkEnabled
-      ? validateChoice(answers[targetHead], Object.keys(questions[targetHead].criteria))
+      ? validateAnswer(answers[targetHead], Object.keys(questions[targetHead].criteria), capabilities)
       : null;
     if (targetInvalid) {
       return {
         stepDurationMs: Date.now() - started,
         phases: phaseReport(), serverModel: receipt.model ?? null, serverUsage: receipt.usage ?? null,
         action, target: null, isDone: false, blocked: false, changed: false,
-        invalidResponse: targetInvalid, invalidHead: targetHead, observeMode,
+        invalidResponse: targetInvalid, invalidHead: targetHead, deciderKind: decider.kind, observeMode,
+        urlBefore, urlAfter: urlBefore,
+      };
+    }
+    if (
+      gate.enabled && gate.minTargetConfidence != null &&
+      typeof answers[targetHead]?.confidence === "number" &&
+      answers[targetHead].confidence < gate.minTargetConfidence
+    ) {
+      return {
+        stepDurationMs: Date.now() - started,
+        phases: phaseReport(), serverModel: receipt.model ?? null, serverUsage: receipt.usage ?? null,
+        action, target: null, isDone: false, blocked: false, changed: false,
+        invalidResponse: "low_confidence_target", invalidHead: targetHead, deciderKind: decider.kind, observeMode,
         urlBefore, urlAfter: urlBefore,
       };
     }
@@ -1834,8 +2151,14 @@ export async function runJevStep(page, goal, options = {}) {
     urlAfter,
     observeMode,
     observedAfterNavigation,
+    deciderKind: decider.kind,
+    deciderConfidence: capabilities.confidence !== false,
+    confidenceGateEnabled: gate.enabled,
     operationProbabilities: answers.operation?.probabilities,
     operationConfidence: answers.operation?.confidence,
+    confidenceBelowStuck:
+      Boolean(gate.enabled) && gate.stuckThreshold != null &&
+      typeof answers.operation?.confidence === "number" && answers.operation.confidence < gate.stuckThreshold,
   };
 }
 
@@ -1880,6 +2203,7 @@ export async function runJevAutonomousLoop(page, goal, options = {}) {
   let nextReveal = null;
   let invalidStreak = 0;
   let sameActionStreak = 0;
+  let lowConfidenceStreak = 0; // 「置信度一直偏低」的连续计数（仅在有校准置信度的后端上有意义）
   let lastAction = null;
   let optionRetryStreak = 0; // 「选中项不在当前 options 里」的重问计数（我们自己的）
   const progress = [];
@@ -1926,7 +2250,8 @@ export async function runJevAutonomousLoop(page, goal, options = {}) {
     if (result.invalidResponse) {
       invalidStreak += 1;
       if (invalidStreak >= (options.maxInvalidResponses ?? 2)) {
-        return done({ success: false, steps: step, reason: "invalid_response", history });
+        const reason = String(result.invalidResponse).startsWith("low_confidence") ? "low_confidence" : "invalid_response";
+        return done({ success: false, steps: step, reason, history });
       }
       await sleep(options.invalidRetryDelayMs ?? 150);
       continue;
@@ -2033,6 +2358,16 @@ export async function runJevAutonomousLoop(page, goal, options = {}) {
     noTargetStreak = 0;
 
     history.push(result);
+    // 置信度「一直含糊」熔断：只在有校准置信度的后端上启用（stuckThreshold 默认关；
+    // 本地无置信度后端 confidenceBelowStuck 恒为 false → 不参与）
+    if (result.confidenceBelowStuck) {
+      lowConfidenceStreak += 1;
+      if (lowConfidenceStreak >= (options.maxSameAction ?? 3)) {
+        return done({ success: false, steps: step, reason: "stuck", history });
+      }
+    } else {
+      lowConfidenceStreak = 0;
+    }
     if (result.error) return done({ success: false, steps: step, reason: "action_failed", history });
     if (result.textError) return done({ success: false, steps: step, reason: result.textError, history });
     if (result.isDone) return done({ success: true, steps: step, reason: "jev_done", history });

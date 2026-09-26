@@ -7,6 +7,35 @@
 每个版本按 **新增 / 修复 / 更正 / 未验证** 分组。「更正」记的是被实测推翻的旧结论，
 不是新功能；「未验证」如实列出还没测过的边界。
 
+## 0.3.4 — 2026-09-26
+
+### 新增
+
+- **决策后端（decider）抽成可插拔的一层**：正式契约 `decide({ state, questions, options }) → { answers, meta }`
+  （`meta` 带 `model` / `usage` / `endpoint` / `kind`）。既有 16 个导出签名不变，`options.ask` 语义保持
+  （注入实现优先级最高）。默认仍是 System One（`askJev`），未配置时行为与从前完全一致。
+- **本地模型路径（`kind: "openai-compatible"`）**：`POST {baseUrl}/chat/completions`，适配
+  llama.cpp / ollama / vLLM / LM Studio 等 OpenAI 兼容端点。`questions` 按稳定顺序确定性地渲染成
+  一段文本（不掺时间戳/随机数），要求严格 JSON；非 JSON / 缺问题头 / 候选非法 → 按既有
+  `invalid_response` 失败，不猜、不派发任何动作。
+- **诚实的能力声明**：适配器 `capabilities: { confidence: false }`——文本 LLM 没有校准置信度。
+  引擎据此跳过 `minOpConfidence` / `minTargetConfidence` / `doneThreshold` / `stuckThreshold`
+  四类基于置信度的阈值升级（默认全关），**绝不伪造概率数字**；但执行层护栏一条不少（陈旧校验、
+  `guardRejected`、跨 frame fail-closed、危险动作拦截、`validateChoice` 候选合法性校验）。
+- **文件式配置 + CLI 开关**：`~/.config/ego-jev/decider.json`（`kind`/`baseUrl`/`model`/
+  `apiKey`/`apiKeyFile`/`timeoutMs`/`headers`）；CLI 加 `--decider <kind>` / `--base-url` / `--model`。
+  本地后端不需要 TypeSafe 凭证，凭证预检相应放宽。README 加「决策后端」一节，`SKILL.md` 对应一句。
+- 新增 `bench/test-decider-backend.mjs`（离线、stub `fetch`、不需凭证）覆盖：默认路径请求体形状、
+  本地后端提示完整性/顺序稳定性、解析失败不派发、置信度能力差异、三类护栏仍生效、注入 ask 优先。
+
+### 未验证
+
+- 本地模型路径只用 **stub `fetch`** 验证过：**没有在真实的本地推理服务上端到端跑过**（llama.cpp /
+  ollama / vLLM / LM Studio 任一都没试）。真实端点的超时、`response_format` 支持度、JSON 遵循率
+  均未测量。
+- 同 0.3.3：hooks 方案未做、路由触发率未量化、个人作用域技能在 Cowork / 云会话不加载未实测；
+  `docs/ECOSYSTEM.md` 的三列计数是文件树机械计数，★ 数与更新日期会变。
+
 ## 0.3.3 — 2026-09-26
 
 ### 新增

@@ -1,6 +1,6 @@
 {
   "name": "ego-jev",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "description": "用 Jev（TypeSafe System One）驱动 ego lite 浏览器，把「下一步点哪里」的决策放进单个进程内闭环。",
   "author": {
     "name": "liuyuchen",

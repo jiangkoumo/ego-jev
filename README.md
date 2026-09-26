@@ -274,7 +274,9 @@ console.log(result); // { success, reason, steps, history, phases, serverModels,
 配套导出：`askJev`、`runJevStep`、`parseActionTargets`、`enrichTargets`、`buildQuestions`、
 `validateChoice`、`generateText`、`loadTextModelConfig`、`resolveTextApiKey`、`loadApiKey`、
 `renderJevSummary`（分阶段耗时 + 服务端模型）。判定器可注入：`options.ask(state, questions)`，
-与 `askJev` 同签名，用于离线自测或接入别的判定器。
+与 `askJev` 同签名，用于离线自测或接入别的判定器（优先级最高）。决策后端抽象层另导出
+`resolveDecider` / `loadDeciderConfig` / `createOpenAICompatibleDecider` / `validateAnswer` /
+`confidenceGate`（见下节）。
 
 把「自动驾驶」作为**独立技能**装给 Agent（可选）：
 
@@ -312,6 +314,61 @@ mkdir -p ~/.agents/skills/ego-jev && ln -sfn "$PWD/SKILL.md" ~/.agents/skills/eg
 - 实测某网关的 `deepseek-v4.1-flash` 会输出 `reasoning_content`，`reasoning:{enabled:false}` 无效，
   生成约 1.3–1.9s
 
+## 决策后端（decider）：默认 System One，可换本地模型
+
+引擎把「谁来回答这张问题表」抽成了一层。默认后端就是 TypeSafe System One（`askJev`，行为与从前
+完全一致）；也可以切到**本地 / 自建的 OpenAI 兼容端点**（`POST /v1/chat/completions`，llama.cpp /
+ollama / vLLM / LM Studio 都提供）。契约：
+
+```
+decide({ state, questions, options }) → { answers, meta }
+  answers  与 questions 同形：每个问题头给出 { choice }，值必须来自该头的 criteria 键
+  meta     { model, usage, endpoint, kind }
+```
+
+`questions` 与给 System One 的完全一样（operation + 各操作的兼容元素），本地后端只是换个渲染方式：
+问题头与候选按**稳定顺序**（不掺时间戳/随机数）写成一段文本，要求模型返回**严格 JSON**；返回非 JSON、
+缺问题头、或选了不存在的候选 → 一律按 `invalid_response` **失败，不猜、不执行任何动作**。
+
+配置放在**文件**里（`ego-browser` 内嵌运行时拿不到自定义环境变量；与路由层同一配置目录，
+可用 `EGO_JEV_DECIDER_FILE` 覆盖路径）：
+
+```json
+// ~/.config/ego-jev/decider.json
+{
+  "kind": "openai-compatible",
+  "baseUrl": "http://127.0.0.1:11434/v1",
+  "model": "qwen2.5:7b",
+  "apiKey": "ollama",
+  "apiKeyFile": "~/.config/ego-jev/local.key",
+  "timeoutMs": 30000,
+  "headers": { "X-My-Gateway": "1" }
+}
+```
+
+- `kind`：`systemone`（默认）或 `openai-compatible`；字段 `baseUrl` / `model` / `apiKey` /
+  `apiKeyFile` / `timeoutMs` / `headers`
+- `apiKey` 与 `apiKeyFile` 二选一；本地端点常不校验，两者都可以不写（**不会**回退去读 TypeSafe 凭证）
+- CLI 覆盖：`--decider <kind>`、`--base-url <url>`、`--model <name>`；**未配置时行为与从前完全一致**
+- 脚本里也可注入：`options.ask(state, questions, options)`（优先级最高，压过任何配置），或
+  `options.deciderConfig` / `options.decider`
+
+**能力差异（诚实处理置信度）**：文本 LLM 没有校准过的概率。适配器声明
+`capabilities: { confidence: false }`，引擎据此**跳过**所有基于置信度阈值的升级
+（`minOpConfidence` / `minTargetConfidence` / `doneThreshold` / `stuckThreshold`，默认都是关），
+也**绝不伪造概率或置信度数字**。但执行层护栏一条不少：陈旧校验（结构指纹）、`guardRejected`、
+跨 frame fail-closed、危险动作拦截，以及 `validateChoice` 的**候选合法性**校验（choice 必须来自本次
+给出的候选集合）。System One 后端能力为 `confidence: true`，语义与从前完全一致。
+
+接一个本地端点（不写 `--decider` 就仍走 System One，只有显式指定时才切）：
+
+```bash
+ego-jev --decider openai-compatible \
+  --base-url "http://127.0.0.1:11434/v1" --model "qwen2.5:7b" \
+  --url "https://en.wikipedia.org/wiki/Main_Page" --until "/wiki/Jev" --text "Jev" \
+  "在搜索框输入 Jev 并提交"
+```
+
 ## 退出原因
 
 | reason | 含义 |
@@ -323,7 +380,8 @@ mkdir -p ~/.agents/skills/ego-jev && ln -sfn "$PWD/SKILL.md" ~/.agents/skills/eg
 | `target_missing` | 选了需要目标的动作却没解析出目标（连续 2 次） |
 | `no_targets` | 连续 3 次空快照（页面可能仍在加载） |
 | `guard_rejected` | 执行前守卫拒绝（陈旧/遮挡/不可用/跨 frame 命中失败，或命中危险动作词表 `dangerous_action`），该步未执行 |
-| `invalid_response` | Jev 响应校验不通过（非 argmax 或概率和不一致），未执行 |
+| `invalid_response` | 决策响应不通过校验（System One：非 argmax / 概率和不一致；本地后端：非 JSON / 缺问题头 / 候选非法），未执行 |
+| `low_confidence` | 有校准置信度的后端上，置信度低于 `minOpConfidence` / `doneThreshold` / `minTargetConfidence` 阈值（阈值默认关；无置信度的本地后端不受影响） |
 | `text_model_failed` / `no_text_source` | 输入操作拿不到文本，**不会猜一个值填进去** |
 | `action_failed` / `max_steps_reached` | 执行异常 / 超出步数预算 |
 

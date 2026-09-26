@@ -43,6 +43,9 @@ USAGE() {
   --keep <a,b>       完成后保留的页面标签，如 p1,p2（默认全部关闭）
   --keep-space       完成后不关闭 taskSpace，便于人工接手检查
   --api-key <key>    直接传入 Jev API Key
+  --decider <kind>   决策后端：systemone（默认）| openai-compatible（本地 /v1/chat/completions）
+  --base-url <url>   覆盖后端地址（openai-compatible 传端点根，如 http://127.0.0.1:11434/v1）
+  --model <name>     覆盖模型名（默认 jev-latest）
   --route-status     只读打印路由状态 JSON（接管情况 / always-on / 官方技能路径），
                      不起浏览器、不需要凭证
   --help, -h         显示帮助
@@ -65,6 +68,10 @@ USAGE() {
 
 注意:
   * ego-browser 内嵌运行时不会继承 shell 环境变量，所以凭证必须落盘成文件。
+  * 决策后端（默认 System One）也走文件式配置：~/.config/ego-jev/decider.json，
+    字段 kind/baseUrl/model/apiKey/apiKeyFile/timeoutMs/headers。kind=openai-compatible
+    时指向本地端点（llama.cpp / ollama / vLLM / LM Studio），不需要 TypeSafe 凭证；
+    文本 LLM 没有校准置信度，引擎会跳过置信度阈值判断，但保留全部执行层护栏。
   * --until 不要用会被浏览器自动翻译改写的 UI 字符串做比较，建议比对 URL 路径或 DOM 状态。
   * 跑任务前会看一眼官方 ego-browser 入口：接管过就静默重接管（ego lite 升级会把它还原）；
     没接管过但检测到入口，就首跑接管一次并打印一行；都没有则什么都不做。
@@ -101,6 +108,7 @@ write_route_status() {  # <out-file>
 }
 
 TARGET_URL=""; SPACE_ID=""; MAX_STEPS="10"; UNTIL=""; KEEP=""; KEEP_SPACE="0"; API_KEY_OVERRIDE=""; GOAL=""; TEXTS=(); ROUTE_STATUS=0
+DECIDER_KIND=""; DECIDER_BASE_URL=""; DECIDER_MODEL=""
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --url) TARGET_URL="$2"; shift 2 ;;
@@ -110,6 +118,9 @@ while [[ $# -gt 0 ]]; do
     --keep) KEEP="$2"; shift 2 ;;
     --keep-space) KEEP_SPACE="1"; shift ;;
     --api-key) API_KEY_OVERRIDE="$2"; shift 2 ;;
+    --decider) DECIDER_KIND="$2"; shift 2 ;;
+    --base-url) DECIDER_BASE_URL="$2"; shift 2 ;;
+    --model) DECIDER_MODEL="$2"; shift 2 ;;
     --route-status) ROUTE_STATUS=1; shift ;;
     --text) TEXTS+=("$2"); shift 2 ;;
     -h|--help) USAGE; exit 0 ;;
@@ -128,12 +139,16 @@ if [[ "$ROUTE_STATUS" == "1" ]]; then
 fi
 
 if [[ -z "$GOAL" ]]; then echo "错误: 请提供目标描述" >&2; exit 2; fi
+case "$DECIDER_KIND" in
+  ""|systemone|openai-compatible) ;;
+  *) echo "错误: --decider 只支持 systemone / openai-compatible（得到 ${DECIDER_KIND}）" >&2; exit 2 ;;
+esac
 if [[ ! -f "$LIB" ]]; then echo "错误: 找不到引擎 ${LIB}（可用 EGO_JEV_LIB 指定）" >&2; exit 2; fi
 if [[ -z "$API_KEY_OVERRIDE" ]]; then
-  # 用引擎自己的查找链判定（--api-key > 环境变量 > 文件链：我们自己的配置 / api_key / rc 里的 export）
-  if ! EGO_JEV_LIB_CHECK="$LIB" node --input-type=module -e \
-      'const m = await import(process.env.EGO_JEV_LIB_CHECK); process.exit(m.loadApiKey() ? 0 : 1);' >/dev/null 2>&1; then
-    echo "错误: 未找到 Jev 凭证。写入 ${CONFIG_FILE}（一行 API Key），或在 ~/.config/ego-jev/credentials 写 export TYPESAFE_API_KEY=…，或用 --api-key。" >&2
+  # 本地 OpenAI 兼容后端不需要 TypeSafe 凭证：--decider 显式指定，或 decider.json 已配置
+  if ! EGO_JEV_LIB_CHECK="$LIB" JEV_DECIDER_KIND="$DECIDER_KIND" node --input-type=module -e \
+      'const m = await import(process.env.EGO_JEV_LIB_CHECK); const local = process.env.JEV_DECIDER_KIND === "openai-compatible" || m.loadDeciderConfig()?.kind === "openai-compatible"; process.exit(m.loadApiKey() || local ? 0 : 1);' >/dev/null 2>&1; then
+    echo "错误: 未找到 Jev 凭证。写入 ${CONFIG_FILE}（一行 API Key），或在 ~/.config/ego-jev/credentials 写 export TYPESAFE_API_KEY=…，或用 --api-key；用本地后端请配 ~/.config/ego-jev/decider.json 或加 --decider openai-compatible。" >&2
     exit 3
   fi
 fi
@@ -154,6 +169,7 @@ JEV_GOAL="$GOAL" JEV_URL="$TARGET_URL" JEV_UNTIL="$UNTIL" JEV_KEEP="$KEEP" \
 JEV_STEPS="$MAX_STEPS" JEV_KEY="$API_KEY_OVERRIDE" JEV_SPACE="$SPACE_ID" \
 JEV_KEEP_SPACE="$KEEP_SPACE" JEV_CONFIG_OUT="$TMPD/config.json" \
 JEV_BASE_URL="${TYPESAFE_BASE_URL:-}" JEV_FALLBACK_BASE_URL="${TYPESAFE_FALLBACK_BASE_URL:-}" \
+JEV_DECIDER_KIND="$DECIDER_KIND" JEV_DECIDER_BASE_URL="$DECIDER_BASE_URL" JEV_DECIDER_MODEL="$DECIDER_MODEL" \
 JEV_ROUTE_FILE="$ROUTE_JSON" \
 node -e '
   const fs = require("node:fs");
@@ -169,6 +185,14 @@ node -e '
     // ego 运行时拿不到父进程环境变量，后端地址必须在父进程读好、写进配置再送进去
     baseUrl: process.env.JEV_BASE_URL || null,
     fallbackBaseUrl: process.env.JEV_FALLBACK_BASE_URL || null,
+    // 决策后端覆盖（--decider/--base-url/--model）；空则交给引擎读 decider.json 或默认 System One
+    deciderConfig: (process.env.JEV_DECIDER_KIND || process.env.JEV_DECIDER_BASE_URL || process.env.JEV_DECIDER_MODEL)
+      ? {
+          kind: process.env.JEV_DECIDER_KIND || undefined,
+          baseUrl: process.env.JEV_DECIDER_BASE_URL || undefined,
+          model: process.env.JEV_DECIDER_MODEL || undefined,
+        }
+      : null,
     routeFile: process.env.JEV_ROUTE_FILE || null,
     texts: process.argv.slice(1),
   }, null, 2));
@@ -217,6 +241,7 @@ const result = await runJevAutonomousLoop(page, cfg.goal, {
   apiKey: cfg.apiKey || undefined,
   baseUrl: cfg.baseUrl || undefined,
   fallbackBaseUrl: cfg.fallbackBaseUrl || undefined,
+  deciderConfig: cfg.deciderConfig || undefined,
   check: cfg.until ? async (p) => (await p.url()).includes(cfg.until) : undefined,
 });
 

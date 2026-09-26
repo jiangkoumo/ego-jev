@@ -2,7 +2,7 @@
 name: ego-jev
 description: 多步线性浏览器任务（连续点击、翻页、搜索表单提交、导航跳转）的默认入口：用 `ego-jev` 一条命令让 Jev（TypeSafe System One）在单个 ego-browser 进程内闭环决策（browser automation / multi-step click chain / form submit / navigation），不再每步退回大模型思考。单步动作、精确 DOM/选择器、批量抓取仍走 ego-browser 原生 API；也可把官方 ego-browser 技能入口接管成路由层。当任务涉及浏览器多步操作、要写 ego-browser nodejs 脚本（await import / fetch / 凭证落盘）时读它。
 metadata:
-  version: "0.3.3"
+  version: "0.3.4"
   date: "2026-09-26"
   requires: ego-browser
 ---
@@ -111,6 +111,12 @@ CLI 在父进程读取后写进配置传给子进程**（ego 运行时自身读�
 用 `options.ask` 注入确定性判定器（不联网、不需要 key），但观测、`locate`、裸 CDP 派发、真实 DOM 断言
 全走真实路径，并断言整个用例一次 `fetch` 都没发。判定器注入契约：`options.ask(state, questions, options)`，
 与引擎自己的 `askJev` 同签名；默认仍走 TypeSafe。
+
+**决策后端可换**：契约形如 `decide({ state, questions, options }) → { answers, meta }`；默认 System One
+（语义不变），配置 `~/.config/ego-jev/decider.json` 可切到本地 OpenAI 兼容端点
+（`kind: "openai-compatible"`），CLI 用 `--decider` / `--base-url` / `--model` 覆盖。本地文本模型
+没有校准置信度（`capabilities.confidence: false`），引擎跳过置信度阈值升级但保留全部执行层护栏
+（陈旧 / `guardRejected` / 跨 frame fail-closed / 危险动作拦截 / 候选合法性校验）；细节见 README。
 
 **决策结构**（对齐 [browser-use/jev-ultrafast](https://github.com/browser-use/jev-ultrafast) 的
 dynamic operation + target）：每次观测产出「索引化元素表」，每个可交互元素一个 `ref`，并携带
