@@ -101,6 +101,8 @@ ego lite 会把**官方** `ego-browser` 技能写进每个 Agent 的技能目录
 
 `scripts/wire-agent-skills.sh` 把这个入口接管成一层**路由层**（包外）：Agent 先看到的
 「先路由、再决定写不写脚本」那一节是本技能加的，技能正文仍然软链到 App 的当前版本（升级自动跟随）。
+技能列表里的 description 也把**路由句排到厂商描述之前**（描述被按预算压缩、优先丢尾部，排在末尾
+等于最先被砍掉）；厂商文本一字不改，只是挪到后面。
 **`install.sh` 默认就会做这件事**，`ego-jev` CLI 首次运行时也会在检测到官方入口时补一次：
 
 ```bash
@@ -331,8 +333,14 @@ mkdir -p ~/.agents/skills/ego-jev && ln -sfn "$PWD/SKILL.md" ~/.agents/skills/eg
     或 `Skill(name)` 权限 deny 规则；**我们只文档说明，不自动改用户设置**。
   - hooks（`SessionStart` / `UserPromptSubmit` 注入 `additionalContext`）是唯一「必须发生」的强制层；
     **本轮没做**——它要写用户的 Agent settings，代价是侵入用户配置。
-- **路由触发率没有量化**：我们没有测「Agent 实际走 ego-jev 的比例」（需要另一套 grader）；
-  本仓库只保证接管层在位、状态可审计（`--route-status`）。
+- **路由触发率：已分层量化，但样本很小（决策探针，不是执行成功率）**——方法：起全新会话（中立 cwd，
+  不读本仓库），给真实口吻的多步浏览器任务，只让它报「打算怎么做」、不许执行；判定「计划里是否走 ego-jev」。
+  - **交互式会话：5/5 主动走 ego-jev**（当时只有同名接管 + 自身技能两层，**没开 always-on**；
+    含两条不含「点击/翻页」字眼的问法）。开启 always-on 后复测 2/2，无回归。
+  - **子代理 / 一次性无会话上下文：0/6**（开 always-on 之前是 0/4）。探针确认这类上下文里
+    **既没有技能清单、也没有任何 AGENTS.md 内容**——always-on 那行到不了它们。所以把浏览器活
+    派给子代理时，**必须在 handoff 里显式写「用 `ego-jev` CLI」**，否则它不会自己选。
+  - 注意事项：`n=5/6`、单机单模型、探针只报计划；这不能外推成「真实执行成功率」。
 - **跨域 iframe 不处理**：读不到 `contentDocument`，这类树不在观测范围内。
 - **frame 祖先带缩放/旋转时直接拒绝**：frame 内坐标换算会失真，所以宁可不点。
   frame 元素到文档根的祖先链上有非 identity 的 2D 线性变换（scale/rotate/skew）或 `zoom !== 1`

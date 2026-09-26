@@ -44,8 +44,10 @@ MARKER_MAGIC='"overlay": "ego-jev"'
 ROUTE_BEGIN='<!-- ego-jev:route begin -->'
 ROUTE_END='<!-- ego-jev:route end -->'
 
-# 路由说明（进 frontmatter 的 description，是 Agent 选择技能的依据）
-ROUTING_NOTE='本入口已由 ego-jev 接管：连续点击、翻页、搜索表单提交、多字段填写、导航跳转这类多步线性任务，先用 `ego-jev` CLI 在单进程内闭环（一条命令，别写逐步脚本）；单步动作、精确 DOM/选择器操作、批量抓取再落到本技能的 ego-browser API。'
+# 路由说明（进 frontmatter 的 description，是 Agent 选择技能的依据）。
+# 必须排在厂商描述之前：描述会被按预算压缩、优先丢最少用的尾部，放在末尾等于最先被砍。
+# 开头即「触发条件 + 动作」，长度刻意不超过厂商描述之后的那版旧拼法（越短越抗截断）。
+ROUTING_NOTE='多步线性浏览器任务（连续点击、翻页、搜索表单提交、多字段填写、导航跳转）先用 `ego-jev` CLI 在单进程内闭环（一条命令，别写逐步脚本）；单步动作、精确 DOM/选择器、批量抓取走本技能的 ego-browser API。本入口已由 ego-jev 接管。'
 
 MODE="wire"          # wire | check | restore | ensure | status | always-on
 DRY_RUN=0
@@ -131,7 +133,8 @@ render_overlay() {
   [[ -n "$desc" ]] || desc="When you need a browser, read this Skill by default（原描述读取失败，请重跑本脚本）"
   # frontmatter 是 YAML：description 用单引号标量，内部单引号翻倍，换行压成空格。
   # 不这样做的话，厂商描述里一旦出现 ": " 就会让整条技能解析失败（Agent 直接看不到这个技能）。
-  desc_yaml="'$(printf '%s %s' "$desc" "$ROUTING_NOTE" | tr '\n' ' ' | sed "s/'/''/g")'"
+  # 路由句在前、厂商描述在后（厂商文本一字不改，只挪位置）。
+  desc_yaml="'$(printf '%s %s' "$ROUTING_NOTE" "$desc" | tr '\n' ' ' | sed "s/'/''/g")'"
   while IFS= read -r line || [[ -n "$line" ]]; do
     line="${line//'{{DESCRIPTION_YAML}}'/$desc_yaml}"
     line="${line//'{{VENDOR_VERSION}}'/$ver}"
@@ -196,15 +199,17 @@ route_block() {
 ## 浏览器任务：多步线性先走 ego-jev
 
 多步线性浏览器任务（连续点击、翻页、搜索表单提交、多字段填写、导航跳转）先用 `ego-jev` CLI
-在单个进程内闭环；单步动作、精确 DOM/选择器、批量抓取仍走 `ego-browser` 原生 API。
-
-Multi-step linear browser work (click chains, pagination, form submits, navigation) should go
-through the `ego-jev` CLI first; single actions, precise DOM/selector work and bulk scraping stay
-on the `ego-browser` API.
+在单进程内闭环（一条命令，别写逐步脚本）：
 
 ```bash
 ego-jev --url "https://…" --until "/expected/path" --steps 8 "把目标写清楚"
 ```
+
+单步动作、精确 DOM/选择器、批量抓取仍走 `ego-browser` 原生 API。
+
+Multi-step linear browser work (click chains, pagination, form submits, navigation) should go
+through the `ego-jev` CLI first; single actions, precise DOM/selector work and bulk scraping stay
+on the `ego-browser` API.
 
 技能目录：`{{EGO_JEV_SKILL}}` · 路由层与 always-on 块的还原：`bash {{WIRE_SCRIPT}} --restore`
 <!-- ego-jev:route end -->

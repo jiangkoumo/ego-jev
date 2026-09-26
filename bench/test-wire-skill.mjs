@@ -75,6 +75,14 @@ check("接管前 --check 报未接管（exit 1）", wire("--check").code === 1);
   check("生成物带路由规则", overlayText().includes("先路由，再决定写不写脚本"));
   check("生成物带 ego-jev CLI 用法", overlayText().includes("ego-jev --url"));
   check("保留了官方描述（触发词不变）", overlayText().includes(DESC_1));
+  { // 回归保护（位置断言，不是 contains）：路由句必须排在厂商描述之前——描述被压缩时先丢尾部，
+    // 旧拼法把路由句放末尾，等于最先被砍掉。这里断言路由句的开头与结尾都在厂商文本之前。
+    const descLine = overlayText().split("\n").find((l) => l.startsWith("description: ")) || "";
+    const pOpen = descLine.indexOf("多步线性");
+    const pTail = descLine.indexOf("本入口已由 ego-jev 接管");
+    const pVendor = descLine.indexOf(DESC_1);
+    check("路由句整段在厂商描述之前（位置断言）", pOpen >= 0 && pTail >= 0 && pVendor >= 0 && pOpen < pTail && pTail < pVendor, `open=${pOpen} tail=${pTail} vendor=${pVendor}`);
+  }
   check("指向稳定的官方软链（不是版本号目录）", overlayText().includes(join(VENDOR_LINK, "SKILL.md")) && !overlayText().includes(join(VENDOR, "SKILL.md")));
   check("references 软链指向稳定路径", fs.readlinkSync(join(ENTRY, "references")) === join(VENDOR_LINK, "references"));
   check("生成物里没有时间戳（否则每次 --check 都会误报漂移）", !/\d{4}-\d{2}-\d{2}T/.test(overlayText()));
@@ -336,12 +344,13 @@ wire();
   const line = text.split("\n").find((l) => l.startsWith("description: "));
   check("description 是单引号标量", line.startsWith("description: '") && line.endsWith("'"), line.slice(0, 70));
   const value = line.slice("description: ".length).slice(1, -1).replace(/''/g, "'");
-  check("描述内容完整保留（含接管说明）", value.startsWith(DESC_COLON) && value.includes("已由 ego-jev 接管"));
+  check("描述内容完整保留（含厂商文本与接管说明）", value.includes(DESC_COLON) && value.includes("已由 ego-jev 接管"));
+  check("路由句排在厂商描述之前（位置断言）", value.indexOf("本入口已由 ego-jev 接管") < value.indexOf(DESC_COLON) && value.indexOf(DESC_COLON) > 0, `route=${value.indexOf("本入口已由 ego-jev 接管")} vendor=${value.indexOf(DESC_COLON)}`);
   check("description 只占一行", text.split("\n").filter((l) => l.startsWith("description: ")).length === 1);
   let yamlOk = null;
   try {
     const YAML = await import("yaml");
-    yamlOk = YAML.parse(text.split("---\n")[1])?.description?.startsWith(DESC_COLON) === true;
+    yamlOk = YAML.parse(text.split("---\n")[1])?.description?.includes(DESC_COLON) === true;
   } catch { /* 环境里没有 yaml 包 → 跳过这一步 */ }
   if (yamlOk !== null) check("真 YAML 解析通过", yamlOk);
   check("--check 仍通过", wire("--check").code === 0);
