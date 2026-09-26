@@ -74,6 +74,10 @@ overlay/ego-browser/     路由层模板（渲染到 Agent 技能目录，不是
 examples/bench/          A/B 对照基准（Jev 闭环 vs 每步大模型循环）
 install.sh               手工安装（接 CLI 进 PATH + 准备凭证；`--wire` 顺便接管入口）
 update.sh                一键更新（接管过则自动重接管）
+CHANGELOG.md             版本历史（顶部条目必须与 SKILL.md 的 metadata.version 一致）
+.claude-plugin/          Claude Code 插件元数据（plugin.json / marketplace.json）
+skills/ego-jev/          插件技能目录（SKILL.md / scripts / overlay 是指向仓库根的相对软链）
+docs/                    demo 素材与重做脚本（banner.svg / demo.gif / capture-demo.mjs …）
 ```
 
 ## 开发约定
@@ -102,6 +106,14 @@ update.sh                一键更新（接管过则自动重接管）
   `EGO_JEV_NO_HEAL=1` 或 `EGO_JEV_CONFIG_DIR` 可控制）；改这块要重跑同一个单测（[29] 段覆盖）。
 - 接管脚本要兼容 macOS 自带的 bash 3.2（没有 `local -n`、关联数组、`mapfile`）。
 - 生成物必须确定性（不能写时间戳/随机数），否则 `--check` 会永远报漂移。
+- **版本号只有一个来源**：`SKILL.md` 的 frontmatter `metadata.version`；`CHANGELOG.md` 顶部条目、
+  `.claude-plugin/plugin.json`、`.claude-plugin/marketplace.json` 必须与它一致。改版本后跑
+  `node bench/test-release-consistency.mjs`（纯 node，无需浏览器/凭证）。
+- **demo 素材必须由真实运行产生**（不许手绘界面）：录帧用
+  `sed "s|__REPO__|$PWD|g" docs/capture-demo.mjs | ego-browser nodejs`，再按 `docs/README.md`
+  里的 ffmpeg 命令合成 GIF/MP4，社交预览图用 `docs/make-social-preview.mjs`。
+- 插件技能目录 `skills/ego-jev/` 里只放**指向仓库根**的相对软链，不复制 SKILL.md 正文
+  （正文只有仓库根一份，软链保证 clone 后可用）。
 - 接管层只在 Agent 技能目录里写：`SKILL.md` 是生成的，`references/`、`scripts/`、`learnings/`
   是软链——不要把正文拷进去（会跟 App 版本脱节）。
 - 只用真实命令输出和退出码宣称完成；不确定就明说哪一步失败。

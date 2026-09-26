@@ -1,0 +1,23 @@
+{
+  "goal": "先打开 new 页面，再打开 comments 页面",
+  "done": true,
+  "finalUrl": "https://news.ycombinator.com/newcomments",
+  "trace": [
+    {
+      "step": 1,
+      "action": "click",
+      "target": "link \"new\" 当前值=空 /newest",
+      "changed": true,
+      "urlAfter": "https://news.ycombinator.com/newest",
+      "reason": null
+    },
+    {
+      "step": 2,
+      "action": "click",
+      "target": "link \"comments\" 当前值=空 /newcomments",
+      "changed": true,
+      "urlAfter": "https://news.ycombinator.com/newcomments",
+      "reason": null
+    }
+  ]
+}

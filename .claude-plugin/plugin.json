@@ -1,0 +1,13 @@
+{
+  "name": "ego-jev",
+  "version": "0.2.0",
+  "description": "用 Jev（TypeSafe System One）驱动 ego lite 浏览器，把「下一步点哪里」的决策放进单个进程内闭环。",
+  "author": {
+    "name": "liuyuchen",
+    "url": "https://github.com/jiangkoumo"
+  },
+  "homepage": "https://github.com/jiangkoumo/ego-jev",
+  "repository": "https://github.com/jiangkoumo/ego-jev",
+  "license": "MIT",
+  "keywords": ["browser-automation", "ego-browser", "jev", "typesafe", "agent-skill"]
+}

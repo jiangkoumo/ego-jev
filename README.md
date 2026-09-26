@@ -1,8 +1,8 @@
-# ego-jev
+![ego-jev](docs/banner.svg)
 
 [![skills.sh](https://skills.sh/b/jiangkoumo/ego-jev)](https://skills.sh/jiangkoumo/ego-jev)
 
-**用 Jev（TypeSafe System One）驱动 ego lite 浏览器，把「下一步点哪里」的决策放进单个进程内闭环。**
+**用 Jev（TypeSafe System One）驱动 ego lite 浏览器：把「下一步点哪里」的决策放进单个进程内闭环。**
 
 > English summary: `ego-jev` replaces the per-step LLM round trip in browser automation with
 > [TypeSafe](https://docs.typesafe.ai)'s System One model **Jev**. Jev reads one *indexed element
@@ -18,101 +18,54 @@
 
 ---
 
-## 这是什么
+## 为什么需要它
 
-[ego lite](https://github.com/citrolabs/ego-lite) 的 `ego-browser` 让 Agent 操作真实浏览器（复用你的登录态）。
-但典型用法是每一步都退出浏览器上下文、回到大模型思考「点哪里」——每步一次模型往返。
+用 `ego-browser` 做多步任务时，典型写法是每一步都退出浏览器上下文、回到大模型问一句「下一步点哪里」，
+拿到答案再开一步。贵在三处：
 
-`ego-jev` 把这一步换成一个小的 System One 模型 **Jev**：
+- **模型往返**：一次大模型判断实测 1.6–4.5s（`kimi-k3` 1.8s、`minimax-m3` 1.6s、`glm-5.3` 3.2s、
+  `qwen3.8-max` 3.5s、`deepseek-v4-pro` 4.5s），每一步都要付一次。
+- **上下文开销**：每步一个新进程 / 新会话，进程启动本身 250–350ms，还要重新把页面状态讲一遍。
+- **不确定性**：退出条件写在模型嘴里，判没判对没法核对。
 
-- 只把**视口内的索引化元素表**发给它（不是整页快照），1.6KB ≈ 400 tokens 量级
-- 一次请求同时问 **operation** 和各操作的 **target**（推测性问题，彼此不可见）
-- 每个 target 头只列出与它兼容的元素，操作与目标不匹配天然被排除
-- 代码负责：观察、执行、陈旧校验、死循环保护、退出判定、space 收尾
+`ego-jev` 把「下一步做什么、点哪个」换成一个小模型 **Jev**，一次请求就答完；观测、执行、
+陈旧校验、退出条件全部由代码负责。它**不替代大模型**：Jev 不生成文本、不做业务判断，
+需要写内容时再调一个小文本模型。
 
-它**不是**想替代大模型：Jev 不生成文本、不做业务判断，只回答「下一步做什么、点哪个」。
-需要生成内容时再调一个小文本模型（见[文本生成](#文本生成可选)）。
+## 能做什么
 
-## 实测
+每条都带一个实测数字或明确边界；数字的测量条件见[测量与复跑基准](#测量与复跑基准)。
 
-**方法**：同任务、同元素表、同验证器，「交替 3 轮取中位数」。
-A = `ego-jev` 单进程闭环；B = 经典循环（**每步一个独立进程** + 大模型 `kimi-k3` 思考）。
-测于 macOS + ego lite 0.5.0.32 + `jev-1.13`，2026-09-19。
+- **多步线性任务一条命令闭环**：连续点击、翻页、搜索表单提交、导航跳转。Hacker News 两步导航
+  A/B 对照中位 **4.9s**（1 进程）对经典循环 **9.7s**（3 进程）。
+- **决策比大模型快**：Jev 决策请求 **0.35–0.52s/次**（10 次采样，中位 434ms），大模型 1.6–4.5s/次。
+- **观测便宜**：一次 `page.evaluate` 自建元素表，**2–4ms / ~2k 字符**；旧路径 `page.snapshot()`
+  是 110–130ms / 27484 字符。
+- **动作便宜**：裸 CDP 派发 **13–16ms**；旧路径 `page.click(ref)` 788–1005ms。
+- **元素表覆盖原生控件之外**：无 role 的容器型可点元素（`<div onclick>`、`tabindex`、
+  `cursor:pointer` 块级容器）补成 `clickable-region`；实测 YouTube 首页 3 个、X 首页 5 个，
+  真实 Jev 能选中它。同源 iframe 与开放 shadow root 里的元素也进表。
+- **执行期护栏**：陈旧 ref、被遮挡、不可用、跨 frame 命中失败一律拒绝执行（0 次派发），
+  另有**危险动作前置拦截**——目标命中「支付 / 删除 / 退订」词表（我们自己的中英词表）时不执行。
+- **退出条件由代码判定**：`--until <substr>` 或脚本里的 `check`，不依赖模型自评。
+- **每一步可核对**：分阶段耗时（观测 / 决策 / 执行 / 校验）与**服务端实际模型版本**由
+  `renderJevSummary` 打印；请求里写的是浮动别名，只有响应里的 `model` 字段能说明当时服务的是哪版。
+- **凭证链 + 后端可降级**：凭证按文件链查找（含已有 rc 里的 `export`），后端地址可覆盖，
+  主后端失败有一条可关闭的降级端点。
+- **没凭证也能先自测**：`bench/test-offline-e2e.mjs` 在 `about:blank` 上注入 DOM，
+  用注入判定器跑真实的观测 → 裸 CDP 派发 → 真实 DOM 断言，不联网、不需要 key。
 
-| 任务 | A（ego-jev） | B（经典循环） | 结果 |
-| --- | ---: | ---: | --- |
-| Hacker News 两步复合导航 | 中位 **4.9s**（1 进程，12 次浏览器调用） | 中位 **9.7s**（3 进程） | **约 2.0×** |
-| 维基百科搜索（两组都要生成文本） | 中位 **5.4s**（1 步） | 中位 **10.1s**（2 进程） | **约 1.9×** |
+## Demo
 
-省在哪里（实测分解）：
+![真实运行录屏](docs/demo.gif)
 
-- ✅ **决策往返**：Jev 决策请求约 **0.35–0.52s/次**（整步合计约 1.0–1.4s），可用大模型 1.6–4.5s/次
-  （实测 `kimi-k3` 1.8s、`minimax-m3` 1.6s、`glm-5.3` 3.2s、`qwen3.8-max` 3.5s、`deepseek-v4-pro` 4.5s）
-  —— 2026-09-26 实测，服务端 `jev-1.13.0`；分阶段数字由 `renderJevSummary` 打印。
-  旧文档的「单步决策约 1.0–1.5s」实为**整步耗时**，不是决策请求本身。
-- ✅ **每步退出浏览器上下文**：B 每步一个新进程，A 全程 1 个（进程启动实测仅 250–350ms/次，不是主要成本）
-- ✅ **省浏览器动作**（引擎重建后新增，现在是最大收益项）：默认观测是**一次 `page.evaluate`**
-  自建 DOM 元素表（约 **2–4ms / ~2k 字符**），动作走**裸 CDP**（**13–16ms**）；
-  旧路径是 `page.snapshot()` **110–130ms / 27484 字符**、`page.click(ref)` **788–1005ms**
-
-> ⚠️ 上表是**引擎重建前**的测量（2026-09-19，3 对/任务，方差大）。重建后的数字见下。
-> 目标能用选择器写死时，直接写代码比两者都快。基准脚本见 [`examples/bench/`](examples/bench/)。
-
-### 引擎重建后（2026-09-22）
-
-按剖析结果重建，不是按猜测——真实瓶颈是 **ego 的语义动作通道**，不是快照。
-同任务隔离实验（5 臂 × 3 任务 × 3 次，全部 3/3 成功）：
-
-| 任务 | 重建前 | 重建后 |
-| --- | ---: | ---: |
-| Hacker News 两步导航 | 4569ms | **1916ms** |
-| httpbin 表单（填写+勾选+提交） | 6782ms | **3607ms** |
-| 维基搜索（含文本生成） | 3663ms | 3634ms（受模型延迟主导，无变化） |
-
-**与 browser-harness + jev-ultrafast 的预登记配对验证**（5 任务 × 2 栈 × 10 轮 = 100 轮，
-bootstrap 95% CI，判定规则**跑前写死**）：
-
-| 任务 | 结论 |
-| --- | --- |
-| HN 点击链 | **本体更快 −378ms**，CI[−1453,−313]，10/0 |
-| 维基搜索 | **本体更快 −819ms**，CI[−1314,−195]；且只需 **1 次 Jev 决策**（对方 3 次）|
-| 表单填写 | **无差异**（CI 跨 0）|
-| 原生下拉 | 对方更快 **+248ms**，CI[163,426] |
-| 翻页（目标在文档序 110/119）| 两栈都完不成 —— 能力边界，非速度问题 |
-
-另外：**滚动若真的移动了视口或露出新元素就算进展** —— X 上必须连滚 >3 次的深帖任务 **0/6 → 6/6**。
-详见 [`VERIFY-REPORT.md`](VERIFY-REPORT.md)，每个数字都能追到 [`bench/raw/`](bench/raw)。
-
-## 架构
-
-```
-页面 ──page.evaluate──► 元素表（ref | role | 名称 | 当前值 | 勾选态 | 下拉选项 | 路径）
-                        │
-                        ▼
-              单次 Jev 请求（并行、互不可见）
-              ┌──────────────────────────────┐
-              │ operation: click/type_text/… │
-              │ click_target                 │ ← 只含可点元素
-              │ type_text_target             │ ← 只含可输入元素
-              │ select_target                │ ← 元素#选项序号
-              │ input_text                   │ ← 候选文本（可选）
-              └──────────────┬───────────────┘
-                             ▼
-                     只消费命中操作的那个头 → 执行 → 由代码判定是否达成
-```
-
-关键设计：
-
-- **一次请求、多个 target 头**：避免串行的「先问操作再问目标」，也天然排除不兼容的目标
-- **每个 target 头显式写明它假设的 operation**（并行问题读不到彼此答案）
-- **`done` / `blocked` 就是 operation 之一**，不另设概率阈值
-- **代码侧选项索引**：原生下拉的候选写成 `ref=6#2`，索引由代码持有，模型只做选择
-- **Jev 无跨请求记忆**，所以「已完成步骤」由代码回填进 state，复合目标才稳
-- **陈旧校验**：只执行与本次元素表一致的 ref，且比较页面变化时忽略 `#hash`
+上面这段是**真实运行**录的：`docs/capture-demo.mjs` 跑 hacker news 首页 → `new` → `comments`，
+每步动作后注入的说明条取自真实的 `runJevStep` 结果（不是写死「成功」）。重做命令见
+[`docs/README.md`](docs/README.md)。
 
 ## 安装
 
-### 方式 1：skills CLI（推荐，一行，支持 40+ 种 Agent）
+### 方式 1：skills CLI（推荐，一行）
 
 ```bash
 npx skills add jiangkoumo/ego-jev
@@ -120,7 +73,17 @@ npx skills add jiangkoumo/ego-jev
 
 装完技能落在 Agent 的技能目录里（如 `~/.agents/skills/ego-jev/`），引擎和 CLI 一起带过去。
 
-### 方式 2：克隆后跑安装脚本
+### 方式 2：Claude Code 插件市场
+
+仓库根有 `.claude-plugin/plugin.json` 与 `.claude-plugin/marketplace.json`，技能本体在
+`skills/ego-jev/`（里面是**指向仓库根**的相对软链，不复制正文）。在 Claude Code 里：
+
+```
+/plugin marketplace add jiangkoumo/ego-jev
+/plugin install ego-jev@ego-jev
+```
+
+### 方式 3：克隆后跑安装脚本
 
 ```bash
 git clone https://github.com/jiangkoumo/ego-jev.git
@@ -152,11 +115,11 @@ bash scripts/wire-agent-skills.sh --restore   # 还原成官方软链（启用�
 
 接管会在 `~/.config/ego-jev/wire-enabled.json` 留下启用标记（含接管过的目录列表）；之后有两道自愈：
 `./update.sh` 自动重接管/刷新（ego lite 升级会把入口重建回官方软链，甚至短时间变成断链），
-`ego-jev` CLI 每次跑任务前也静默检查一次（实测 ~80ms，只在真漂移时才写盘；`EGO_JEV_NO_HEAL=1` 关闭）。
+`ego-jev` CLI 每次跑任务前也静默检查一次（只在真漂移时才写盘；`EGO_JEV_NO_HEAL=1` 关闭）。
 目录被记在标记里、入口又不见了时，会按启用意图把路由层重建回去。指向别处的软链不会被碰，
 普通目录（官方技能的一份拷贝）不会被覆盖。路由只影响**新开的** Agent 会话（技能列表是启动时快照的）。
 
-### 方式 3：把这段 prompt 丢给你的 Agent
+### 方式 4：把这段 prompt 丢给你的 Agent
 
 > 帮我安装 https://github.com/jiangkoumo/ego-jev ：
 > 1. 执行 `npx skills add jiangkoumo/ego-jev`（skills CLI 不可用就改成克隆仓库跑 `./install.sh`）；
@@ -178,7 +141,7 @@ npx skills add jiangkoumo/ego-jev  # skills CLI 安装的：重跑一次即覆�
 skills CLI 装的是拷贝、会提示你重跑那条 `npx skills add`。**工作区有未提交改动时会跳过 pull**，
 不会覆盖你的改动。
 
-### 验证安装（别只看代码，跑起来）
+## 验证安装（别只看代码，跑起来）
 
 ```bash
 ego-browser --version                                        # 前置条件
@@ -192,6 +155,10 @@ ego-browser --version                                        # 前置条件
 bash "<技能目录>/scripts/wire-agent-skills.sh" --check   # 期望：exit 0（漂移则 exit 1）
 grep -l "先路由" ~/.agents/skills/ego-browser/SKILL.md     # 期望：打印出路径
 ```
+
+**没凭证也能先自测**：`ego-browser nodejs < bench/test-offline-e2e.mjs` 在 `about:blank` 上注入 DOM，
+用 `options.ask` 注入确定性判定器（不联网、不需要 key），但观测、`locate`、裸 CDP 派发、结果断言
+全走真实路径；失败时能分清是引擎坏了还是凭证/网络问题。
 
 ### 凭证：必须落盘成文件
 
@@ -215,10 +182,6 @@ chmod 600 ~/.config/typesafe/api_key
 **CLI 会在父进程读这两个变量并写进配置传给子进程**（ego 运行时自身读不到自定义环境变量）；
 直接写 `ego-browser nodejs` 脚本时请改用 `options.baseUrl` / `options.fallbackBaseUrl`。
 
-**没凭证也能先自测**：`ego-browser nodejs < bench/test-offline-e2e.mjs` 在 `about:blank` 上注入 DOM，
-用 `options.ask` 注入确定性判定器（不联网、不需要 key），但观测、`locate`、裸 CDP 派发、结果断言
-全走真实路径；失败时能分清是引擎坏了还是凭证/网络问题。
-
 ## 用法
 
 命令行：
@@ -241,6 +204,7 @@ ego-jev --space 3 --keep-space --steps 15 "点击未发送帖子并保存"
 
 `--until` 给的是**确定性**退出条件，比依赖 Jev 自评 `done` 可靠得多，强烈建议带上。
 退出码：`0` 达成 / `1` 未达成（此时 taskSpace 被保留供排查）/ `2` 参数错误 / `3` 缺凭证。
+CLI 收尾会打印一行分阶段耗时与**服务端实际模型版本**（`renderJevSummary`）。
 
 在 `ego-browser nodejs` 脚本里复用引擎：
 
@@ -252,8 +216,13 @@ const result = await runJevAutonomousLoop(page, "先打开 new 页面，再打�
   text: ["Jev"],                                                  // 可填文本候选（可选）
   check: async (p) => (await p.url()).includes("/newcomments"),    // 确定性成功条件（推荐）
 });
-console.log(result); // { success, reason, steps, history }
+console.log(result); // { success, reason, steps, history, phases, serverModels, usage }
 ```
+
+配套导出：`askJev`、`runJevStep`、`parseActionTargets`、`enrichTargets`、`buildQuestions`、
+`validateChoice`、`generateText`、`loadTextModelConfig`、`resolveTextApiKey`、`loadApiKey`、
+`renderJevSummary`（分阶段耗时 + 服务端模型）。判定器可注入：`options.ask(state, questions)`，
+与 `askJev` 同签名，用于离线自测或接入别的判定器。
 
 把「自动驾驶」作为**独立技能**装给 Agent（可选）：
 
@@ -298,10 +267,11 @@ mkdir -p ~/.agents/skills/ego-jev && ln -sfn "$PWD/SKILL.md" ~/.agents/skills/eg
 | `check_passed` / `jev_done` | 成功 |
 | `blocked` | Jev 判定验证码/登录墙/无可用推进手段 |
 | `no_progress` | 连续 5 次变更类动作页面无变化 |
-| `stuck` | 同一动作连续 3 次无变化（含反复滚动） |
+| `stuck` | 同一动作连续 3 次无变化（含反复滚动；原生下拉重问仍失败也归这里） |
 | `target_missing` | 选了需要目标的动作却没解析出目标（连续 2 次） |
 | `no_targets` | 连续 3 次空快照（页面可能仍在加载） |
-| `guard_rejected` | 执行前守卫拒绝（陈旧/遮挡/不可用，或命中危险动作词表 `dangerous_action`），该步未执行 |
+| `guard_rejected` | 执行前守卫拒绝（陈旧/遮挡/不可用/跨 frame 命中失败，或命中危险动作词表 `dangerous_action`），该步未执行 |
+| `invalid_response` | Jev 响应校验不通过（非 argmax 或概率和不一致），未执行 |
 | `text_model_failed` / `no_text_source` | 输入操作拿不到文本，**不会猜一个值填进去** |
 | `action_failed` / `max_steps_reached` | 执行异常 / 超出步数预算 |
 
@@ -309,32 +279,28 @@ mkdir -p ~/.agents/skills/ego-jev && ln -sfn "$PWD/SKILL.md" ~/.agents/skills/eg
 
 ## 已知限制（实测）
 
-- **原生下拉的「选中项不在当前 options 里」有了一次重问**：选项在观测与执行之间被 JS 重建/重排时，
-  不再当失败/无进展，而是**一次**带新选项的重问（`maxOptionRetries` 默认 1），重问仍失败才报 `stuck`。
+- **跨域 iframe 不处理**：读不到 `contentDocument`，这类树不在观测范围内。
+- **frame 祖先带缩放/旋转时直接拒绝**：frame 内坐标换算会失真，所以宁可不点。
+  frame 元素到文档根的祖先链上有非 identity 的 2D 线性变换（scale/rotate/skew）或 `zoom !== 1`
+  时记 `frame_transformed`；纯平移、`translateZ(0)` 这类只影响合成的写法放行。
+  跨 frame 命中测试逐层做：每层 `elementFromPoint` 必须**严格命中承载下一层的 `<iframe>` 自身**，
+  任一层被遮挡即 `covered`、0 次派发；frame 链断记 `frame_unresolved`。这是有意的 fail-closed 取舍。
+- **危险动作词表是启发式**：命中「支付/删除/退订」一类目标时不执行并直接停（`dangerous_action`），
+  但词表是我们自己拟的中英词表，`remove` / `pay` 这类词可能误伤，站点改版后可能要调；
+  `dangerGuard: false` 可整体关闭。
+- **降级路径默认关闭，且没有真实第二后端验证**：`TYPESAFE_FALLBACK_BASE_URL` 不设就不降级，
+  机制只用假端点验证过。
+- **真实验证码/登录墙未测**（只在合成拦截页上验证过 `blocked` 分支）。
 - **旧的「维基语言选择器 2/3」基线元素已变**：`www.wikipedia.org` 的 77 项 `#searchLanguage`
   现在是 `opacity:0`（被自定义语言列表 UI 取代），引擎按可见性规则跳过它。同类任务在 DDG 设置页
   语言下拉实测 **6/6**（`bench/test-native-select.mjs`）。
+- **原生下拉的「选中项不在当前 options 里」有了一次重问**：选项在观测与执行之间被 JS 重建/重排时，
+  不再当失败/无进展，而是**一次**带新选项的重问（`maxOptionRetries` 默认 1），重问仍失败才报 `stuck`。
 - **默认的自建 DOM 元素表覆盖自定义控件，旧快照路径不覆盖**：实测 DuckDuckGo 设置页 DOM 有
   18 个复选框，默认 `observe: "dom"` 路径下 18 个全部进元素表（视口内 5 个；拉高视口后 18 个）；
   `observe: "snapshot"` 路径仍是 0 个（1×1 的自定义样式 input 不进辅助树）。
   部分站点的复选框在快照里既无定位器也无名称，只能按**文档顺序**兜底补齐；
   仅当数量完全一致时才敢用，否则显示「勾选态未知」而不会谎报。
-- **无 role 的容器型可点元素已覆盖**：`<div onclick>` 卡片/行、`tabindex` 区块、`cursor:pointer`
-  块级容器会被补成 `clickable-region`（映射到 `kind: clickable`，进同一套点击决策）。
-  实测 YouTube 首页 3 个、X 首页 5 个；**真实 Jev 能选中它**（YouTube 视频元数据块 → `/watch`，
-  见 `bench/test-realjev-region.mjs`）。与已收集的 a11y 元素做节点身份 + 祖先去重
-  （嵌套容器只收最内层；被占满的容器、`<a href>` 内的容器、`<label for>` 都不与 a11y 元素双收），
-  a11y 元素优先占预算。视口外的元素仍由「有界滚动揭示」处理（元素表只覆盖当前视口）。
-- **跨 frame / shadow 的可点元素**：同源 iframe 与开放 shadow root 里的元素也进元素表。
-  frame 内节点在主文档里没有 DOM 身份，因此打 `frameOrigin` 标：`locate` 做**逐层命中校验**
-  （每层把点换算到该层坐标系，含 `clientLeft/clientTop`，断言该层 `elementFromPoint` **严格命中
-  `<iframe>` 自身**）；任一层被遮挡即 `covered`、不派发，命中测试在元素自己的 root 里做。
-  frame 链断 / `defaultView` 为 null → `frame_unresolved`；frame 元素到文档根的祖先链上有非 identity 的
-  2D 线性变换（scale/rotate/skew）或 `zoom !== 1` → `frame_transformed`（纯平移、`translateZ(0)` 放行），
-  两者都直接拒绝（不猜坐标、不退化成 {0,0}）。跨域 iframe 不处理。
-- **危险动作前置拦截**：命中「支付/删除/退订」一类目标（中文 + 英文词表，我们自己的）时**不执行**，
-  记为 `guardRejected=dangerous_action` 并**直接停**（不重试，重试不会让它变安全）。
-  这是机制不是承诺——「不替你付款/删除」不再只靠 Jev 自评；`dangerGuard: false` 可整体关闭。
 - **浏览器自动翻译会影响判断**：实测页面被译成中文后，元素名与选项名与目标语言不一致。
   Jev 跨语言选择正常，但 `--until` / `check` 用 UI 字符串比较会误判——请比对 URL 路径或 DOM 状态。
 - **ego 运行时会静默吞掉两件事**（排查时很坑）：
@@ -342,10 +308,68 @@ mkdir -p ~/.agents/skills/ego-jev && ln -sfn "$PWD/SKILL.md" ~/.agents/skills/eg
   运行时不能起服务也不能访问 loopback（`fetch("http://127.0.0.1:...")` 会挂起后 exit 0）。
 - **运行时拿不到自定义环境变量，且 `process.cwd()` 是 `/`**：`export FOO=bar` 在脚本里读不到，
   相对路径也不能用。要传配置只能在父进程把值替换进脚本文本（本项目的 CLI 就是这么做的）。
-- **真实验证码/登录墙未测**（只在合成拦截页上验证过 `blocked` 分支）。
 - Jev 走完**不等于业务正确**，最终页面状态仍要按 ego-browser skill 的观察纪律复核。
 
-## 复跑基准
+## 测量与复跑基准
+
+> 所有数字都来自本机真实运行（macOS + ego lite 0.5.0.32）。请求里写的是浮动别名
+> `jev-latest`，**服务端实际服务哪个版本只有响应里的 `model` 字段能回答**——每次测量都要记下它
+> （`renderJevSummary` 会打印）。2026-09-26 曾出现约 5 分钟 `403 RBAC: access denied`
+> （凭证文件完好、随后自愈）：环境本身会变，只记「能跑通」不够。
+
+**方法**：同任务、同元素表、同验证器，「交替 3 轮取中位数」。
+A = `ego-jev` 单进程闭环；B = 经典循环（**每步一个独立进程** + 大模型 `kimi-k3` 思考）。
+测于 2026-09-19。
+
+| 任务 | A（ego-jev） | B（经典循环） | 结果 |
+| --- | ---: | ---: | --- |
+| Hacker News 两步复合导航 | 中位 **4.9s**（1 进程，12 次浏览器调用） | 中位 **9.7s**（3 进程） | **约 2.0×** |
+| 维基百科搜索（两组都要生成文本） | 中位 **5.4s**（1 步） | 中位 **10.1s**（2 进程） | **约 1.9×** |
+
+样本只有 3 对/任务且**方差很大**（经典组单轮 7.3s–22s，上表是不同批次里更好的那批），不构成基准；
+只能说量级上 Jev 闭环约为经典循环的一半时间。
+
+**省在哪里（实测分解）**：
+
+- ✅ **决策往返**：Jev 决策请求约 **0.35–0.52s/次**（2026-09-26 实测，服务端 `jev-1.13.0`，
+  10 次采样 352–524ms、中位 434ms），可用大模型 1.6–4.5s/次。整步（观测+决策+执行+校验）约 1.0–1.4s。
+- ✅ **每步退出浏览器上下文**：B 每步一个新进程，A 全程 1 个（进程启动实测仅 250–350ms/次，不是主要成本）
+- ✅ **省浏览器动作**（引擎重建后新增，现在是最大收益项）：观测是一次 `page.evaluate`
+  自建 DOM 元素表（约 **2–4ms / ~2k 字符**），动作走**裸 CDP**（**13–16ms**）；
+  旧路径是 `page.snapshot()` **110–130ms / 27484 字符**、`page.click(ref)` **788–1005ms**
+
+> 分阶段数据显示当前单步的大头是「派发 + 稳定等待」0.56–0.99s，而不是决策（0.35–0.52s）。
+> 目标能用选择器写死时，直接写代码比两者都快。
+
+### 引擎重建后（2026-09-22）
+
+按剖析结果重建，不是按猜测——真实瓶颈是 **ego 的语义动作通道**，不是快照。
+同任务隔离实验（5 臂 × 3 任务 × 3 次，全部 3/3 成功）：
+
+| 任务 | 重建前 | 重建后 |
+| --- | ---: | ---: |
+| Hacker News 两步导航 | 4569ms | **1916ms** |
+| httpbin 表单（填写+勾选+提交） | 6782ms | **3607ms** |
+| 维基搜索（含文本生成） | 3663ms | 3634ms（受模型延迟主导，无变化） |
+
+> HN 那一行是 A4 臂（含响应校验/提示词规则/执行前守卫）；只加「自建元素表 + 裸 CDP 动作」的 A3 臂
+> 是 **1675ms**。两档都记在 [`PORT-REPORT.md`](PORT-REPORT.md)，原始数据在 [`bench/raw/`](bench/raw)。
+
+**与 browser-harness + jev-ultrafast 的预登记配对验证**（5 任务 × 2 栈 × 10 轮 = 100 轮，
+bootstrap 95% CI，判定规则**跑前写死**）：
+
+| 任务 | 结论 |
+| --- | --- |
+| HN 点击链 | **本体更快 −378ms**，CI[−1453,−313]，10/0 |
+| 维基搜索 | **本体更快 −819ms**，CI[−1314,−195]；且只需 **1 次 Jev 决策**（对方 3 次）|
+| 表单填写 | **无差异**（CI 跨 0）|
+| 原生下拉 | 对方更快 **+248ms**，CI[163,426] |
+| 翻页（目标在文档序 110/119）| 两栈都完不成 —— 能力边界，非速度问题 |
+
+另外：**滚动若真的移动了视口或露出新元素就算进展** —— X 上必须连滚 >3 次的深帖任务 **0/6 → 6/6**。
+详见 [`VERIFY-REPORT.md`](VERIFY-REPORT.md)，每个数字都能追到 [`bench/raw/`](bench/raw)。
+
+### 复跑
 
 ```bash
 cd examples/bench
@@ -370,21 +394,22 @@ bash bench/verify.sh 10                 # 5 任务 × 10 轮，结果落 bench/r
 BENCH_OUT_DIR=/tmp/x bash bench/verify.sh 1   # 或写到别处，不污染仓库
 ```
 
-仓库里有一条不变量测试守着这件事：`node bench/test-no-bh-dependency.mjs`（可执行脚本中不许出现
-browser-harness 的调用面；驱动脚本不得回流；`--check-env` 契约成立）。
-
 ## 仓库结构
 
 ```
-SKILL.md                 技能本体（刻意放在根目录——`npx skills add` 就是找它）
+SKILL.md                 技能本体（刻意放在根目录——`npx skills add` 就是找它；也是版本号唯一来源）
+CHANGELOG.md             版本历史（顶部条目必须与 SKILL.md 的 metadata.version 一致）
 AGENTS.md                给其他 Agent 的安装/验证指令（可直接粘贴的 prompt 在里面）
 scripts/ego-jev.mjs      引擎
 scripts/ego-jev          CLI（自动在 同目录 / 仓库根 / ~/.agents/lib 里找引擎）
 scripts/wire-agent-skills.sh   把官方 ego-browser 入口接管成路由层（--check / --restore）
 overlay/ego-browser/     路由层的模板（接管时渲染到 Agent 技能目录）
+.claude-plugin/          Claude Code 插件元数据（plugin.json / marketplace.json）
+skills/ego-jev/          插件技能目录（SKILL.md / scripts / overlay 都指向仓库根的软链）
+docs/                    demo 素材与重做脚本（banner.svg / demo.gif / capture-demo.mjs …）
 examples/bench/          A/B 对照基准脚本（CLI 闭环 vs 每步大模型）
 bench/verify.sh          A 臂验证编排（--check-env 预检；结果落 bench/raw/ 或 BENCH_OUT_DIR）
-bench/test-no-bh-dependency.mjs  「不依赖 browser-harness」的不变量测试
+bench/test-*.mjs         离线/在线测试（含 test-release-consistency.mjs、test-no-bh-dependency.mjs）
 install.sh               手工安装（接 CLI 进 PATH、准备凭证；`--wire` 顺便接管入口）
 update.sh                一键更新（幂等；自动识别克隆/拷贝两种安装方式，并重接管入口）
 ```

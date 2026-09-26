@@ -1,9 +1,9 @@
 ---
 name: ego-jev
-description: 浏览器任务的默认入口（配合 ego-browser）：多步线性任务（连续点击、翻页、搜索表单、导航跳转）用 `ego-jev` 一条命令让 Jev（TypeSafe System One）在单进程内闭环决策，不再每步退回大模型慢思考；也能把官方 ego-browser 技能的入口接管成路由层，让每个 Agent 默认走它。同时记录了 ego 内嵌运行时的两条静默失败限制（静态 import 内置模块会无声退出、不能起服务也不能访问 loopback）、凭证为何必须落盘、实测对照数据与失效边界。当任务涉及浏览器多步操作、要写 ego-browser nodejs 脚本（尤其用到 await import / fetch）、或发现 Agent 还在照官方技能写逐步脚本时读它。
+description: 多步线性浏览器任务（连续点击、翻页、搜索表单提交、导航跳转）的默认入口：用 `ego-jev` 一条命令让 Jev（TypeSafe System One）在单个 ego-browser 进程内闭环决策（browser automation / multi-step click chain / form submit / navigation），不再每步退回大模型思考。单步动作、精确 DOM/选择器、批量抓取仍走 ego-browser 原生 API；也可把官方 ego-browser 技能入口接管成路由层。当任务涉及浏览器多步操作、要写 ego-browser nodejs 脚本（await import / fetch / 凭证落盘）时读它。
 metadata:
-  version: "1.0.0"
-  date: "2026-09-19"
+  version: "0.2.0"
+  date: "2026-09-26"
   requires: ego-browser
 ---
 # ego-jev — 给 ego-browser 装一个 Jev 决策闭环
@@ -60,8 +60,9 @@ bash scripts/wire-agent-skills.sh --restore  # 还原成官方软链
 退出来交给大模型慢思考。可以让 Jev（TypeSafe System One）在单个进程内闭环决策执行。
 
 实测（2026-09-26, 服务端 `jev-1.13.0`，维基百科搜索任务）：单步（观测+决策+执行+校验）约
-**1.0–1.4s**，其中**决策请求本身约 0.35–0.52s**（10 次采样 352–524ms，中位 434ms；分阶段数字由
-`renderJevSummary` 打印）。旧文档的「单步决策约 1.0–1.5s」实为**整步耗时**，不是决策请求本身。
+**1.0–1.4s**，其中**决策请求本身约 0.35–0.52s**（10 次采样 352–524ms，中位 434ms），
+**执行（派发 + 稳定等待）约 0.56–0.99s 是当前单步的大头**；分阶段数字由
+`renderJevSummary` 打印。旧文档的「单步决策约 1.0–1.5s」实为**整步耗时**，不是决策请求本身。
 **对照实测**（同任务、同元素表、同验证器，
 交替 3 轮取中位数）：
 
@@ -99,6 +100,11 @@ export 的变量不会传进去，所以凭证只能来自文件。查找顺序�
 降级端点 `TYPESAFE_FALLBACK_BASE_URL`（不设即不降级，`fallback: false` 可关）；**这两个变量由
 CLI 在父进程读取后写进配置传给子进程**（ego 运行时自身读不到自定义环境变量），直接写
 `ego-browser nodejs` 脚本时用 `options.baseUrl` / `options.fallbackBaseUrl`。
+
+**没凭证也能先自测**：`ego-browser nodejs < bench/test-offline-e2e.mjs` 在 `about:blank` 上注入 DOM，
+用 `options.ask` 注入确定性判定器（不联网、不需要 key），但观测、`locate`、裸 CDP 派发、真实 DOM 断言
+全走真实路径，并断言整个用例一次 `fetch` 都没发。判定器注入契约：`options.ask(state, questions, options)`，
+与引擎自己的 `askJev` 同签名；默认仍走 TypeSafe。
 
 **决策结构**（对齐 [browser-use/jev-ultrafast](https://github.com/browser-use/jev-ultrafast) 的
 dynamic operation + target）：每次观测产出「索引化元素表」，每个可交互元素一个 `ref`，并携带

@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="280" viewBox="0 0 1200 280" role="img" aria-label="ego-jev — 用 Jev 把「下一步点哪里」放进单个浏览器进程内闭环">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b0f14"/>
+      <stop offset="1" stop-color="#111b26"/>
+    </linearGradient>
+    <pattern id="grid" width="24" height="24" patternUnits="userSpaceOnUse">
+      <path d="M24 0H0V24" fill="none" stroke="#16202b" stroke-width="1"/>
+    </pattern>
+  </defs>
+
+  <rect width="1200" height="280" fill="url(#bg)"/>
+  <rect width="1200" height="280" fill="url(#grid)" opacity="0.55"/>
+  <rect x="20.5" y="20.5" width="1159" height="239" rx="12" fill="none" stroke="#22303e"/>
+
+  <g font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">
+    <text x="58" y="104" font-size="52" font-weight="700" fill="#e6edf3" letter-spacing="-1.5">ego-jev</text>
+    <text x="58" y="200" font-size="15" fill="#7fd1b9">$ ego-jev --url https://news.ycombinator.com "先开 new，再开 comments"</text>
+    <text x="58" y="226" font-size="13" fill="#5b6673">观测 1 次 evaluate · 决策 1 次请求 · 动作裸 CDP · 代码判定退出</text>
+  </g>
+
+  <text x="58" y="140" font-family="-apple-system, 'PingFang SC', 'Helvetica Neue', sans-serif" font-size="20" fill="#c9d4df">用 Jev 把「下一步点哪里」放进单个浏览器进程内闭环</text>
+
+  <g transform="translate(760 66)" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">
+    <rect width="378" height="148" rx="8" fill="#0d141c" stroke="#22303e"/>
+    <text x="18" y="30" font-size="12" fill="#4d5a67">元素表（索引化，每次观测重编号）</text>
+    <line x1="18" y1="42" x2="360" y2="42" stroke="#1b2531"/>
+    <text x="18" y="66" font-size="13" fill="#8b98a5">ref=5 | link | "new"      | /newest</text>
+    <text x="18" y="90" font-size="13" fill="#8b98a5">ref=7 | link | "comments" | /newcomments</text>
+    <text x="18" y="118" font-size="12" fill="#4d5a67">operation: click</text>
+    <text x="18" y="136" font-size="12" fill="#4d5a67">click_target: ref=5</text>
+  </g>
+</svg>
