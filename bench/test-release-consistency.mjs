@@ -81,6 +81,10 @@ console.log("\n[6] 外部仓库名扫描");
   const DOC = new Set([".md"]);
   // 本文件与同目录的 no-bh 不变量测试都必须在源码里写下被禁的名字，跳过它们
   const SKIP_FILES = new Set([SELF, join(REPO, "bench", "test-no-bh-dependency.mjs")]);
+  // 刻意放行的生态清单：docs/ECOSYSTEM.md 是维护中的同类项目一览，逐行照抄各仓库自己的
+  // GitHub About 与同一套 API 可复算的公开计数，因此必然包含多个外部仓库 URL（只引用自述，
+  // 不做评价）。只放行这一个文档；代码文件（.sh/.mjs/.js/.py）的「不得出现外部仓库名」不变。
+  const ALLOWED_DOCS = new Set([join(REPO, "docs", "ECOSYSTEM.md")]);
 
   const hits = [];
   const walk = (dir) => {
@@ -92,6 +96,7 @@ console.log("\n[6] 外部仓库名扫描");
       const ext = dot < 0 ? "" : e.name.slice(dot);
       if (!CODE.has(ext) && !DOC.has(ext)) continue;
       const isCode = CODE.has(ext);
+      if (!isCode && ALLOWED_DOCS.has(p)) return;   // 生态清单刻意放行（见上）
       fs.readFileSync(p, "utf8").split("\n").forEach((line, i) => {
         if (isCode) {
           if (isCommentOnly(line)) return; // 代码只看真调用行（纯注释允许解释历史）
@@ -107,7 +112,7 @@ console.log("\n[6] 外部仓库名扫描");
     }
   };
   walk(REPO);
-  check("代码行没有外部仓库名、文档里的 github URL 仅限已登记上游", hits.length === 0, hits.slice(0, 8).join(", "));
+  check("代码行没有外部仓库名、文档里的 github URL 仅限已登记上游（生态清单除外）", hits.length === 0, hits.slice(0, 8).join(", "));
 }
 
 // ── [7] 与最新 tag 的一致性：打 tag 前必然不一致，只作为警告行 ──────────────

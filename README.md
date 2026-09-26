@@ -4,6 +4,12 @@
 
 **用 Jev（TypeSafe System One）驱动 ego lite 浏览器：把「下一步点哪里」的决策放进单个进程内闭环。**
 
+> **为什么是这一个**：差异只有一条 —— **它是被测量的**。本机 2026-09-26 全量复跑 **16 套测试 / 429 项检查**
+> （除 `native-select` 是成功率测量外全部 exit 0）；原始数据在 [`bench/raw/`](bench/raw)，每个数字都能用仓库里的
+> 脚本复算；[`CHANGELOG.md`](CHANGELOG.md) 里记着**被实测推翻的旧结论**（包括我们自己先前公布的口径错误）；
+> 执行层是 **fail-closed**（陈旧 ref、被遮挡、跨 frame 命中失败、危险动作一律 **0 次派发**）；
+> 代码级溯源登记在 [`THIRD-PARTY.md`](THIRD-PARTY.md)。
+
 > English summary: `ego-jev` replaces the per-step LLM round trip in browser automation with
 > [TypeSafe](https://docs.typesafe.ai)'s System One model **Jev**. Jev reads one *indexed element
 > table* and answers, in a single request, both the **operation** (`click` / `type_text` / `select` /
@@ -485,6 +491,8 @@ update.sh                一键更新（幂等；自动识别克隆/拷贝两种
   许可声明见 [`THIRD-PARTY.md`](THIRD-PARTY.md)；分级依据与并排证据见
   [`THIRD-PARTY-ASSESSMENT.md`](THIRD-PARTY-ASSESSMENT.md) 与 [`bench/raw/third-party-excerpts.md`](bench/raw/third-party-excerpts.md)
 - [TypeSafe](https://docs.typesafe.ai) —— Jev / System One
+- 同类项目与上游一览：[`docs/ECOSYSTEM.md`](docs/ECOSYSTEM.md)（中立清单，只引用各项目自己的 GitHub About
+  与同一套 API 可复算的公开计数）
 
 本项目**没有**再分发 ego-lite 的任何文档或代码；`skill/ego-jev-section.md` 仅包含我们自己撰写的章节。
 
