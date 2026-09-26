@@ -38,6 +38,7 @@ WIRE_SCRIPT="$REPO_DIR/scripts/wire-agent-skills.sh"
 CONFIG_DIR="${EGO_JEV_CONFIG_DIR:-$HOME/.config/ego-jev}"
 FLAG_FILE="$CONFIG_DIR/wire-enabled.json"
 ALWAYS_ON_LIST="$CONFIG_DIR/always-on.list"
+OPTOUT_FILE="$CONFIG_DIR/opted-out"
 MARKER_NAME=".ego-jev-overlay.json"
 MARKER_MAGIC='"overlay": "ego-jev"'
 ROUTE_BEGIN='<!-- ego-jev:route begin -->'
@@ -49,6 +50,7 @@ ROUTING_NOTE='本入口已由 ego-jev 接管：连续点击、翻页、搜索表
 MODE="wire"          # wire | check | restore | ensure | status | always-on
 DRY_RUN=0
 IF_ENABLED=0
+ENSURE=0
 DIRS_FIXED=0
 ALWAYS_ON_FILE=""
 VENDOR_ARG="${EGO_JEV_VENDOR:-}"
@@ -64,7 +66,7 @@ while [[ $# -gt 0 ]]; do
     --restore) MODE="restore"; shift ;;
     --dry-run) DRY_RUN=1; shift ;;
     --if-enabled) IF_ENABLED=1; shift ;;
-    --ensure) MODE="ensure"; shift ;;
+    --ensure) MODE="ensure"; ENSURE=1; shift ;;
     --status-json) MODE="status"; shift ;;
     --always-on) [[ $# -ge 2 && -n "$2" ]] || fail "--always-on 需要一个非空文件路径"; MODE="always-on"; ALWAYS_ON_FILE="$2"; shift 2 ;;
     --dir) [[ $# -ge 2 && -n "$2" ]] || fail "--dir 需要一个非空目录"; DIRS+=("$2"); DIRS_FIXED=1; shift 2 ;;
@@ -284,6 +286,19 @@ remove_always_on() {  # <file>：有 .bak 就按字节还原，否则只去块
 
 json_escape() { printf '%s' "$1" | sed 's/\\/\\\\/g; s/"/\\"/g'; }
 
+# ── 用户明确选择不接管（opt-out）──────────────────────────────────────────────
+# 由 --restore 写入、只能被显式 wire 解除；自动路径（--ensure / --if-enabled）不得解除。
+# 内容确定性（无时间戳/随机数）。
+write_optout() {
+  mkdir -p "$CONFIG_DIR" || return 1
+  {
+    printf '%s\n' 'ego-jev: 已按用户选择不接管官方 ego-browser 入口（由 --restore 写入）'
+    printf '重新启用: bash %s\n' "$WIRE_SCRIPT"
+  } > "$OPTOUT_FILE"
+}
+clear_optout() { rm -f "$OPTOUT_FILE"; }
+opted_out() { [[ -f "$OPTOUT_FILE" ]]; }
+
 generated_hash() {  # 路由层生成物的内容哈希（确定性）
   local h=""
   if command -v shasum >/dev/null 2>&1; then
@@ -401,6 +416,7 @@ has_wireable_entry() {
 FIRST_RUN=0
 if [[ "$MODE" == "ensure" ]]; then
   if [[ -n "${EGO_JEV_NO_WIRE:-}" ]]; then exit 0; fi
+  if opted_out; then exit 0; fi   # 用户明确选择不接管（--restore）→ 什么都不做，连入口都不探测
   if [[ -f "$FLAG_FILE" ]]; then
     MODE="wire"
   else
@@ -445,6 +461,8 @@ n_skipped=0
 n_failed=0
 n_drift=0
 n_noneed=0
+OPTED_OUT=0
+if opted_out; then OPTED_OUT=1; fi
 did_something=0
 declare -a WIRED_DIRS=()
 
@@ -545,8 +563,12 @@ render_check_line() {  # <state> <dir> <target>
     wired-stale) warn "漂移  ${target}（生成物过期：ego lite 升级过，重跑本脚本刷新）"; n_drift=$((n_drift + 1)); had_drift=1 ;;
     wired-broken) warn "漂移  ${target}（官方子目录软链已失效：ego lite 升级删掉了旧版本目录，重跑本脚本）"; n_drift=$((n_drift + 1)); had_drift=1 ;;
     wired-novendor) warn "漂移  ${target}（ego lite 技能目录找不到：无法校验/刷新，装好后重跑本脚本）"; n_drift=$((n_drift + 1)); had_drift=1 ;;
-    official) warn "未接管  ${target}（还是官方软链：重跑本脚本接管）"; n_drift=$((n_drift + 1)); had_drift=1 ;;
-    official-broken) warn "漂移  ${target}（软链断向 ${t}：升级窗口，重跑本脚本接管）"; n_drift=$((n_drift + 1)); had_drift=1 ;;
+    official)
+      if [[ $OPTED_OUT -eq 1 ]]; then info "无需接管  ${target}（已按用户选择不接管）"; n_noneed=$((n_noneed + 1))
+      else warn "未接管  ${target}（还是官方软链：重跑本脚本接管）"; n_drift=$((n_drift + 1)); had_drift=1; fi ;;
+    official-broken)
+      if [[ $OPTED_OUT -eq 1 ]]; then info "无需接管  ${target}（已按用户选择不接管；软链断向 ${t}）"; n_noneed=$((n_noneed + 1))
+      else warn "漂移  ${target}（软链断向 ${t}：升级窗口，重跑本脚本接管）"; n_drift=$((n_drift + 1)); had_drift=1; fi ;;
     foreign) warn "未知  ${target}（软链指向别处，不是 ego lite 技能）: → ${t}"; n_drift=$((n_drift + 1)); had_drift=1 ;;
     plain) warn "未知  ${target}（既不是我们的路由层，也不是官方软链）"; n_drift=$((n_drift + 1)); had_drift=1 ;;
     missing-recorded) warn "漂移  ${dir}（接管过，但 ego-browser 入口不见了：重跑本脚本）"; n_drift=$((n_drift + 1)); had_drift=1 ;;
@@ -597,6 +619,7 @@ emit_status_json() {
   local dir rec st tg first=1 n=0 m=0 k=0 ao_first=1 f wired drift entry hasEntry
   printf '{\n'
   if [[ -f "$FLAG_FILE" ]]; then printf '  "enabled": true,\n'; else printf '  "enabled": false,\n'; fi
+  if opted_out; then printf '  "optedOut": true,\n'; else printf '  "optedOut": false,\n'; fi
   if [[ -n "$VENDOR" ]]; then printf '  "vendor": "%s",\n' "$(json_escape "$VENDOR")"; else printf '  "vendor": null,\n'; fi
   printf '  "generatedHash": "%s",\n' "$(generated_hash)"
   printf '  "dirs": ['
@@ -608,7 +631,9 @@ emit_status_json() {
     case "$st" in
       wired-ok) wired=true; entry="wired"; hasEntry=true; n=$((n + 1)) ;;
       wired-stale|wired-broken|wired-novendor) wired=true; drift=true; entry="wired"; hasEntry=true; k=$((k + 1)) ;;
-      official|official-broken) drift=true; entry="official"; hasEntry=true; k=$((k + 1)) ;;
+      official|official-broken)
+        hasEntry=true; entry="official"
+        if opted_out; then drift=false; m=$((m + 1)); else drift=true; k=$((k + 1)); fi ;;
       foreign) drift=true; entry="foreign"; k=$((k + 1)) ;;
       plain) drift=true; entry="plain"; k=$((k + 1)) ;;
       missing-recorded) drift=true; entry="missing"; k=$((k + 1)) ;;
@@ -638,6 +663,13 @@ if [[ "$MODE" == "status" ]]; then emit_status_json; exit 0; fi
 echo "==> ego-jev 路由接管（${MODE}）"
 info "官方技能: ${VENDOR:-（未找到）}"
 
+# 显式 wire（用户直接跑 wire-agent-skills.sh，或 install.sh 的接管步骤）解除 opt-out；
+# 自动路径（--ensure / --if-enabled）不得解除——用户的显式选择不能被自动流程反转。
+if [[ "$MODE" == "wire" && $ENSURE -eq 0 && $IF_ENABLED -eq 0 && $DRY_RUN -eq 0 ]] && opted_out; then
+  clear_optout
+  info "已解除「不接管」选择（显式 wire），重新接管官方 ego-browser 入口"
+fi
+
 rec=""
 for dir in "${DIRS[@]}"; do
   case "$MODE" in
@@ -656,9 +688,17 @@ case "$MODE" in
       file_has_block "$f" && ao_count=$((ao_count + 1))
     done < <(always_on_files)
     echo "==> 路由: 已接管 ${n_overlay} / 无需接管 ${n_noneed} / 漂移 ${n_drift}"
+    if [[ $OPTED_OUT -eq 1 ]]; then
+      info "已按用户选择不接管（由 --restore 写入；重新启用：bash ${WIRE_SCRIPT}）"
+    fi
     info "always-on 块: ${ao_count} 个文件在位"
     if [[ $had_drift -eq 0 ]]; then
-      echo "==> 检查通过：所有 ego-browser 入口都已接管且最新"
+      # 用户显式选择过不接管时，不能说“所有入口都已接管”——那与上面那行自相矛盾。
+      if [[ $OPTED_OUT -eq 1 ]]; then
+        echo "==> 检查通过：按你的选择未接管任何入口（重新启用命令见上）"
+      else
+        echo "==> 检查通过：所有 ego-browser 入口都已接管且最新"
+      fi
       exit 0
     fi
     echo "==> 发现需要处理的情况（见上）：能修的用 \`bash $WIRE_SCRIPT\` 重跑；官方技能是拷贝目录时脚本不会覆盖，需人工处理" >&2
@@ -682,6 +722,9 @@ case "$MODE" in
           info "已清掉启用标记: ${FLAG_FILE}"
         fi
       fi
+      # 记录「用户已明确选择不接管」：自动路径（--ensure）见到它就什么都不做，
+      # 只有显式 wire 才能解除。
+      write_optout && info "已记录「不接管」选择: ${OPTOUT_FILE}（重新启用：bash ${WIRE_SCRIPT}）"
     fi
     exit $(( n_failed > 0 ? 1 : 0 ))
     ;;

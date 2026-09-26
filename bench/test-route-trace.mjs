@@ -168,6 +168,24 @@ console.log("\n[6] CLI --route-status");
   check("没有凭证也能跑（stderr 不提凭证）", !/凭证|api_key/i.test(r.stderr || ""), (r.stderr || "").slice(0, 120));
 }
 
+// ── [7] opt-out 粘性：--restore 之后自动路径不接管；显式 wire 才解除 ────────
+console.log("\n[7] opt-out 粘性");
+{
+  setup();
+  wire();
+  wire("--restore");
+  const s = status();
+  check("--status-json optedOut=true", s.optedOut === true, JSON.stringify(s.optedOut));
+  check("opt-out 下 summary 无漂移", s.summary.n === 0 && s.summary.k === 0, JSON.stringify(s.summary));
+  check("opt-out 下 enabled=false", s.enabled === false);
+  const c = wire("--check");
+  check("--check exit 0 且含「不接管」", c.code === 0 && c.out.includes("不接管"), c.out);
+  const e = wire("--ensure");
+  check("--ensure 不接管（入口仍是官方软链）", e.code === 0 && fs.lstatSync(ENTRY).isSymbolicLink() && !fs.existsSync(join(ENTRY, ".ego-jev-overlay.json")), e.out);
+  const w = wire();
+  check("显式 wire 解除 opt-out 并恢复接管", w.code === 0 && status().optedOut === false && fs.existsSync(join(ENTRY, ".ego-jev-overlay.json")), w.out);
+}
+
 fs.rmSync(root, { recursive: true, force: true });
 console.log(`\n结果: ${pass} 通过 / ${fail} 失败`);
 process.exitCode = fail ? 1 : 0;

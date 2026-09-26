@@ -707,6 +707,37 @@ console.log("\n[33] install.sh 默认接管");
   check("--no-wire 仍成功退出", r.status === 0, `status=${r.status}`);
 }
 
+// ── [34] --restore 是粘性的：自动路径不得撤销用户选择 ────────────────────────
+console.log("\n[34] opt-out 粘性");
+{
+  setup();
+  wire();
+  wire("--restore");
+  check("--restore 写了 opt-out 标记", fs.existsSync(join(CFG, "opted-out")));
+  const e = wire("--ensure");
+  check("--ensure 不再接管（exit 0，入口仍是官方软链）", e.code === 0 && fs.lstatSync(ENTRY).isSymbolicLink() && !isOurOverlayAt(ENTRY), e.out);
+  check("--ensure 不写启用标记", !fs.existsSync(join(CFG, "wire-enabled.json")));
+  check("--ensure 不打首跑噪音", !e.out.includes("已首跑接管"), e.out);
+  const c = wire("--check");
+  check("opt-out 状态下 --check exit 0", c.code === 0, c.out);
+  check("--check 文案含「不接管」", c.out.includes("不接管"), c.out);
+  const s = JSON.parse(wire("--status-json").out);
+  check("--status-json optedOut=true", s.optedOut === true, JSON.stringify(s.optedOut));
+  check("opt-out 下不报漂移", s.summary.k === 0 && s.dirs.every((d) => !d.drift), JSON.stringify(s.summary));
+  const w = wire();
+  check("显式 wire 清掉 opt-out", w.code === 0 && !fs.existsSync(join(CFG, "opted-out")), w.out);
+  check("显式 wire 恢复接管", isOurOverlayAt(ENTRY));
+  check("显式 wire 后 optedOut=false", JSON.parse(wire("--status-json").out).optedOut === false);
+  const e2 = wire("--ensure");
+  check("恢复后 --ensure 是刷新（不再首跑）", e2.code === 0 && !e2.out.includes("已首跑接管"), e2.out);
+}
+{
+  setup();   // 回归保护：没有 opt-out 的普通未接管仍 exit 1
+  const c = wire("--check");
+  check("普通未接管（无 opt-out）仍 exit 1", c.code === 1, c.out);
+  check("普通未接管不写 opt-out", !fs.existsSync(join(CFG, "opted-out")));
+}
+
 fs.rmSync(root, { recursive: true, force: true });
 console.log(`\n结果: ${pass} 通过 / ${fail} 失败`);
 process.exitCode = fail ? 1 : 0;

@@ -2,7 +2,7 @@
 name: ego-jev
 description: 多步线性浏览器任务（连续点击、翻页、搜索表单提交、导航跳转）的默认入口：用 `ego-jev` 一条命令让 Jev（TypeSafe System One）在单个 ego-browser 进程内闭环决策（browser automation / multi-step click chain / form submit / navigation），不再每步退回大模型思考。单步动作、精确 DOM/选择器、批量抓取仍走 ego-browser 原生 API；也可把官方 ego-browser 技能入口接管成路由层。当任务涉及浏览器多步操作、要写 ego-browser nodejs 脚本（await import / fetch / 凭证落盘）时读它。
 metadata:
-  version: "0.3.0"
+  version: "0.3.1"
   date: "2026-09-26"
   requires: ego-browser
 ---
@@ -53,6 +53,8 @@ bash scripts/wire-agent-skills.sh --restore  # 还原成官方软链（启用标
 接管后：入口是包外的一层 `SKILL.md`，正文仍软链到 App 当前版本的官方技能（升级自动跟随），
 只有「先路由、再决定写不写脚本」那一段是本技能加的。`update.sh` 与 `ego-jev` CLI 都会自动重接管
 （ego lite 升级会把入口还原）。**应用包内任何文件都没动。**
+`--restore` 是**粘性**的：它记下「不接管」的选择，之后 CLI 首跑不会自动接管回去；
+重新启用要显式跑一次接管（`bash scripts/wire-agent-skills.sh`）。
 
 想让它**在读技能之前**就知道路由：`bash scripts/wire-agent-skills.sh --always-on AGENTS.md`
 （显式开关，默认不写任何用户文件；块带标记、幂等、可 `--restore` 精确移除）。

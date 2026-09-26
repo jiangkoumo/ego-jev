@@ -106,7 +106,7 @@ ego lite 会把**官方** `ego-browser` 技能写进每个 Agent 的技能目录
 ```bash
 bash scripts/wire-agent-skills.sh              # 接管 / 刷新（幂等；只写 Agent 技能目录，不碰应用包）
 bash scripts/wire-agent-skills.sh --check      # 只读检查：已接管 N / 无需接管 M / 漂移 K（漂移则 exit 1）
-bash scripts/wire-agent-skills.sh --restore    # 还原成官方软链（启用标记与 always-on 块一并清掉）
+bash scripts/wire-agent-skills.sh --restore    # 还原成官方软链 + 记下「不接管」（粘性，见下）
 ```
 
 退出码：`0` 正常 / `1` 需要处理（`--check` 发现漂移；或本次一个都没接管到）/ `2` 用法或环境错误。
@@ -125,6 +125,12 @@ OK    ~/.claude/skills/ego-browser（路由层，生成物最新）
 接管会在 `~/.config/ego-jev/wire-enabled.json` 留下启用标记；`./update.sh` 与 `ego-jev` CLI
 都会据此自动重接管（`EGO_JEV_NO_WIRE=1`，旧名 `EGO_JEV_NO_HEAL=1` 仍接受）。
 路由只影响**新开的** Agent 会话（技能列表是启动时快照的）。
+
+**`--restore` 是粘性的**：它会记下「用户已明确选择不接管」（`~/.config/ego-jev/opted-out`），
+之后 CLI 首跑**不会**再把入口接管回去（`--ensure` 见到该标记就什么都不做）；`--check` 在该状态下
+输出「已按用户选择不接管」并 **exit 0**（健康状态，不是漂移）。重新启用必须**显式**跑一次接管
+（上面的 `bash scripts/wire-agent-skills.sh`，或 `./install.sh` 的接管步骤）——
+自动路径（`--ensure` / `--if-enabled`）永远不会解除这个选择。
 
 ### 让 Agent 在读任何技能之前就看到路由（always-on，显式开关）
 
