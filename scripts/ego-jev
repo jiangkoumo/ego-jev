@@ -50,6 +50,8 @@ USAGE() {
   TYPESAFE_TEXT_MODEL_FILE   文本生成配置（默认 ~/.config/typesafe/text_model.json）
   EGO_JEV_LIB                引擎路径（默认按 同目录/仓库根/用户级 lib 依次查找）
   EGO_BROWSER_BIN            ego-browser 可执行文件（默认 PATH 里的 ego-browser）
+  EGO_JEV_NO_HEAL            设为非空则不在启动时自动重接管官方 ego-browser 入口
+  EGO_JEV_CONFIG_DIR         路由层启用标记目录（默认 ~/.config/ego-jev）
 
 退出码:
   0 目标达成 (check_passed / jev_done)
@@ -60,7 +62,26 @@ USAGE() {
 注意:
   * ego-browser 内嵌运行时不会继承 shell 环境变量，所以凭证必须落盘成文件。
   * --until 不要用会被浏览器自动翻译改写的 UI 字符串做比较，建议比对 URL 路径或 DOM 状态。
+  * 跑任务前会检查官方 ego-browser 技能入口是否还在（接管过才动手）：ego lite 升级会把
+    入口重建回官方软链，这里会静默重接管，用 EGO_JEV_NO_HEAL=1 关闭。
 TXT
+}
+
+# 路由层自愈：只对「接管过」（有启用标记）的机器动手，失败静默（不能影响浏览器任务）。
+heal_skill_entry() {
+  [ -n "${EGO_JEV_NO_HEAL:-}" ] && return 0
+  local cfg_dir="${EGO_JEV_CONFIG_DIR:-$HOME/.config/ego-jev}"
+  [ -f "$cfg_dir/wire-enabled.json" ] || return 0
+  local wire="$SCRIPT_DIR/wire-agent-skills.sh"
+  [ -f "$wire" ] || wire="$SCRIPT_DIR/../scripts/wire-agent-skills.sh"
+  [ -f "$wire" ] || return 0
+  local out
+  out="$(bash "$wire" --if-enabled 2>&1)" || true
+  case "$out" in
+    *"已接管:"*|*"已刷新:"*|*"已重建入口:"*)
+      printf '[ego-jev] 官方 ego-browser 入口被 ego lite 升级还原了，已自动重接管；EGO_JEV_NO_HEAL=1 可关掉这个自愈\n' >&2 ;;
+  esac
+  return 0
 }
 
 TARGET_URL=""; SPACE_ID=""; MAX_STEPS="10"; UNTIL=""; KEEP=""; KEEP_SPACE="0"; API_KEY_OVERRIDE=""; GOAL=""; TEXTS=()
@@ -82,12 +103,15 @@ while [[ $# -gt 0 ]]; do
 done
 
 if [[ -z "$GOAL" ]]; then echo "错误: 请提供目标描述" >&2; exit 2; fi
-if [[ ! -f "$LIB" ]]; then echo "错误: 找不到引擎 $LIB（可用 EGO_JEV_LIB 指定）" >&2; exit 2; fi
+if [[ ! -f "$LIB" ]]; then echo "错误: 找不到引擎 ${LIB}（可用 EGO_JEV_LIB 指定）" >&2; exit 2; fi
 if [[ -z "$API_KEY_OVERRIDE" && ! -f "$CONFIG_FILE" && -z "${TYPESAFE_API_KEY:-}" ]]; then
   echo "错误: 未找到 Jev 凭证。请写入 ${CONFIG_FILE}（内容为 API Key 一行），或使用 --api-key。" >&2
   exit 3
 fi
-command -v "$EGO_BIN" >/dev/null 2>&1 || { echo "错误: 找不到 $EGO_BIN（ego lite 是否已安装？）" >&2; exit 2; }
+command -v "$EGO_BIN" >/dev/null 2>&1 || { echo "错误: 找不到 ${EGO_BIN}（ego lite 是否已安装？）" >&2; exit 2; }
+
+# 参数与凭证都合法后才动手（错误路径不写盘）
+heal_skill_entry
 
 TMPD="$(mktemp -d "${TMPDIR:-/tmp}/ego-jev.XXXXXX")"
 trap 'rm -rf "$TMPD"' EXIT

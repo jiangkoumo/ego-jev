@@ -293,7 +293,13 @@ fs.mkdirSync(EMPTY_SKILLS, { recursive: true });
 const fakeBin = join(root, "fakebin");
 const makeFakeEgoBrowser = () => {
   fs.mkdirSync(fakeBin, { recursive: true });
-  fs.writeFileSync(join(fakeBin, "ego-browser"), "#!/bin/sh\necho 'ego-browser 0.0.0-test'\n", { mode: 0o755 });
+  fs.writeFileSync(join(fakeBin, "ego-browser"), `#!/bin/sh
+echo "$*" >> "\${FAKE_LOG:-/dev/null}"
+case "$1" in
+  --version|-v) echo "ego-browser 0.0.0-test"; exit 0 ;;
+esac
+exit 3
+`, { mode: 0o755 });
 };
 makeFakeEgoBrowser();
 {
@@ -533,6 +539,76 @@ wire();
 {
   check("生成物里没有未加引号的 ': '", !unquotedColonIssue(overlayText()));
   check("负对照：修复前的写法会被抓出来", unquotedColonIssue("---\ndescription: \u4e00\u53e5\u8bdd: \u5e26\u5192\u53f7\n---\n"));
+}
+
+// ── [29] ego-jev 启动时自愈路由层（档 2）────────────────────────────
+console.log("\n[29] CLI 启动自愈");
+const stubKey = () => {
+  fs.mkdirSync(join(HOME, ".config", "typesafe"), { recursive: true });
+  fs.writeFileSync(join(HOME, ".config", "typesafe", "api_key"), "stub-key\n");
+};
+const runCli = (extra = {}) => {
+  const env = { ...baseEnv(), TYPESAFE_API_KEY: "", FAKE_LOG: join(root, "fake.log"), PATH: `${dirname(process.execPath)}:${fakeBin}:/usr/bin:/bin`, ...extra };
+  const r = spawnSync("bash", [join(REPO, "scripts", "ego-jev"), "--url", "https://example.com", "点一下"], { env, encoding: "utf8" });
+  const argv = fs.existsSync(join(root, "fake.log")) ? fs.readFileSync(join(root, "fake.log"), "utf8") : "(none)";
+  return { code: r.status ?? 1, out: `${r.stdout ?? ""}${r.stderr ?? ""}`, argv };
+};
+const restoreOfficialEntry = () => {
+  fs.rmSync(ENTRY, { recursive: true, force: true });
+  fs.symlinkSync(VENDOR_LINK, ENTRY, "dir");      // 模拟 ego 升级把入口重建回官方软链
+};
+{
+  setup();
+  makeFakeEgoBrowser();
+  stubKey();
+  wire();
+  restoreOfficialEntry();
+  const r = runCli();
+  check("跑 ego-jev 会把入口自愈回路由层", isOurOverlayAt(ENTRY), r.out);
+  check("stderr 有自愈提示", r.out.includes("已自动重接管"), r.out);
+  check("退出码仍来自引擎（fake ego-browser 的 3）", r.code === 3, `code=${r.code} argv=${JSON.stringify(r.argv)} out=${r.out.slice(-200)}`);
+  check("自愈后 --check 通过", wire("--check").code === 0);
+
+  restoreOfficialEntry();
+  const r2 = runCli({ EGO_JEV_NO_HEAL: "1" });
+  check("EGO_JEV_NO_HEAL=1 时不动入口", fs.lstatSync(ENTRY).isSymbolicLink() && !isOurOverlayAt(ENTRY), r2.out);
+  check("也没有自愈提示", !r2.out.includes("已自动重接管"));
+}
+{
+  setup();                                          // 从没接管过的机器
+  makeFakeEgoBrowser();
+  stubKey();
+  const r = runCli();
+  check("没接管过就不动手", fs.lstatSync(ENTRY).isSymbolicLink() && !isOurOverlayAt(ENTRY), r.out);
+  check("没接管过也不写启用标记", !fs.existsSync(join(CFG, "wire-enabled.json")));
+}
+{
+  setup();                                          // 缺凭证的错误路径不写盘
+  makeFakeEgoBrowser();
+  wire();
+  restoreOfficialEntry();
+  const r = runCli({ TYPESAFE_API_KEY_FILE: join(root, "nope", "api_key") });
+  check("缺凭证时退出 3 且不自愈", r.code === 3 && fs.lstatSync(ENTRY).isSymbolicLink(), `code=${r.code} ${r.out.slice(0, 60)}`);
+}
+
+// ── [30] macOS bash 3.2 的 "$VAR 紧跟中文" 陷阱（会让脚本直接崩在 unbound variable）──
+console.log("\n[30] bash 3.2 变量展开陷阱");
+{
+  const bad = [];
+  for (const f of ["scripts/ego-jev", "scripts/wire-agent-skills.sh", "install.sh", "update.sh"]) {
+    const src = fs.readFileSync(join(REPO, f), "utf8");
+    src.split("\n").forEach((line, i) => {
+      if (/\$[A-Za-z_][A-Za-z0-9_]*[^\x00-\x7F]/.test(line)) bad.push(`${f}:${i + 1}`);
+    });
+  }
+  check("脚本里没有「$VAR 紧跟非 ASCII 字符」", bad.length === 0, bad.join(", "));
+}
+{
+  setup();
+  makeFakeEgoBrowser();
+  stubKey();
+  const r = runCli({ EGO_BROWSER_BIN: "no-such-ego-binary-xyz", EGO_JEV_NO_HEAL: "1" });
+  check("ego-browser 缺失时报错而不是崩", r.code === 2 && !r.out.includes("unbound variable") && r.out.includes("找不到"), `code=${r.code} ${r.out.slice(0, 120)}`);
 }
 
 fs.rmSync(root, { recursive: true, force: true });

@@ -78,7 +78,7 @@ elif [ -e "$SKILL_LINK" ]; then
   info "$SKILL_LINK 是拷贝（skills CLI 安装）"
   info "更新它请重跑：npx skills add jiangkoumo/ego-jev"
 else
-  info "未发现技能目录 $SKILL_LINK（可选——不装技能也能直接用 CLI）"
+  info "未发现技能目录 ${SKILL_LINK}（可选——不装技能也能直接用 CLI）"
   info "  装它：npx skills add jiangkoumo/ego-jev"
   info "  或链接：mkdir -p \"$SKILL_LINK\" && ln -sfn \"$REPO_DIR/SKILL.md\" \"$SKILL_LINK/SKILL.md\""
 fi

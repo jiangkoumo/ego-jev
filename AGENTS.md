@@ -80,6 +80,8 @@ update.sh                一键更新（接管过则自动重接管）
 - 改完引擎要重跑上面的冒烟测试**和** `./examples/bench/run-pair.sh A`。
 - 改 `scripts/wire-agent-skills.sh` / `overlay/` 要重跑 `node bench/test-wire-skill.mjs`
   （用临时 HOME 造官方软链，无需浏览器与凭证），并在真机上 `--check` 一次。
+- `scripts/ego-jev` 启动时会调 `wire-agent-skills.sh --if-enabled` 自愈（只在有启用标记时动手，失败静默，
+  `EGO_JEV_NO_HEAL=1` 或 `EGO_JEV_CONFIG_DIR` 可控制）；改这块要重跑同一个单测（[29] 段覆盖）。
 - 接管脚本要兼容 macOS 自带的 bash 3.2（没有 `local -n`、关联数组、`mapfile`）。
 - 生成物必须确定性（不能写时间戳/随机数），否则 `--check` 会永远报漂移。
 - 接管层只在 Agent 技能目录里写：`SKILL.md` 是生成的，`references/`、`scripts/`、`learnings/`
