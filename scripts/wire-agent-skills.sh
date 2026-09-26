@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# ego-jev — 把 Agent 技能目录里的 ego-browser 入口接管成「路由层」，让多步浏览器任务默认走 ego-jev。
+# ego-decision-layer — 把 Agent 技能目录里的 ego-browser 入口接管成「路由层」，让多步浏览器任务默认走 ego-decision-layer。
 #
 # 背景：ego lite 会把官方技能写进每个 Agent 的技能目录（~/.agents/skills、~/.claude/skills……），
-# 那个位置由 App 管理、升级时会重建；官方正文不知道 ego-jev 存在，于是 Agent 默认照着它写逐步脚本。
+# 那个位置由 App 管理、升级时会重建；官方正文不知道 ego-decision-layer 存在，于是 Agent 默认照着它写逐步脚本。
 # 本脚本把入口换成路由层：技能正文仍是 App 的当前版本（软链跟随，升级自动更新），
-# 只是最前面多一条路由规则——多步线性任务先走 `ego-jev`。
+# 只是最前面多一条路由规则——多步线性任务先走 `ego-decision-layer`。
 #
 # 只写 Agent 技能目录，不碰 /Applications 里的应用包；`--restore` 可还原成官方软链。
 #
@@ -18,7 +18,7 @@
 #   --if-enabled  仅当之前接管过（有启用标记）才动手；给 update.sh 用
 #   --ensure      给 CLI 首跑用：接管过就静默刷新；没接管过但检测到官方入口才首跑接管一次；
 #                 两者都不是就什么都不做（见下方 EGO_JEV_NO_WIRE）
-#   --status-json 只读：把同一份路由状态输出成 JSON（给 `ego-jev --route-status` 用）
+#   --status-json 只读：把同一份路由状态输出成 JSON（给 `ego-decision-layer --route-status` 用）
 #   --always-on FILE  向 FILE 插入一段带标记的路由说明块（幂等、可 --restore 精确移除）
 #   --dry-run     只打印会做什么，不落盘
 #
@@ -27,27 +27,42 @@
 # 环境变量:
 #   EGO_JEV_SKILLS_DIRS  以 : 分隔的技能目录列表，覆盖默认探测
 #   EGO_JEV_VENDOR       官方技能目录，覆盖自动探测
-#   EGO_JEV_CONFIG_DIR   启用标记 / always-on 记录目录，默认 ~/.config/ego-jev
-#   EGO_JEV_SKILL_PATH   ego-jev 自己的 SKILL.md（写进路由层）
+#   EGO_JEV_CONFIG_DIR   启用标记 / always-on 记录目录，默认 ~/.config/ego-decision-layer（环境变量名为历史名，保留）
+#   EGO_JEV_SKILL_PATH   ego-decision-layer 自己的 SKILL.md（写进路由层）
 #   EGO_JEV_NO_WIRE      设为非空：--ensure 什么都不做（CLI 首跑接管与自愈一并关闭）
 set -uo pipefail
 
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TEMPLATE="$REPO_DIR/overlay/ego-browser/SKILL.md.in"
 WIRE_SCRIPT="$REPO_DIR/scripts/wire-agent-skills.sh"
-CONFIG_DIR="${EGO_JEV_CONFIG_DIR:-$HOME/.config/ego-jev}"
+# 配置目录 0.4.0 起改名：新目录优先；新目录不存在而旧目录存在时沿用它并提示一次（不静默丢配置）。
+USING_LEGACY_CONFIG=0
+if [[ -n "${EGO_JEV_CONFIG_DIR:-}" ]]; then
+  CONFIG_DIR="$EGO_JEV_CONFIG_DIR"
+elif [[ -d "$HOME/.config/ego-decision-layer" ]]; then
+  CONFIG_DIR="$HOME/.config/ego-decision-layer"
+elif [[ -d "$HOME/.config/ego-jev" ]]; then   # 兼容旧配置目录
+  CONFIG_DIR="$HOME/.config/ego-jev"            # 兼容旧配置目录
+  USING_LEGACY_CONFIG=1
+else
+  CONFIG_DIR="$HOME/.config/ego-decision-layer"
+fi
+[[ $USING_LEGACY_CONFIG -eq 1 ]] && printf '[ego-decision-layer] 检测到旧配置目录 ~/.config/ego-jev，本次沿用它；bash scripts/rename-self.sh 可迁移\n' >&2
 FLAG_FILE="$CONFIG_DIR/wire-enabled.json"
 ALWAYS_ON_LIST="$CONFIG_DIR/always-on.list"
 OPTOUT_FILE="$CONFIG_DIR/opted-out"
-MARKER_NAME=".ego-jev-overlay.json"
-MARKER_MAGIC='"overlay": "ego-jev"'
-ROUTE_BEGIN='<!-- ego-jev:route begin -->'
-ROUTE_END='<!-- ego-jev:route end -->'
+MARKER_NAME=".ego-jev-overlay.json"          # 内部标记名保留（兼容 pre-0.4.0 的 --restore）
+MARKER_MAGIC='"overlay": "ego-jev"'          # 内部标记内容保留（兼容）
+ROUTE_BEGIN='<!-- ego-decision-layer:route begin -->'
+ROUTE_END='<!-- ego-decision-layer:route end -->'
+# 历史 always-on 块标记（pre-0.4.0）：--restore / 重插时先删掉旧块（兼容）
+ROUTE_BEGIN_LEGACY='<!-- ego-jev:route begin -->'
+ROUTE_END_LEGACY='<!-- ego-jev:route end -->'
 
 # 路由说明（进 frontmatter 的 description，是 Agent 选择技能的依据）。
 # 必须排在厂商描述之前：描述会被按预算压缩、优先丢最少用的尾部，放在末尾等于最先被砍。
 # 开头即「触发条件 + 动作」，长度刻意不超过厂商描述之后的那版旧拼法（越短越抗截断）。
-ROUTING_NOTE='多步线性浏览器任务（连续点击、翻页、搜索表单提交、多字段填写、导航跳转）先用 `ego-jev` CLI 在单进程内闭环（一条命令，别写逐步脚本）；单步动作、精确 DOM/选择器、批量抓取走本技能的 ego-browser API。本入口已由 ego-jev 接管。'
+ROUTING_NOTE='多步线性浏览器任务（连续点击、翻页、搜索表单提交、多字段填写、导航跳转）先用 `ego-decision-layer` CLI 在单进程内闭环（一条命令，别写逐步脚本）；单步动作、精确 DOM/选择器、批量抓取走本技能的 ego-browser API。本入口已由 ego-decision-layer 接管。'
 
 MODE="wire"          # wire | check | restore | ensure | status | always-on
 DRY_RUN=0
@@ -114,13 +129,13 @@ vendor_frontmatter_field() { # vendor_frontmatter_field <key>：frontmatter 字�
     "$VENDOR/SKILL.md" 2>/dev/null
 }
 
-ego_jev_skill_path() {
+decision_layer_skill_path() {
   if [[ -n "${EGO_JEV_SKILL_PATH:-}" ]]; then printf '%s' "$EGO_JEV_SKILL_PATH"; return; fi
-  local cand
-  for cand in "$HOME/.agents/skills/ego-jev/SKILL.md" "$REPO_DIR/SKILL.md"; do
+  local cand legacy_skill="$HOME/.agents/skills/ego-jev/SKILL.md"   # 兼容 pre-0.4.0 的旧安装位置
+  for cand in "$HOME/.agents/skills/ego-decision-layer/SKILL.md" "$legacy_skill" "$REPO_DIR/SKILL.md"; do
     [[ -f "$cand" ]] && { printf '%s' "$cand"; return; }
   done
-  printf '%s' "未安装（直接用 ego-jev CLI 即可）"
+  printf '%s' "未安装（直接用 ego-decision-layer CLI 即可）"
 }
 
 # 生成路由层 SKILL.md 到 stdout（必须确定性：不含时间戳/随机数，否则 --check 会一直误报漂移）
@@ -129,7 +144,7 @@ render_overlay() {
   desc="$(vendor_frontmatter_field description)"
   ver="$(vendor_frontmatter_field version)"
   date="$(vendor_frontmatter_field date)"
-  jev="$(ego_jev_skill_path)"
+  jev="$(decision_layer_skill_path)"
   [[ -n "$desc" ]] || desc="When you need a browser, read this Skill by default（原描述读取失败，请重跑本脚本）"
   # frontmatter 是 YAML：description 用单引号标量，内部单引号翻倍，换行压成空格。
   # 不这样做的话，厂商描述里一旦出现 ": " 就会让整条技能解析失败（Agent 直接看不到这个技能）。
@@ -152,7 +167,7 @@ write_marker() {
   local dir="$1" original="$2"
   {
     printf '{\n'
-    printf '  "overlay": "ego-jev",\n'
+    printf '  "overlay": "ego-jev",\n'   # 内部标记内容保留（兼容）
     printf '  "wiredAt": "%s",\n' "$(date -u '+%Y-%m-%dT%H:%M:%SZ')"
     printf '  "original": "%s",\n' "$original"
     printf '  "vendor": "%s",\n' "${VENDOR:-}"
@@ -189,30 +204,30 @@ install_overlay() {
 
 route_block() {
   local jev line
-  jev="$(ego_jev_skill_path)"
+  jev="$(decision_layer_skill_path)"
   while IFS= read -r line || [[ -n "$line" ]]; do
     line="${line//'{{EGO_JEV_SKILL}}'/$jev}"
     line="${line//'{{WIRE_SCRIPT}}'/$WIRE_SCRIPT}"
     printf '%s\n' "$line"
   done <<'BLOCK'
-<!-- ego-jev:route begin -->
-## 浏览器任务：多步线性先走 ego-jev
+<!-- ego-decision-layer:route begin -->
+## 浏览器任务：多步线性先走 ego-decision-layer
 
-多步线性浏览器任务（连续点击、翻页、搜索表单提交、多字段填写、导航跳转）先用 `ego-jev` CLI
+多步线性浏览器任务（连续点击、翻页、搜索表单提交、多字段填写、导航跳转）先用 `ego-decision-layer` CLI
 在单进程内闭环（一条命令，别写逐步脚本）：
 
 ```bash
-ego-jev --url "https://…" --until "/expected/path" --steps 8 "把目标写清楚"
+ego-decision-layer --url "https://…" --until "/expected/path" --steps 8 "把目标写清楚"
 ```
 
 单步动作、精确 DOM/选择器、批量抓取仍走 `ego-browser` 原生 API。
 
 Multi-step linear browser work (click chains, pagination, form submits, navigation) should go
-through the `ego-jev` CLI first; single actions, precise DOM/selector work and bulk scraping stay
+through the `ego-decision-layer` CLI first; single actions, precise DOM/selector work and bulk scraping stay
 on the `ego-browser` API.
 
 技能目录：`{{EGO_JEV_SKILL}}` · 路由层与 always-on 块的还原：`bash {{WIRE_SCRIPT}} --restore`
-<!-- ego-jev:route end -->
+<!-- ego-decision-layer:route end -->
 BLOCK
   return 0
 }
@@ -222,19 +237,34 @@ always_on_files() { [[ -f "$ALWAYS_ON_LIST" ]] && grep -v '^$' "$ALWAYS_ON_LIST"
 always_on_add() {  # <file>
   local f="$1" tmp
   mkdir -p "$CONFIG_DIR" || return 1
-  tmp="$(mktemp "${TMPDIR:-/tmp}/ego-jev-ao.XXXXXX")" || return 1
+  tmp="$(mktemp "${TMPDIR:-/tmp}/ego-decision-layer-ao.XXXXXX")" || return 1
   { always_on_files; printf '%s\n' "$f"; } | sort -u > "$tmp" && mv "$tmp" "$ALWAYS_ON_LIST"
 }
 
-file_has_block() { [[ -f "$1" ]] && grep -qF "$ROUTE_BEGIN" "$1" 2>/dev/null && grep -qF "$ROUTE_END" "$1" 2>/dev/null; }
+block_bounds() {  # <file>：打印「起 止」行号（新标记优先，其次历史标记）；没有则 return 1
+  local file="$1" b e
+  for which in new legacy; do
+    if [[ "$which" == "new" ]]; then
+      b="$(grep -nF "$ROUTE_BEGIN" "$file" 2>/dev/null | head -1 | cut -d: -f1)"
+      e="$(grep -nF "$ROUTE_END" "$file" 2>/dev/null | head -1 | cut -d: -f1)"
+    else
+      b="$(grep -nF "$ROUTE_BEGIN_LEGACY" "$file" 2>/dev/null | head -1 | cut -d: -f1)"
+      e="$(grep -nF "$ROUTE_END_LEGACY" "$file" 2>/dev/null | head -1 | cut -d: -f1)"
+    fi
+    [[ -n "$b" && -n "$e" && "$e" -ge "$b" ]] && { printf '%s %s\n' "$b" "$e"; return 0; }
+  done
+  return 1
+}
 
-# 生成「原文件（去掉旧块）+ 新块」到 stdout；块外内容按行原样保留
+file_has_block() { [[ -f "$1" ]] && block_bounds "$1" >/dev/null; }
+
+# 生成「原文件（去掉旧块，新旧标记都认）+ 新块」到 stdout；块外内容按行原样保留
 file_with_block() {  # <file> <blockfile>
-  local file="$1" bf="$2" b e
+  local file="$1" bf="$2" bounds b e
   if [[ -f "$file" ]]; then
-    b="$(grep -nF "$ROUTE_BEGIN" "$file" 2>/dev/null | head -1 | cut -d: -f1)"
-    e="$(grep -nF "$ROUTE_END" "$file" 2>/dev/null | head -1 | cut -d: -f1)"
-    if [[ -n "$b" && -n "$e" && "$e" -ge "$b" ]]; then
+    bounds="$(block_bounds "$file")" || true
+    if [[ -n "$bounds" ]]; then
+      b="${bounds%% *}"; e="${bounds##* }"
       head -n "$((b - 1))" "$file"
       cat "$bf"
       tail -n "+$((e + 1))" "$file"
@@ -247,12 +277,12 @@ file_with_block() {  # <file> <blockfile>
   return 0
 }
 
-file_without_block() {  # <file>：stdout = 去掉块后的内容
-  local file="$1" b e
+file_without_block() {  # <file>：stdout = 去掉块（新旧标记都认）后的内容
+  local file="$1" bounds b e
   [[ -f "$file" ]] || return 0
-  b="$(grep -nF "$ROUTE_BEGIN" "$file" 2>/dev/null | head -1 | cut -d: -f1)"
-  e="$(grep -nF "$ROUTE_END" "$file" 2>/dev/null | head -1 | cut -d: -f1)"
-  if [[ -n "$b" && -n "$e" && "$e" -ge "$b" ]]; then
+  bounds="$(block_bounds "$file")" || true
+  if [[ -n "$bounds" ]]; then
+    b="${bounds%% *}"; e="${bounds##* }"
     head -n "$((b - 1))" "$file"
     tail -n "+$((e + 1))" "$file"
   else
@@ -263,14 +293,14 @@ file_without_block() {  # <file>：stdout = 去掉块后的内容
 
 apply_always_on() {  # <file>
   local file="$1" bf tmp
-  bf="$(mktemp "${TMPDIR:-/tmp}/ego-jev-blk.XXXXXX")" || return 1
+  bf="$(mktemp "${TMPDIR:-/tmp}/ego-decision-layer-blk.XXXXXX")" || return 1
   route_block > "$bf" || { rm -f "$bf"; return 1; }
   if [[ -e "$file" ]]; then
     [[ -e "$file.bak" ]] || cp "$file" "$file.bak" || { rm -f "$bf"; return 1; }
   else
     mkdir -p "$(dirname "$file")" || { rm -f "$bf"; return 1; }
   fi
-  tmp="$(mktemp "${TMPDIR:-/tmp}/ego-jev-out.XXXXXX")" || { rm -f "$bf"; return 1; }
+  tmp="$(mktemp "${TMPDIR:-/tmp}/ego-decision-layer-out.XXXXXX")" || { rm -f "$bf"; return 1; }
   file_with_block "$file" "$bf" > "$tmp" && mv "$tmp" "$file" || { rm -f "$bf" "$tmp"; return 1; }
   rm -f "$bf"
   always_on_add "$file"
@@ -283,7 +313,7 @@ remove_always_on() {  # <file>：有 .bak 就按字节还原，否则只去块
     return 0
   fi
   [[ -f "$file" ]] || return 0
-  tmp="$(mktemp "${TMPDIR:-/tmp}/ego-jev-out.XXXXXX")" || return 1
+  tmp="$(mktemp "${TMPDIR:-/tmp}/ego-decision-layer-out.XXXXXX")" || return 1
   file_without_block "$file" > "$tmp" && mv "$tmp" "$file"
   [[ -s "$file" ]] || rm -f "$file"   # 只去块后变空、且无 .bak → 这是本脚本建的文件
   return 0
@@ -297,7 +327,7 @@ json_escape() { printf '%s' "$1" | sed 's/\\/\\\\/g; s/"/\\"/g'; }
 write_optout() {
   mkdir -p "$CONFIG_DIR" || return 1
   {
-    printf '%s\n' 'ego-jev: 已按用户选择不接管官方 ego-browser 入口（由 --restore 写入）'
+    printf '%s\n' 'ego-decision-layer: 已按用户选择不接管官方 ego-browser 入口（由 --restore 写入）'
     printf '重新启用: bash %s\n' "$WIRE_SCRIPT"
   } > "$OPTOUT_FILE"
 }
@@ -373,7 +403,7 @@ if [[ $DIRS_FIXED -eq 0 ]]; then
   while IFS= read -r d; do DIRS+=("$d"); done < <( { flag_dirs; default_dirs; } | dedup_lines )
 fi
 
-if [[ -f "$TEMPLATE" ]]; then :; else fail "缺少模板: ${TEMPLATE}（本脚本要在 ego-jev 仓库内运行）"; fi
+if [[ -f "$TEMPLATE" ]]; then :; else fail "缺少模板: ${TEMPLATE}（本脚本要在 ego-decision-layer 仓库内运行）"; fi
 
 declare -a RECORDED_DIRS=()
 if [[ -f "$FLAG_FILE" ]]; then
@@ -444,12 +474,12 @@ fi
 # ── --always-on：只写指定的那个文件（默认不写任何用户文件）──────────────────────
 if [[ "$MODE" == "always-on" ]]; then
   if [[ $DRY_RUN -eq 1 ]]; then
-    echo "==> ego-jev always-on（dry-run）"
+    echo "==> ego-decision-layer always-on（dry-run）"
     info "会向 ${ALWAYS_ON_FILE} 插入/替换路由块（块外内容不动；首次会备份到 ${ALWAYS_ON_FILE}.bak）"
     exit 0
   fi
   if apply_always_on "$ALWAYS_ON_FILE"; then
-    echo "==> ego-jev always-on"
+    echo "==> ego-decision-layer always-on"
     info "已写入路由块: ${ALWAYS_ON_FILE}（幂等）"
     info "移除它（连同路由层）: bash ${WIRE_SCRIPT} --restore"
     exit 0
@@ -577,7 +607,7 @@ render_check_line() {  # <state> <dir> <target>
     foreign) warn "未知  ${target}（软链指向别处，不是 ego lite 技能）: → ${t}"; n_drift=$((n_drift + 1)); had_drift=1 ;;
     plain) warn "未知  ${target}（既不是我们的路由层，也不是官方软链）"; n_drift=$((n_drift + 1)); had_drift=1 ;;
     missing-recorded) warn "漂移  ${dir}（接管过，但 ego-browser 入口不见了：重跑本脚本）"; n_drift=$((n_drift + 1)); had_drift=1 ;;
-    none) info "无需接管  ${dir}（没有官方 ego-browser 入口；该 Agent 通过自身的 ego-jev 技能被发现）"; n_noneed=$((n_noneed + 1)) ;;
+    none) info "无需接管  ${dir}（没有官方 ego-browser 入口；该 Agent 通过自身的 ego-decision-layer 技能被发现）"; n_noneed=$((n_noneed + 1)) ;;
     no-dir) info "无需接管  ${dir}（目录不存在）"; n_noneed=$((n_noneed + 1)) ;;
   esac
   return 0
@@ -619,7 +649,7 @@ restore_one() {
   did_something=1
 }
 
-# 只读状态（机器可读）：`ego-jev --route-status` 用它；不写盘、不起浏览器、不要凭证
+# 只读状态（机器可读）：`ego-decision-layer --route-status` 用它；不写盘、不起浏览器、不要凭证
 emit_status_json() {
   local dir rec st tg first=1 n=0 m=0 k=0 ao_first=1 f wired drift entry hasEntry
   printf '{\n'
@@ -665,7 +695,7 @@ emit_status_json() {
 
 if [[ "$MODE" == "status" ]]; then emit_status_json; exit 0; fi
 
-echo "==> ego-jev 路由接管（${MODE}）"
+echo "==> ego-decision-layer 路由接管（${MODE}）"
 info "官方技能: ${VENDOR:-（未找到）}"
 
 # 显式 wire（用户直接跑 wire-agent-skills.sh，或 install.sh 的接管步骤）解除 opt-out；
@@ -755,10 +785,10 @@ fi
 
 echo
 if [[ $FIRST_RUN -eq 1 && $n_overlay -gt 0 ]]; then
-  echo "已首跑接管 ${n_overlay} 个入口：多步线性浏览器任务默认走 ego-jev；还原: bash ${WIRE_SCRIPT} --restore"
+  echo "已首跑接管 ${n_overlay} 个入口：多步线性浏览器任务默认走 ego-decision-layer；还原: bash ${WIRE_SCRIPT} --restore"
 fi
 if [[ $n_overlay -gt 0 ]]; then
-  echo "已接管 ${n_overlay} 个入口：多步线性任务先走 ego-jev，其余仍按官方 ego-browser API。"
+  echo "已接管 ${n_overlay} 个入口：多步线性任务先走 ego-decision-layer，其余仍按官方 ego-browser API。"
   echo "技能正文照旧从 App 当前版本读取（软链跟随升级）；新开的 Agent 会话才会看到这层路由。"
 fi
 if [[ $n_skipped -gt 0 ]]; then

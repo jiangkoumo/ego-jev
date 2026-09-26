@@ -12,10 +12,10 @@
 //
 // 合成 GIF/MP4 见 docs/README.md。
 const REPO_INJECTED = "__REPO__";
-const REPO = REPO_INJECTED.startsWith("/") ? REPO_INJECTED : (process.env.HOME || "") + "/.agents/skills/ego-jev";
+const REPO = REPO_INJECTED.startsWith("/") ? REPO_INJECTED : (process.env.HOME || "") + "/.agents/skills/ego-decision-layer";
 const { join } = await import("node:path");
 const { mkdir, writeFile } = await import("node:fs/promises");
-const { runJevStep, loadApiKey } = await import(join(REPO, "scripts", "ego-jev.mjs"));
+const { runJevStep, loadApiKey } = await import(join(REPO, "scripts", "decider-loop.mjs"));
 
 const FRAMES = join(REPO, "docs", "demo-frames");
 await mkdir(FRAMES, { recursive: true });
@@ -26,7 +26,7 @@ if (!key) {
   process.exit(0);
 }
 
-const space = await taskSpace(`ego-jev-demo-${Date.now()}`);
+const space = await taskSpace(`ego-decision-layer-demo-${Date.now()}`);
 const page = space.page("p1");
 const trace = [];
 try {
@@ -39,10 +39,10 @@ try {
   // 注入我们自己的说明条（固定定位；文案由真实 trace 传进来，不写死「成功」）
   const shot = async (index, text) => {
     await page.evaluate((payload) => {
-      const old = document.getElementById("ego-jev-caption");
+      const old = document.getElementById("ego-decision-layer-caption");
       if (old) old.remove();
       const bar = document.createElement("div");
-      bar.id = "ego-jev-caption";
+      bar.id = "ego-decision-layer-caption";
       bar.textContent = payload.text;
       bar.style.cssText =
         "position:fixed;left:0;right:0;bottom:0;z-index:2147483647;background:#0b0f14;color:#e6edf3;" +

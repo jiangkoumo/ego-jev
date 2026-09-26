@@ -16,7 +16,7 @@ const check = (name, ok, detail = "") => {
   else { fail++; console.log(`  FAIL ${name} ${detail}`); }
 };
 
-const root = fs.mkdtempSync(join(os.tmpdir(), "ego-jev-wire-"));
+const root = fs.mkdtempSync(join(os.tmpdir(), "ego-decision-layer-wire-"));
 const HOME = join(root, "home");
 const VENDOR = join(root, "vendor");
 const SKILLS = join(HOME, ".agents", "skills");
@@ -41,12 +41,12 @@ const DESC_2 = "When you need a browser, read this Skill by default. VERSION-TWO
 
 const setup = () => {
   fs.rmSync(root, { recursive: true, force: true });
-  for (const d of [VENDOR, SKILLS, CFG, join(VENDOR, "references"), join(VENDOR, "scripts"), join(VENDOR, "learnings"), dirname(VENDOR_LINK), join(SKILLS, "ego-jev")]) {
+  for (const d of [VENDOR, SKILLS, CFG, join(VENDOR, "references"), join(VENDOR, "scripts"), join(VENDOR, "learnings"), dirname(VENDOR_LINK), join(SKILLS, "ego-decision-layer")]) {
     fs.mkdirSync(d, { recursive: true });
   }
   fs.writeFileSync(join(VENDOR, "SKILL.md"), vendorSkill(DESC_1, "2.0.0"));
   fs.writeFileSync(join(VENDOR, "references", "api.md"), "# api\n");
-  fs.writeFileSync(join(SKILLS, "ego-jev", "SKILL.md"), "---\nname: ego-jev\n---\n");
+  fs.writeFileSync(join(SKILLS, "ego-decision-layer", "SKILL.md"), "---\nname: ego-decision-layer\n---\n");
   fs.symlinkSync(VENDOR, VENDOR_LINK, "dir");
   fs.symlinkSync(VENDOR_LINK, ENTRY, "dir");
 };
@@ -73,13 +73,13 @@ check("接管前 --check 报未接管（exit 1）", wire("--check").code === 1);
   check("入口变成实目录（不再是软链）", !isSymlink() && fs.statSync(ENTRY).isDirectory());
   check("生成了标记文件", isOverlay());
   check("生成物带路由规则", overlayText().includes("先路由，再决定写不写脚本"));
-  check("生成物带 ego-jev CLI 用法", overlayText().includes("ego-jev --url"));
+  check("生成物带 ego-decision-layer CLI 用法", overlayText().includes("ego-decision-layer --url"));
   check("保留了官方描述（触发词不变）", overlayText().includes(DESC_1));
   { // 回归保护（位置断言，不是 contains）：路由句必须排在厂商描述之前——描述被压缩时先丢尾部，
     // 旧拼法把路由句放末尾，等于最先被砍掉。这里断言路由句的开头与结尾都在厂商文本之前。
     const descLine = overlayText().split("\n").find((l) => l.startsWith("description: ")) || "";
     const pOpen = descLine.indexOf("多步线性");
-    const pTail = descLine.indexOf("本入口已由 ego-jev 接管");
+    const pTail = descLine.indexOf("本入口已由 ego-decision-layer 接管");
     const pVendor = descLine.indexOf(DESC_1);
     check("路由句整段在厂商描述之前（位置断言）", pOpen >= 0 && pTail >= 0 && pVendor >= 0 && pOpen < pTail && pTail < pVendor, `open=${pOpen} tail=${pTail} vendor=${pVendor}`);
   }
@@ -323,7 +323,7 @@ makeFakeEgoBrowser();
   fs.mkdirSync(join(mini, "scripts"), { recursive: true });
   fs.mkdirSync(join(mini, "overlay", "ego-browser"), { recursive: true });
   for (const f of ["SKILL.md", "install.sh", "update.sh"]) fs.copyFileSync(join(REPO, f), join(mini, f));
-  for (const f of ["ego-jev", "ego-jev.mjs", "wire-agent-skills.sh"]) fs.copyFileSync(join(REPO, "scripts", f), join(mini, "scripts", f));
+  for (const f of ["ego-decision-layer", "decider-loop.mjs", "wire-agent-skills.sh"]) fs.copyFileSync(join(REPO, "scripts", f), join(mini, "scripts", f));
   fs.copyFileSync(join(REPO, "overlay", "ego-browser", "SKILL.md.in"), join(mini, "overlay", "ego-browser", "SKILL.md.in"));
   fs.writeFileSync(join(CFG, "wire-enabled.json"), `{\n  "enabled": true,\n  "dirs": ["${join(root, "missing-skills")}"]\n}\n`);
   const r = spawnSync("bash", [join(mini, "update.sh")], {
@@ -344,8 +344,8 @@ wire();
   const line = text.split("\n").find((l) => l.startsWith("description: "));
   check("description 是单引号标量", line.startsWith("description: '") && line.endsWith("'"), line.slice(0, 70));
   const value = line.slice("description: ".length).slice(1, -1).replace(/''/g, "'");
-  check("描述内容完整保留（含厂商文本与接管说明）", value.includes(DESC_COLON) && value.includes("已由 ego-jev 接管"));
-  check("路由句排在厂商描述之前（位置断言）", value.indexOf("本入口已由 ego-jev 接管") < value.indexOf(DESC_COLON) && value.indexOf(DESC_COLON) > 0, `route=${value.indexOf("本入口已由 ego-jev 接管")} vendor=${value.indexOf(DESC_COLON)}`);
+  check("描述内容完整保留（含厂商文本与接管说明）", value.includes(DESC_COLON) && value.includes("已由 ego-decision-layer 接管"));
+  check("路由句排在厂商描述之前（位置断言）", value.indexOf("本入口已由 ego-decision-layer 接管") < value.indexOf(DESC_COLON) && value.indexOf(DESC_COLON) > 0, `route=${value.indexOf("本入口已由 ego-decision-layer 接管")} vendor=${value.indexOf(DESC_COLON)}`);
   check("description 只占一行", text.split("\n").filter((l) => l.startsWith("description: ")).length === 1);
   let yamlOk = null;
   try {
@@ -395,7 +395,7 @@ setup();
 wire();
 {
   const text = overlayText();
-  check("version 带上厂商版本号", /version: "2\.0\.0\+ego-jev"/.test(text), text.split("\n").find((l) => l.includes("version:")));
+  check("version 带上厂商版本号", /version: "2\.0\.0\+ego-decision-layer"/.test(text), text.split("\n").find((l) => l.includes("version:")));
   check("date 带上厂商日期", /date: "2026-09-09"/.test(text), text.split("\n").find((l) => l.includes("date:")));
 }
 
@@ -550,7 +550,7 @@ wire();
   check("负对照：修复前的写法会被抓出来", unquotedColonIssue("---\ndescription: \u4e00\u53e5\u8bdd: \u5e26\u5192\u53f7\n---\n"));
 }
 
-// ── [29] ego-jev 启动时自愈路由层（档 2）────────────────────────────
+// ── [29] ego-decision-layer 启动时自愈路由层（档 2）────────────────────────────
 console.log("\n[29] CLI 启动自愈");
 const stubKey = () => {
   fs.mkdirSync(join(HOME, ".config", "typesafe"), { recursive: true });
@@ -558,7 +558,7 @@ const stubKey = () => {
 };
 const runCli = (extra = {}) => {
   const env = { ...baseEnv(), TYPESAFE_API_KEY: "", FAKE_LOG: join(root, "fake.log"), PATH: `${dirname(process.execPath)}:${fakeBin}:/usr/bin:/bin`, ...extra };
-  const r = spawnSync("bash", [join(REPO, "scripts", "ego-jev"), "--url", "https://example.com", "点一下"], { env, encoding: "utf8" });
+  const r = spawnSync("bash", [join(REPO, "scripts", "ego-decision-layer"), "--url", "https://example.com", "点一下"], { env, encoding: "utf8" });
   const argv = fs.existsSync(join(root, "fake.log")) ? fs.readFileSync(join(root, "fake.log"), "utf8") : "(none)";
   return { code: r.status ?? 1, out: `${r.stdout ?? ""}${r.stderr ?? ""}`, argv };
 };
@@ -573,7 +573,7 @@ const restoreOfficialEntry = () => {
   wire();
   restoreOfficialEntry();
   const r = runCli();
-  check("跑 ego-jev 会把入口自愈回路由层", isOurOverlayAt(ENTRY), r.out);
+  check("跑 ego-decision-layer 会把入口自愈回路由层", isOurOverlayAt(ENTRY), r.out);
   check("stderr 有自愈提示", r.out.includes("已自动重接管"), r.out);
   check("退出码仍来自引擎（fake ego-browser 的 3）", r.code === 3, `code=${r.code} argv=${JSON.stringify(r.argv)} out=${r.out.slice(-200)}`);
   check("自愈后 --check 通过", wire("--check").code === 0);
@@ -624,7 +624,7 @@ const restoreOfficialEntry = () => {
 console.log("\n[30] bash 3.2 变量展开陷阱");
 {
   const bad = [];
-  for (const f of ["scripts/ego-jev", "scripts/wire-agent-skills.sh", "install.sh", "update.sh"]) {
+  for (const f of ["scripts/ego-decision-layer", "scripts/ego-jev", "scripts/wire-agent-skills.sh", "install.sh", "update.sh"]) {   // 含历史垫片
     const src = fs.readFileSync(join(REPO, f), "utf8");
     src.split("\n").forEach((line, i) => {
       if (/\$[A-Za-z_][A-Za-z0-9_]*[^\x00-\x7F]/.test(line)) bad.push(`${f}:${i + 1}`);
@@ -644,8 +644,8 @@ console.log("\n[30] bash 3.2 变量展开陷阱");
 console.log("\n[31] --check 结论与只读性");
 {
   setup();
-  fs.mkdirSync(join(HOME, ".codex", "skills", "ego-jev"), { recursive: true });
-  fs.writeFileSync(join(HOME, ".codex", "skills", "ego-jev", "SKILL.md"), "---\nname: ego-jev\n---\n");
+  fs.mkdirSync(join(HOME, ".codex", "skills", "ego-decision-layer"), { recursive: true });
+  fs.writeFileSync(join(HOME, ".codex", "skills", "ego-decision-layer", "SKILL.md"), "---\nname: ego-decision-layer\n---\n");
   wire();
   const c = wire("--check");
   check("--check exit 0", c.code === 0, c.out);

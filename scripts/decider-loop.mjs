@@ -1,4 +1,4 @@
-// ego-jev.mjs — a Jev (TypeSafe System One) driver for the ego lite browser
+// decider-loop.mjs — a Jev (TypeSafe System One) driver for the ego lite browser
 // 全局通用 Jev + ego-browser 极速驱动引擎
 //
 // 重要：`ego-browser nodejs` 内嵌运行时只继承最小化登录环境（HOME/PATH/...），
@@ -70,9 +70,25 @@ const FALLBACK_BASE_URL = process.env.TYPESAFE_FALLBACK_BASE_URL || "";
 //   既有 ~/.config/typesafe/api_key > 用户已有 rc 文件里的同名 export。
 // 为什么回退到 rc：用户往往已经在 shell rc 里 export 过 key，不必再落盘一次；
 // 但它仍必须是文件——ego 运行时拿不到父进程的环境变量。
+// 配置目录改名（0.4.0）：写死新目录名；读不到时兼容旧目录，只提示一次，不静默丢配置。
+// 旧名 `.config/ego-jev` 只作为迁移期兼容路径存在。
+const CONFIG_DIR_NAME = "ego-decision-layer";
+const LEGACY_CONFIG_DIR_NAME = "ego-jev";   // 兼容旧名（迁移期）
+let legacyConfigWarned = false;
+function warnLegacyConfigOnce() {
+  if (legacyConfigWarned) return;
+  legacyConfigWarned = true;
+  console.error(
+    "[ego-decision-layer] 检测到旧配置目录 ~/.config/ego-jev，本次沿用它；" +
+      "跑 `bash scripts/rename-self.sh` 完成迁移。"
+  );
+}
+
 const CREDENTIAL_SOURCES = [
   process.env.TYPESAFE_API_KEY_FILE ? { file: process.env.TYPESAFE_API_KEY_FILE, allowBare: true } : null,
-  { file: join(homedir(), ".config", "ego-jev", "credentials"), allowBare: true },
+  { file: join(homedir(), ".config", CONFIG_DIR_NAME, "credentials"), allowBare: true },
+  // 历史路径（0.4.0 前的配置目录）：迁移期继续可读
+  { file: join(homedir(), ".config", LEGACY_CONFIG_DIR_NAME, "credentials"), allowBare: true },
   { file: join(homedir(), ".config", "typesafe", "api_key"), allowBare: true },
   { file: join(homedir(), ".zshrc"), allowBare: false },
   { file: join(homedir(), ".bashrc"), allowBare: false },
@@ -128,7 +144,7 @@ export async function askJev(state, questions, options = {}) {
       "未检测到 Jev API 凭证。请写入 " +
         join(homedir(), ".config", "typesafe", "api_key") +
         "（内容为 API Key 一行），或在 " +
-        join(homedir(), ".config", "ego-jev", "credentials") +
+        join(homedir(), ".config", CONFIG_DIR_NAME, "credentials") +
         " 里写 `export TYPESAFE_API_KEY=…`，或通过 options.apiKey 传入。"
     );
   }
@@ -189,7 +205,15 @@ const DECIDER_CAPABILITIES = {
 
 /** decider.json 默认路径（与路由层同一配置目录；本轮不改目录名） */
 function deciderFilePath() {
-  return process.env.EGO_JEV_DECIDER_FILE || join(homedir(), ".config", "ego-jev", "decider.json");
+  if (process.env.EGO_JEV_DECIDER_FILE) return process.env.EGO_JEV_DECIDER_FILE;
+  const next = join(homedir(), ".config", CONFIG_DIR_NAME, "decider.json");
+  if (existsSync(next)) return next;
+  const legacy = join(homedir(), ".config", LEGACY_CONFIG_DIR_NAME, "decider.json");
+  if (existsSync(legacy)) {
+    warnLegacyConfigOnce();
+    return legacy;
+  }
+  return next;
 }
 
 /**
@@ -363,7 +387,7 @@ function createSystemOneDecider(cfg, options = {}) {
  *   1) options.ask（注入的自定义实现，优先级最高，语义与从前完全一致）
  *   2) options.decider（已构造好的 decider 对象）
  *   3) options.deciderConfig（显式配置，CLI 用它传 --decider/--base-url/--model）
- *   4) ~/.config/ego-jev/decider.json
+ *   4) ~/.config/ego-decision-layer/decider.json
  *   5) 默认 System One
  */
 export function resolveDecider(options = {}) {
@@ -474,11 +498,11 @@ export async function generateText(input, options = {}) {
     const headers = {
       Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json",
-      "User-Agent": cfg.userAgent || "ego-jev/1.0",
+      "User-Agent": cfg.userAgent || "ego-decision-layer/1.0",
       ...(cfg.headers || {}),
     };
     // 部分网关（如 opencode-go）要求稳定的会话 id，用于路由与提示缓存
-    if (cfg.sessionHeader) headers[cfg.sessionHeader] = cfg.sessionId || "ego-jev";
+    if (cfg.sessionHeader) headers[cfg.sessionHeader] = cfg.sessionId || "ego-decision-layer";
 
     const res = await fetch(`${cfg.baseUrl.replace(/\/+$/, "")}/chat/completions`, {
       method: "POST",

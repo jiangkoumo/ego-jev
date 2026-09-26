@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# ego-jev — 手工安装（不想用 `npx skills add` 时走这条路）。
+# ego-decision-layer — 手工安装（不想用 `npx skills add` 时走这条路）。
 #
 # 做五件事：
 #   1. 检查 ego lite / ego-browser 是否就绪
-#   2. 把 scripts/ego-jev 链接进 PATH
+#   2. 把 scripts/ego-decision-layer 链接进 PATH（另建 ego-jev 垫片保留兼容）
 #   3. 准备 ~/.config/typesafe/api_key（会把 shell 里的 TYPESAFE_API_KEY 落盘，权限 600）
-#   4. 提示 ego-jev 技能怎么装（本脚本不改任何应用包内文件）
+#   4. 提示 ego-decision-layer 技能怎么装（本脚本不改任何应用包内文件）
 #   5. **默认**把 Agent 技能目录里的官方 ego-browser 入口接管成路由层（可还原，不碰应用包）
 #      想跳过就加 --no-wire；--wire 是显式启用（与默认等价，接管失败会让安装退出非零）
 #
@@ -41,8 +41,10 @@ command -v node >/dev/null 2>&1 || fail "未找到 node（CLI 需要它生成配
 
 echo "==> 2/5 安装命令入口"
 mkdir -p "$BINDIR"
-ln -sfn "$REPO_DIR/scripts/ego-jev" "$BINDIR/ego-jev"
-info "$BINDIR/ego-jev -> $REPO_DIR/scripts/ego-jev"
+ln -sfn "$REPO_DIR/scripts/ego-decision-layer" "$BINDIR/ego-decision-layer"
+ln -sfn "$REPO_DIR/scripts/ego-jev" "$BINDIR/ego-jev"   # 历史入口垫片（兼容：自动转发到新 CLI）
+info "$BINDIR/ego-decision-layer -> $REPO_DIR/scripts/ego-decision-layer"
+info "$BINDIR/ego-jev -> $REPO_DIR/scripts/ego-jev（历史名，保留兼容）"
 case ":$PATH:" in
   *":$BINDIR:"*) info "已在 PATH 中" ;;
   *) info "注意: $BINDIR 不在 PATH 中，请自行加入（export PATH=\"$BINDIR:\$PATH\"）" ;;
@@ -65,18 +67,18 @@ else
 fi
 
 echo "==> 4/5 安装技能（让 Agent 知道怎么用）"
-SKILL_DEST="$SKILLS_DIR/ego-jev"
+SKILL_DEST="$SKILLS_DIR/ego-decision-layer"
 if [ -f "$SKILL_DEST/SKILL.md" ] || [ -L "$SKILL_DEST/SKILL.md" ]; then
   info "技能已存在: $SKILL_DEST"
 else
   info "本脚本不替你把技能装到任何 Agent 目录（各 Agent 约定不同）。二选一："
-  info "  a) npx skills add jiangkoumo/ego-jev"
+  info "  a) npx skills add jiangkoumo/ego-decision-layer"
   info "  b) mkdir -p \"$SKILL_DEST\" && ln -sfn \"$REPO_DIR/SKILL.md\" \"$SKILL_DEST/SKILL.md\""
 fi
 
 if [ "$RUN_TEST" = "1" ]; then
   echo "==> 冒烟测试（会打开一个浏览器 Space）"
-  if "$BINDIR/ego-jev" --url "https://en.wikipedia.org/wiki/Main_Page" \
+  if "$BINDIR/ego-decision-layer" --url "https://en.wikipedia.org/wiki/Main_Page" \
       --text "Jev" --until "/wiki/Jev" --steps 5 \
       "type Jev into the search box and submit"; then
     echo "==> 冒烟测试通过"
@@ -92,7 +94,7 @@ if [ "$WIRE" = "1" ]; then
   echo "==> 5/5 接管官方 ego-browser 入口"
   if ! bash "$REPO_DIR/scripts/wire-agent-skills.sh"; then
     WIRE_FAILED=1
-    echo "  ! 接管没完成——上面是原因；ego-jev CLI 仍可用。修好后重跑：bash \"$REPO_DIR/scripts/wire-agent-skills.sh\"" >&2
+    echo "  ! 接管没完成——上面是原因；ego-decision-layer CLI 仍可用。修好后重跑：bash \"$REPO_DIR/scripts/wire-agent-skills.sh\"" >&2
   fi
 else
   echo "==> 5/5 接管官方 ego-browser 入口（--no-wire 已跳过）"
@@ -102,7 +104,7 @@ fi
 
 echo
 echo "完成。常用命令："
-echo "  ego-jev --url \"https://…\" --until \"/expected/path\" \"目标描述\""
-echo "  引擎也可在 ego-browser nodejs 脚本里 import: $REPO_DIR/scripts/ego-jev.mjs"
+echo "  ego-decision-layer --url \"https://…\" --until \"/expected/path\" \"目标描述\""
+echo "  引擎也可在 ego-browser nodejs 脚本里 import: $REPO_DIR/scripts/decider-loop.mjs"
 
 if [ "$WIRE_FAILED" = "1" ] && [ "$WIRE_EXPLICIT" = "1" ]; then exit 1; fi

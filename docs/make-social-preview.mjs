@@ -6,14 +6,14 @@
 //   sed "s|__REPO__|$PWD|g" docs/make-social-preview.mjs | ego-browser nodejs
 // 产物：docs/social-preview.png（1280x640）
 const REPO_INJECTED = "__REPO__";
-const REPO = REPO_INJECTED.startsWith("/") ? REPO_INJECTED : (process.env.HOME || "") + "/.agents/skills/ego-jev";
+const REPO = REPO_INJECTED.startsWith("/") ? REPO_INJECTED : (process.env.HOME || "") + "/.agents/skills/ego-decision-layer";
 const { join } = await import("node:path");
 const { readFile } = await import("node:fs/promises");
 
 const frame = await readFile(join(REPO, "docs", "demo-frames", "frame-02.png"));
 const dataUrl = "data:image/png;base64," + frame.toString("base64");
 
-const space = await taskSpace(`ego-jev-social-${Date.now()}`);
+const space = await taskSpace(`ego-decision-layer-social-${Date.now()}`);
 const page = space.page("p1");
 try {
   await page.goto("about:blank", { timeout: 15000 });
@@ -25,7 +25,7 @@ try {
                   font-family:-apple-system,'PingFang SC','Helvetica Neue',sans-serif;
                   display:flex;align-items:center;gap:44px;padding:56px 60px">
         <div style="flex:0 0 430px">
-          <div style="font:800 62px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:-1px">ego-jev</div>
+          <div style="font:800 62px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:-1px">ego-decision-layer</div>
           <div style="margin-top:20px;font-size:26px;line-height:1.42;color:#c9d4df">
             用 Jev 把「下一步点哪里」<br>放进单个浏览器进程内闭环
           </div>

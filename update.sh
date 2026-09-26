@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# ego-jev — 一键更新（幂等，可反复跑）
+# ego-decision-layer — 一键更新（幂等，可反复跑）
 #
 # 用法: ./update.sh [--test]
 #
@@ -32,7 +32,7 @@ warn() { printf '  ! %s\n' "$*" >&2; }
 version() { git -C "$REPO_DIR" rev-parse --short HEAD 2>/dev/null || echo "（非 git 克隆）"; }
 
 BEFORE="$(version)"
-echo "==> ego-jev 更新"
+echo "==> ego-decision-layer 更新"
 info "仓库: $REPO_DIR"
 info "当前版本: $BEFORE"
 
@@ -49,7 +49,7 @@ if [ -d "$REPO_DIR/.git" ]; then
   fi
 else
   info "这不是 git 克隆（skills CLI 装的是拷贝，无法自我更新）"
-  info "请重跑一次覆盖更新：npx skills add jiangkoumo/ego-jev"
+  info "请重跑一次覆盖更新：npx skills add jiangkoumo/ego-decision-layer"
 fi
 
 AFTER="$(version)"
@@ -62,8 +62,10 @@ fi
 echo
 echo "==> 2/4 刷新 CLI 软链"
 mkdir -p "$BINDIR"
-ln -sfn "$REPO_DIR/scripts/ego-jev" "$BINDIR/ego-jev"
-info "$BINDIR/ego-jev -> $REPO_DIR/scripts/ego-jev"
+ln -sfn "$REPO_DIR/scripts/ego-decision-layer" "$BINDIR/ego-decision-layer"
+ln -sfn "$REPO_DIR/scripts/ego-jev" "$BINDIR/ego-jev"   # 历史入口垫片（兼容：自动转发到新 CLI）
+info "$BINDIR/ego-decision-layer -> $REPO_DIR/scripts/ego-decision-layer"
+info "$BINDIR/ego-jev -> $REPO_DIR/scripts/ego-jev（历史名，保留兼容）"
 case ":$PATH:" in
   *":$BINDIR:"*) info "已在 PATH 中" ;;
   *) warn "$BINDIR 不在 PATH 中，请自行加入：export PATH=\"$BINDIR:\$PATH\"" ;;
@@ -71,15 +73,15 @@ esac
 
 echo
 echo "==> 3/4 技能目录"
-SKILL_LINK="$SKILLS_DIR/ego-jev"
+SKILL_LINK="$SKILLS_DIR/ego-decision-layer"
 if [ -L "$SKILL_LINK" ]; then
   info "$SKILL_LINK 是软链 → 已随仓库一起更新，无需额外操作"
 elif [ -e "$SKILL_LINK" ]; then
   info "$SKILL_LINK 是拷贝（skills CLI 安装）"
-  info "更新它请重跑：npx skills add jiangkoumo/ego-jev"
+  info "更新它请重跑：npx skills add jiangkoumo/ego-decision-layer"
 else
   info "未发现技能目录 ${SKILL_LINK}（可选——不装技能也能直接用 CLI）"
-  info "  装它：npx skills add jiangkoumo/ego-jev"
+  info "  装它：npx skills add jiangkoumo/ego-decision-layer"
   info "  或链接：mkdir -p \"$SKILL_LINK\" && ln -sfn \"$REPO_DIR/SKILL.md\" \"$SKILL_LINK/SKILL.md\""
 fi
 
@@ -98,7 +100,7 @@ fi
 if [ "$RUN_TEST" = "1" ]; then
   echo
   echo "==> 冒烟测试（会打开一个浏览器 Space）"
-  if "$BINDIR/ego-jev" --url "https://en.wikipedia.org/wiki/Main_Page" \
+  if "$BINDIR/ego-decision-layer" --url "https://en.wikipedia.org/wiki/Main_Page" \
       --text "Jev" --until "/wiki/Jev" --steps 5 \
       "type Jev into the search box and submit"; then
     echo "==> 冒烟测试通过"

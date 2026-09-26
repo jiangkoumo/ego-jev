@@ -10,10 +10,10 @@
 //   [4] 对照：主文档里被遮挡的目标仍判 covered（身份比对没有被全局关掉）
 //
 // 用法（测当前工作树）: sed "s|__REPO__|$PWD|g" bench/test-frame-targets.mjs | ego-browser nodejs
-// 直接 `< bench/test-frame-targets.mjs`：走已安装技能（~/.agents/skills/ego-jev，本机是指向仓库的软链）
+// 直接 `< bench/test-frame-targets.mjs`：走已安装技能（~/.agents/skills/ego-decision-layer，本机是指向仓库的软链）
 const { writeFile, mkdir } = await import("node:fs/promises");
 const REPO_INJECTED = "__REPO__";
-const ROOT = REPO_INJECTED.startsWith("/") ? REPO_INJECTED : (process.env.HOME || "") + "/.agents/skills/ego-jev";
+const ROOT = REPO_INJECTED.startsWith("/") ? REPO_INJECTED : (process.env.HOME || "") + "/.agents/skills/ego-decision-layer";
 const { BENCH, JE } = await import(ROOT + "/bench/lib.mjs").catch(() => {
   throw new Error(`无法定位仓库根（${ROOT}）：请用 sed "s|__REPO__|$PWD|g" bench/<script> | ego-browser nodejs 运行`);
 });

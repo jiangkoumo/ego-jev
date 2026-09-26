@@ -1,4 +1,4 @@
-// ego-jev.mjs — a Jev (TypeSafe System One) driver for the ego lite browser
+// decider-loop.mjs — a Jev (TypeSafe System One) driver for the ego lite browser
 // 全局通用 Jev + ego-browser 极速驱动引擎
 //
 // 重要：`ego-browser nodejs` 内嵌运行时只继承最小化登录环境（HOME/PATH/...），

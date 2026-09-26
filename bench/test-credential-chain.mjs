@@ -10,8 +10,8 @@ import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const JE = join(dirname(fileURLToPath(import.meta.url)), "..", "scripts", "ego-jev.mjs");
-const dir = mkdtempSync(join(tmpdir(), "ego-jev-cred-"));
+const JE = join(dirname(fileURLToPath(import.meta.url)), "..", "scripts", "decider-loop.mjs");
+const dir = mkdtempSync(join(tmpdir(), "ego-decision-layer-cred-"));
 const w = (name, text) => { const p = join(dir, name); writeFileSync(p, text); return p; };
 
 let pass = 0, fail = 0;

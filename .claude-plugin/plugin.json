@@ -1,13 +1,13 @@
 {
-  "name": "ego-jev",
-  "version": "0.3.4",
-  "description": "用 Jev（TypeSafe System One）驱动 ego lite 浏览器，把「下一步点哪里」的决策放进单个进程内闭环。",
+  "name": "ego-decision-layer",
+  "version": "0.4.0",
+  "description": "给 ego lite 的可插拔决策层：默认 System One（Jev），可换本地 / 其他 OpenAI 兼容后端；执行层带 fail-closed 护栏。",
   "author": {
     "name": "liuyuchen",
     "url": "https://github.com/jiangkoumo"
   },
-  "homepage": "https://github.com/jiangkoumo/ego-jev",
-  "repository": "https://github.com/jiangkoumo/ego-jev",
+  "homepage": "https://github.com/jiangkoumo/ego-decision-layer",
+  "repository": "https://github.com/jiangkoumo/ego-decision-layer",
   "license": "MIT",
   "keywords": ["browser-automation", "ego-browser", "jev", "typesafe", "agent-skill"]
 }

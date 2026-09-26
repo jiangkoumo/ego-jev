@@ -23,8 +23,9 @@ jobs:
       - name: 语法检查（引擎 / CLI / bench 脚本）
         run: |
           set -e
-          node --check scripts/ego-jev.mjs
-          bash -n scripts/ego-jev
+          node --check scripts/decider-loop.mjs
+          bash -n scripts/ego-decision-layer
+          bash -n scripts/ego-jev          # 历史垫片（兼容转发）
           bash -n scripts/wire-agent-skills.sh
           bash -n install.sh
           bash -n update.sh
@@ -34,7 +35,7 @@ jobs:
       - name: 公开导出保持向后兼容
         run: |
           node --input-type=module -e '
-            const m = await import("./scripts/ego-jev.mjs");
+            const m = await import("./scripts/decider-loop.mjs");
             const need = ["askJev","parseActionTargets","enrichTargets","buildQuestions",
                           "runJevStep","runJevAutonomousLoop","generateText",
                           "loadTextModelConfig","resolveTextApiKey","loadApiKey"];

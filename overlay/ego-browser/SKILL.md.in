@@ -2,12 +2,12 @@
 name: ego-browser
 description: {{DESCRIPTION_YAML}}
 metadata:
-  version: "{{VENDOR_VERSION}}+ego-jev"
+  version: "{{VENDOR_VERSION}}+ego-decision-layer"
   date: "{{VENDOR_DATE}}"
-  overlay: ego-jev
+  overlay: ego-decision-layer
 ---
 
-# ego-browser（路由层，由 ego-jev 接管）
+# ego-browser（路由层，由 ego-decision-layer 接管）
 
 **本文件只是路由层。完整技能正文在本机 ego lite 的当前版本里，永远是最新的：**
 
@@ -21,23 +21,23 @@ metadata:
 
 | 任务形状 | 走哪条路 |
 | --- | --- |
-| **多步线性**：连续点击、翻页/下一页、搜索框输入并提交、多字段表单、导航到某个目标页 | **`ego-jev`** —— Jev（TypeSafe System One）在单进程内闭环决策，不再每步退回大模型慢思考 |
+| **多步线性**：连续点击、翻页/下一页、搜索框输入并提交、多字段表单、导航到某个目标页 | **`ego-decision-layer`** —— Jev（TypeSafe System One）在单进程内闭环决策，不再每步退回大模型慢思考 |
 | 单个动作；需要精确选择器/DOM、批量抽取、截图、文件、网络请求、CDP | 本技能的 ego-browser API（读上面的技能正文） |
 | 内容生成、业务判断（回什么话、选哪个商品、写哪段文案） | 大模型自己决定，再把决定喂给上面两条 |
 
-`ego-jev` 一条命令就能跑（目标写成一句自然语言）：
+`ego-decision-layer` 一条命令就能跑（目标写成一句自然语言）：
 
 ```bash
-ego-jev --url "https://…" --until "/expected/path" --steps 8 "把目标写清楚"
+ego-decision-layer --url "https://…" --until "/expected/path" --steps 8 "把目标写清楚"
 ```
 
 退出码：`0` 达成 / `1` 未达成（space 会保留供排查）/ `2` 参数错误 / `3` 缺凭证。
 **多步任务务必带 `--until`**（URL 子串，确定性成功条件，比 Jev 自评 `done` 可靠）。
 Jev 判 `blocked`（登录墙、验证码、必须人工确认的发布动作）就按技能正文的纪律停下交给用户，别硬试。
 
-ego-jev 的完整用法、实测数字与失效边界：`{{EGO_JEV_SKILL}}`。
+ego-decision-layer 的完整用法、实测数字与失效边界：`{{EGO_JEV_SKILL}}`。
 
 ---
 
-本文件由 `{{WIRE_SCRIPT}}` 生成（ego-jev 的包外扩展，不修改 `/Applications` 里的应用包）。
+本文件由 `{{WIRE_SCRIPT}}` 生成（ego-decision-layer 的包外扩展，不修改 `/Applications` 里的应用包）。
 `--check` 看是否漂移、`--restore` 还原成官方软链。

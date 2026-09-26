@@ -11,7 +11,7 @@ const { createHash } = await import("node:crypto");
 
 const REPO = join(dirname(fileURLToPath(import.meta.url)), "..");
 const WIRE = join(REPO, "scripts", "wire-agent-skills.sh");
-const CLI = join(REPO, "scripts", "ego-jev");
+const CLI = join(REPO, "scripts", "ego-decision-layer");
 
 let pass = 0, fail = 0;
 const check = (name, ok, detail = "") => {
@@ -19,7 +19,7 @@ const check = (name, ok, detail = "") => {
   else { fail++; console.log(`  FAIL ${name} ${detail}`); }
 };
 
-const root = fs.mkdtempSync(join(os.tmpdir(), "ego-jev-route-"));
+const root = fs.mkdtempSync(join(os.tmpdir(), "ego-decision-layer-route-"));
 const HOME = join(root, "home");
 const VENDOR = join(root, "vendor");
 const SKILLS = join(HOME, ".agents", "skills");
@@ -41,12 +41,12 @@ metadata:
 `;
 const setup = () => {
   fs.rmSync(root, { recursive: true, force: true });
-  for (const d of [VENDOR, SKILLS, CFG, join(VENDOR, "references"), dirname(VENDOR_LINK), join(SKILLS, "ego-jev")]) {
+  for (const d of [VENDOR, SKILLS, CFG, join(VENDOR, "references"), dirname(VENDOR_LINK), join(SKILLS, "ego-decision-layer")]) {
     fs.mkdirSync(d, { recursive: true });
   }
   fs.writeFileSync(join(VENDOR, "SKILL.md"), vendorSkill("When you need a browser, read this Skill by default.", "2.0.0"));
   fs.writeFileSync(join(VENDOR, "references", "api.md"), "# api\n");
-  fs.writeFileSync(join(SKILLS, "ego-jev", "SKILL.md"), "---\nname: ego-jev\n---\n");
+  fs.writeFileSync(join(SKILLS, "ego-decision-layer", "SKILL.md"), "---\nname: ego-decision-layer\n---\n");
   fs.symlinkSync(VENDOR, VENDOR_LINK, "dir");
   fs.symlinkSync(VENDOR_LINK, ENTRY, "dir");
 };
@@ -143,7 +143,7 @@ console.log("\n[5] always-on 幂等与还原");
   const text1 = fs.readFileSync(f, "utf8");
   wire("--always-on", f);
   check("两次 --always-on 内容逐字节一致（幂等）", fileHash(f) === h1);
-  check("块已插入（标记唯一一份）", (text1.match(/ego-jev:route begin/g) || []).length === 1 && (text1.match(/ego-jev:route end/g) || []).length === 1);
+  check("块已插入（标记唯一一份）", (text1.match(/ego-decision-layer:route begin/g) || []).length === 1 && (text1.match(/ego-decision-layer:route end/g) || []).length === 1);
   check("块外内容未改（首行仍是原样）", fs.readFileSync(f, "utf8").split("\n")[0] === "# my project rules");
   const s = status();
   check("--status-json 报告 always-on 在位", s.alwaysOn.length === 1 && s.alwaysOn[0] === f, JSON.stringify(s.alwaysOn));

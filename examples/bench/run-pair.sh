@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# 单轮对照：A = ego-jev 单进程闭环；B = 经典循环（每步一个进程 + 大模型思考）。输出一行 JSON。
+# 单轮对照：A = ego-decision-layer 单进程闭环；B = 经典循环（每步一个进程 + 大模型思考）。输出一行 JSON。
 #
 # ego 内嵌运行时拿不到自定义环境变量，所以配置在这里替换进脚本正文再送进去。
 set -uo pipefail
@@ -15,7 +15,7 @@ API_KEY="${BENCH_API_KEY:-}"
 MODEL_BIG="${2:-${BENCH_MODEL:-kimi-k3}}"
 MODEL_TEXT="${BENCH_TEXT_MODEL:-deepseek-v4.1-flash}"
 
-TMP="$(mktemp -d "${TMPDIR:-/tmp}/ego-jev-bench.XXXXXX")"
+TMP="$(mktemp -d "${TMPDIR:-/tmp}/ego-decision-layer-bench.XXXXXX")"
 trap 'rm -rf "$TMP"' EXIT
 
 subst() {

@@ -8,10 +8,10 @@
 //
 // 需要网络。用法（测当前工作树）:
 //   sed "s|__REPO__|$PWD|g" bench/test-ddg-toggles.mjs | ego-browser nodejs
-// 或直接 `< bench/test-ddg-toggles.mjs`（走 ~/.agents/skills/ego-jev 软链）
+// 或直接 `< bench/test-ddg-toggles.mjs`（走 ~/.agents/skills/ego-decision-layer 软链）
 const { writeFile, mkdir } = await import("node:fs/promises");
 const REPO_INJECTED = "__REPO__";
-const ROOT = REPO_INJECTED.startsWith("/") ? REPO_INJECTED : (process.env.HOME || "") + "/.agents/skills/ego-jev";
+const ROOT = REPO_INJECTED.startsWith("/") ? REPO_INJECTED : (process.env.HOME || "") + "/.agents/skills/ego-decision-layer";
 const { BENCH, JE } = await import(ROOT + "/bench/lib.mjs").catch(() => {
   throw new Error(`无法定位仓库根（${ROOT}）：请用 sed "s|__REPO__|$PWD|g" bench/<script> | ego-browser nodejs 运行`);
 });

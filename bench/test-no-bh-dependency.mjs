@@ -78,7 +78,7 @@ console.log("\n[1] 静态扫描");
 // ── [2] verify.sh 的环境预检契约 ────────────────────────────────────────────
 console.log("\n[2] verify.sh --check-env");
 {
-  const root = fs.mkdtempSync(join(os.tmpdir(), "ego-jev-nobh-"));
+  const root = fs.mkdtempSync(join(os.tmpdir(), "ego-decision-layer-nobh-"));
   const fakeBin = join(root, "bin-ego");
   fs.mkdirSync(fakeBin, { recursive: true });
   fs.writeFileSync(join(fakeBin, "ego-browser"), "#!/bin/sh\nif [ \"$1\" = \"--version\" ]; then echo 'ego-browser 0.0.0-test' >&2; fi\nexit 0\n", { mode: 0o755 });

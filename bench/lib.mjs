@@ -13,7 +13,7 @@ import { fileURLToPath } from "node:url";
 
 export const BENCH = dirname(fileURLToPath(import.meta.url));
 export const ROOT = dirname(BENCH);
-export const JE = join(ROOT, "scripts", "ego-jev.mjs");
+export const JE = join(ROOT, "scripts", "decider-loop.mjs");
 export const RAW = join(BENCH, "raw");
 
 // 走「已安装技能」那条兜底路径时提示一声，避免误以为在测当前工作树
@@ -43,12 +43,12 @@ export async function loadBenchApiKey() {
  * 文本模型配置（只有需要生成输入文本的基准才用）。
  * 优先级：
  *   ① 显式路径：EGO_JEV_ENV_FILE（普通 node 运行时可用）
- *      或 $HOME/.config/ego-jev/bench.env（ego 内嵌运行时里环境变量不传入，只能走文件）
+ *      或 $HOME/.config/ego-decision-layer/bench.env（ego 内嵌运行时里环境变量不传入，只能走文件）
  *   ② 引擎自己的 ~/.config/typesafe/text_model.json
  * 都没有就明确报错——原来写死了另一个仓库的绝对路径，既不通用也不该公开。
  */
 export async function loadBenchTextModel() {
-  const envFile = process.env.EGO_JEV_ENV_FILE || (process.env.HOME ? join(process.env.HOME, ".config", "ego-jev", "bench.env") : "");
+  const envFile = process.env.EGO_JEV_ENV_FILE || (process.env.HOME ? join(process.env.HOME, ".config", "ego-decision-layer", "bench.env") : "");
   if (envFile && existsSync(envFile)) {
     const env = Object.fromEntries(
       (await readFile(envFile, "utf8"))
@@ -71,7 +71,7 @@ export async function loadBenchTextModel() {
   if (!cfg || !apiKey) {
     throw new Error(
       "缺少文本模型配置：把 .env（含 TEXT_MODEL_BASE_URL / TEXT_MODEL / TEXT_MODEL_API_KEY）放到 " +
-        "$HOME/.config/ego-jev/bench.env（或普通 node 下用 EGO_JEV_ENV_FILE=<路径> 指定），" +
+        "$HOME/.config/ego-decision-layer/bench.env（或普通 node 下用 EGO_JEV_ENV_FILE=<路径> 指定），" +
         "或配置 $HOME/.config/typesafe/text_model.json（见 SKILL.md）。"
     );
   }

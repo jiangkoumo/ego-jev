@@ -1,4 +1,4 @@
-// A 组：ego-jev 单进程闭环。计时从导航之后开始（与对照组一致）。
+// A 组：ego-decision-layer 单进程闭环。计时从导航之后开始（与对照组一致）。
 // __BENCH_DIR__ 等占位符由 run-pair.sh 替换（ego 运行时拿不到自定义环境变量）。
 const BENCH_DIR = "__BENCH_DIR__";
 const { readFile } = await import("node:fs/promises");

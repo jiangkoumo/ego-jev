@@ -10,7 +10,7 @@ const { writeFile, mkdir } = await import("node:fs/promises");
 // ① 推荐（测当前工作树）：sed "s|__REPO__|$PWD|g" bench/x-emoji-audit.js | ego-browser nodejs
 // ② 直接 `< bench/x-emoji-audit.js`：走已安装技能（$HOME/.agents/skills/ego-jev）
 const REPO_INJECTED = "__REPO__";
-const ROOT = REPO_INJECTED.startsWith("/") ? REPO_INJECTED : (process.env.HOME || "") + "/.agents/skills/ego-jev";
+const ROOT = REPO_INJECTED.startsWith("/") ? REPO_INJECTED : (process.env.HOME || "") + "/.agents/skills/ego-decision-layer";
 const { BENCH, JE, RAW, loadBenchApiKey, loadBenchTextModel } = await import(ROOT + "/bench/lib.mjs").catch(() => {
   throw new Error(`无法定位仓库根（${ROOT}）：请用 sed "s|__REPO__|$PWD|g" bench/<script> | ego-browser nodejs 运行，或先 npx skills add jiangkoumo/ego-jev`);
 });

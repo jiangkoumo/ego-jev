@@ -1,8 +1,8 @@
-![ego-jev](docs/banner.svg)
+![ego-decision-layer](docs/banner.svg)
 
-[![skills.sh](https://skills.sh/b/jiangkoumo/ego-jev)](https://skills.sh/jiangkoumo/ego-jev)
+[![skills.sh](https://skills.sh/b/jiangkoumo/ego-decision-layer)](https://skills.sh/jiangkoumo/ego-decision-layer)
 
-**用 Jev（TypeSafe System One）驱动 ego lite 浏览器：把「下一步点哪里」的决策放进单个进程内闭环。**
+**给 ego lite 的可插拔决策层：默认 System One（Jev），可换本地 / 其他 OpenAI 兼容后端；执行层带 fail-closed 护栏。**
 
 > **为什么是这一个**：差异只有一条 —— **它是被测量的**。本机 2026-09-26 全量复跑 **16 套测试 / 429 项检查**
 > （除 `native-select` 是成功率测量外全部 exit 0）；原始数据在 [`bench/raw/`](bench/raw)，每个数字都能用仓库里的
@@ -10,7 +10,7 @@
 > 执行层是 **fail-closed**（陈旧 ref、被遮挡、跨 frame 命中失败、危险动作一律 **0 次派发**）；
 > 代码级溯源登记在 [`THIRD-PARTY.md`](THIRD-PARTY.md)。
 
-> English summary: `ego-jev` replaces the per-step LLM round trip in browser automation with
+> English summary: `ego-decision-layer` replaces the per-step LLM round trip in browser automation with
 > [TypeSafe](https://docs.typesafe.ai)'s System One model **Jev**. Jev reads one *indexed element
 > table* and answers, in a single request, both the **operation** (`click` / `type_text` / `select` /
 > `scroll_up` / `scroll_down` / `wait` / `done` / `blocked`) and the **target element**. Code owns
@@ -34,7 +34,7 @@
 - **上下文开销**：每步一个新进程 / 新会话，进程启动本身 250–350ms，还要重新把页面状态讲一遍。
 - **不确定性**：退出条件写在模型嘴里，判没判对没法核对。
 
-`ego-jev` 把「下一步做什么、点哪个」换成一个小模型 **Jev**，一次请求就答完；观测、执行、
+`ego-decision-layer` 把「下一步做什么、点哪个」换成一个小模型（默认 **Jev** / System One，可换本地 OpenAI 兼容后端），一次请求就答完；观测、执行、
 陈旧校验、退出条件全部由代码负责。它**不替代大模型**：Jev 不生成文本、不做业务判断，
 需要写内容时再调一个小文本模型。
 
@@ -74,42 +74,65 @@
 ### 方式 1：skills CLI（推荐，一行）
 
 ```bash
-npx skills add jiangkoumo/ego-jev
+npx skills add jiangkoumo/ego-decision-layer
 ```
 
-装完技能落在 Agent 的技能目录里（如 `~/.agents/skills/ego-jev/`），引擎和 CLI 一起带过去。
+装完技能落在 Agent 的技能目录里（如 `~/.agents/skills/ego-decision-layer/`），引擎和 CLI 一起带过去。
 
 ### 方式 2：Claude Code 插件市场
 
 仓库根有 `.claude-plugin/plugin.json` 与 `.claude-plugin/marketplace.json`，技能本体在
-`skills/ego-jev/`（里面是**指向仓库根**的相对软链，不复制正文）。在 Claude Code 里：
+`skills/ego-decision-layer/`（里面是**指向仓库根**的相对软链，不复制正文）。在 Claude Code 里：
 
 ```
-/plugin marketplace add jiangkoumo/ego-jev
-/plugin install ego-jev@ego-jev
+/plugin marketplace add jiangkoumo/ego-decision-layer
+/plugin install ego-decision-layer@ego-decision-layer
 ```
 
 ### 方式 3：克隆后跑安装脚本
 
 ```bash
-git clone https://github.com/jiangkoumo/ego-jev.git
-cd ego-jev
+git clone https://github.com/jiangkoumo/ego-decision-layer.git
+cd ego-decision-layer
 ./install.sh            # 链接 CLI 进 ~/.local/bin、准备凭证，并**默认接管**官方 ego-browser 入口
 ./install.sh --no-wire  # 只装 CLI，不接管（旧行为）
 ./install.sh --test     # 顺带跑一次端到端冒烟测试
 ```
 
-### 让 Agent 默认走 ego-jev（默认接管）
+### 从 ego-jev 迁移（0.4.0）
+
+0.3.x 旧名叫 `ego-jev`。0.4.0 改名为 `ego-decision-layer`（名字不再绑死某个厂商的决策后端）。仓库内改名
+**全部自动**：跑一次迁移脚本即可，**旧 CLI `ego-jev` 仍可用**（保留为兼容垫片，自动转发到新 CLI）。
+
+```bash
+bash scripts/rename-self.sh --dry-run   # 1. 先看它会做什么（不写任何文件）
+bash scripts/rename-self.sh             # 2. 执行：还原旧接管 → 重建新技能软链 → 迁移配置目录 → 用新名重接管
+# 3. 重开 Agent 会话（技能列表是启动时快照的）
+```
+
+迁移脚本是**幂等**的：再跑一次是 no-op。它做这些事：
+
+- 旧接管状态先用旧路径 `--restore` 清掉（路由层 + always-on 块 + 启用标记）；
+- 删除旧技能软链（`~/.agents/skills/ego-jev` 等），按新名重建；
+- `~/.local/bin`：`ego-decision-layer` → 新 CLI，`ego-jev` → 兼容垫片；
+- 配置目录 `~/.config/ego-jev` **兼容迁移**到 `~/.config/ego-decision-layer`（新目录已存在则合并并留 `.bak`）；
+- 用新名重新接管，并把记下的 `always-on` 文件原样重新插块；
+- 自检（`--check` exit 0、`--route-status`）并 grep 公开界面确认旧名只在白名单里。
+
+**环境变量名 `EGO_JEV_*` 保持不变**（历史名，继续可用）；引擎导出名（`askJev` / `runJevStep` /
+`runJevAutonomousLoop` …）也**一个没改**。
+
+### 让 Agent 默认走 ego-decision-layer（默认接管）
 
 ego lite 会把**官方** `ego-browser` 技能写进每个 Agent 的技能目录
 （`~/.agents/skills/ego-browser`、`~/.claude/skills/ego-browser` …，由 App 在安装/升级时重建），
-而官方正文不知道 ego-jev 存在——不管的话，Agent 默认照它写逐步脚本，ego-jev 根本不会被启动。
+而官方正文不知道 ego-decision-layer 存在——不管的话，Agent 默认照它写逐步脚本，ego-decision-layer 根本不会被启动。
 
 `scripts/wire-agent-skills.sh` 把这个入口接管成一层**路由层**（包外）：Agent 先看到的
 「先路由、再决定写不写脚本」那一节是本技能加的，技能正文仍然软链到 App 的当前版本（升级自动跟随）。
 技能列表里的 description 也把**路由句排到厂商描述之前**（描述被按预算压缩、优先丢尾部，排在末尾
 等于最先被砍掉）；厂商文本一字不改，只是挪到后面。
-**`install.sh` 默认就会做这件事**，`ego-jev` CLI 首次运行时也会在检测到官方入口时补一次：
+**`install.sh` 默认就会做这件事**，`ego-decision-layer` CLI 首次运行时也会在检测到官方入口时补一次：
 
 ```bash
 bash scripts/wire-agent-skills.sh              # 接管 / 刷新（幂等；只写 Agent 技能目录，不碰应用包）
@@ -124,17 +147,17 @@ bash scripts/wire-agent-skills.sh --restore    # 还原成官方软链 + 记下�
 ```
 OK    ~/.agents/skills/ego-browser（路由层，生成物最新）
 OK    ~/.claude/skills/ego-browser（路由层，生成物最新）
-无需接管  ~/.codex/skills（没有官方 ego-browser 入口；该 Agent 通过自身的 ego-jev 技能被发现）
+无需接管  ~/.codex/skills（没有官方 ego-browser 入口；该 Agent 通过自身的 ego-decision-layer 技能被发现）
 
 ==> 路由: 已接管 2 / 无需接管 3 / 漂移 0
 ```
 
 `--check` 是**只读**的（不写启用标记、不改 mtime）；`--restore` 不需要 ego lite 还在（不会自锁）。
-接管会在 `~/.config/ego-jev/wire-enabled.json` 留下启用标记；`./update.sh` 与 `ego-jev` CLI
+接管会在 `~/.config/ego-decision-layer/wire-enabled.json` 留下启用标记；`./update.sh` 与 `ego-decision-layer` CLI
 都会据此自动重接管（`EGO_JEV_NO_WIRE=1`，旧名 `EGO_JEV_NO_HEAL=1` 仍接受）。
 路由只影响**新开的** Agent 会话（技能列表是启动时快照的）。
 
-**`--restore` 是粘性的**：它会记下「用户已明确选择不接管」（`~/.config/ego-jev/opted-out`），
+**`--restore` 是粘性的**：它会记下「用户已明确选择不接管」（`~/.config/ego-decision-layer/opted-out`），
 之后 CLI 首跑**不会**再把入口接管回去（`--ensure` 见到该标记就什么都不做）；`--check` 在该状态下
 输出「已按用户选择不接管」并 **exit 0**（健康状态，不是漂移）。重新启用必须**显式**跑一次接管
 （上面的 `bash scripts/wire-agent-skills.sh`，或 `./install.sh` 的接管步骤）——
@@ -143,14 +166,14 @@ OK    ~/.claude/skills/ego-browser（路由层，生成物最新）
 ### 让 Agent 在读任何技能之前就看到路由（always-on，显式开关）
 
 接管只覆盖「Agent 去读 `ego-browser` 技能」这条路径。若想让它**在读技能之前**就知道
-「多步线性浏览器任务先走 ego-jev」，可以把一段带标记的说明块写进常驻指令文件：
+「多步线性浏览器任务先走 ego-decision-layer」，可以把一段带标记的说明块写进常驻指令文件：
 
 ```bash
 bash scripts/wire-agent-skills.sh --always-on AGENTS.md              # 项目级：只覆盖这个仓库，随仓库共享（最安全）
 bash scripts/wire-agent-skills.sh --always-on ~/.claude/CLAUDE.md    # 本机所有 Claude Code 项目
 ```
 
-块用 `<!-- ego-jev:route begin -->` / `<!-- ego-jev:route end -->` 标记，**幂等**（重复跑只替换自己那一块），
+块用 `<!-- ego-decision-layer:route begin -->` / `<!-- ego-decision-layer:route end -->` 标记，**幂等**（重复跑只替换自己那一块），
 首次写入前备份到同目录 `.bak`，`--restore` 会把它连同接管层一起精确移除（块外内容一字不动）。
 **默认不会写任何用户文件**——只有你显式传 `--always-on <file>` 才写。
 
@@ -165,7 +188,7 @@ bash scripts/wire-agent-skills.sh --always-on ~/.claude/CLAUDE.md    # 本机所
 ### 路由可审计：`--route-status`
 
 ```bash
-ego-jev --route-status        # 只读 JSON：接管情况 / always-on / 官方技能路径 / 生成物哈希
+ego-decision-layer --route-status        # 只读 JSON：接管情况 / always-on / 官方技能路径 / 生成物哈希
 ```
 
 不起浏览器、不需要凭证、不建 TaskSpace。同一份信息也会作为 `route` 段写进每次任务的结果 JSON，
@@ -173,20 +196,20 @@ ego-jev --route-status        # 只读 JSON：接管情况 / always-on / 官方�
 
 ### 方式 4：把这段 prompt 丢给你的 Agent
 
-> 帮我安装 https://github.com/jiangkoumo/ego-jev ：
-> 1. 执行 `npx skills add jiangkoumo/ego-jev`（skills CLI 不可用就改成克隆仓库跑 `./install.sh`）；
+> 帮我安装 https://github.com/jiangkoumo/ego-decision-layer ：
+> 1. 执行 `npx skills add jiangkoumo/ego-decision-layer`（skills CLI 不可用就改成克隆仓库跑 `./install.sh`）；
 > 2. 确认 `ego-browser --version` 正常，没有 ego lite 就先让我装；
 > 3. 确认 `~/.config/typesafe/api_key` 存在且权限 600，缺了就问我要 Key——**不要自己编，也不要回显它**；
 > 4. 跑下面「验证安装」里的命令，把真实输出和退出码报给我；
-> 5. 接管官方 ego-browser 入口（让多步任务默认走 ego-jev）：`bash scripts/wire-agent-skills.sh`，
+> 5. 接管官方 ego-browser 入口（让多步任务默认走 ego-decision-layer）：`bash scripts/wire-agent-skills.sh`，
 >    再用 `--check` 确认 exit 0。**只写 Agent 技能目录，不要改 `/Applications/ego lite.app` 里的任何文件。**
 
 ### 更新
 
 ```bash
-cd ego-jev && ./update.sh          # 克隆安装：拉取 + 刷新软链 + 打印版本（幂等，可反复跑）
+cd ego-decision-layer && ./update.sh          # 克隆安装：拉取 + 刷新软链 + 打印版本（幂等，可反复跑）
 ./update.sh --test                 # 顺带跑一次端到端冒烟
-npx skills add jiangkoumo/ego-jev  # skills CLI 安装的：重跑一次即覆盖更新
+npx skills add jiangkoumo/ego-decision-layer  # skills CLI 安装的：重跑一次即覆盖更新
 ```
 
 `update.sh` 会自动判断你属于哪种安装方式：git 克隆就 `git pull --ff-only`（软链自动跟随，无需重装）；
@@ -197,7 +220,7 @@ skills CLI 装的是拷贝、会提示你重跑那条 `npx skills add`。**工�
 
 ```bash
 ego-browser --version                                        # 前置条件
-"<技能目录>/scripts/ego-jev" \
+"<技能目录>/scripts/ego-decision-layer" \
   --url "https://en.wikipedia.org/wiki/Main_Page" \
   --text "Jev" --until "/wiki/Jev" --steps 5 \
   "在搜索框输入 Jev 并提交"
@@ -227,7 +250,7 @@ chmod 600 ~/.config/typesafe/api_key
 
 查找顺序（全部是文件，因为 ego 运行时拿不到父进程环境变量）：
 `--api-key` > `TYPESAFE_API_KEY`（仅普通 node 进程可见）> `TYPESAFE_API_KEY_FILE` >
-`~/.config/ego-jev/credentials` > `~/.config/typesafe/api_key` >
+`~/.config/ego-decision-layer/credentials` > `~/.config/typesafe/api_key` >
 `~/.zshrc` / `~/.bashrc` / `~/.bash_profile` / `~/.profile` 里的 `export TYPESAFE_API_KEY=…`。
 所以已经 export 过 key 的机器不必再落盘一次。后端地址可用 `TYPESAFE_BASE_URL` 覆盖，
 主后端失败时的降级端点用 `TYPESAFE_FALLBACK_BASE_URL`（不设即不降级，`fallback: false` 可关）——
@@ -240,18 +263,18 @@ chmod 600 ~/.config/typesafe/api_key
 
 ```bash
 # 简单目标
-ego-jev --url "https://example.com" "点击登录按钮并聚焦输入框"
+ego-decision-layer --url "https://example.com" "点击登录按钮并聚焦输入框"
 
 # 推荐：给确定性成功条件（URL 包含该子串即判成功）
-ego-jev --url "https://news.ycombinator.com" --until "/newcomments" \
+ego-decision-layer --url "https://news.ycombinator.com" --until "/newcomments" \
   "先打开 new 页面，再打开 comments 页面"
 
 # 需要输入文本：候选由调用方给，Jev 只选字段和选哪段文本
-ego-jev --url "https://en.wikipedia.org/wiki/Main_Page" --text "Jev" \
+ego-decision-layer --url "https://en.wikipedia.org/wiki/Main_Page" --text "Jev" \
   --until "/wiki/Jev" "在顶部搜索框输入 Jev 并提交"
 
 # 复用已有 taskSpace，完成后保留供人工检查
-ego-jev --space 3 --keep-space --steps 15 "点击未发送帖子并保存"
+ego-decision-layer --space 3 --keep-space --steps 15 "点击未发送帖子并保存"
 ```
 
 `--until` 给的是**确定性**退出条件，比依赖 Jev 自评 `done` 可靠得多，强烈建议带上。
@@ -261,7 +284,7 @@ CLI 收尾会打印一行分阶段耗时与**服务端实际模型版本**（`re
 在 `ego-browser nodejs` 脚本里复用引擎：
 
 ```js
-import { runJevAutonomousLoop } from "/path/to/ego-jev/ego-jev.mjs";
+import { runJevAutonomousLoop } from "/path/to/ego-decision-layer/scripts/decider-loop.mjs";
 
 const result = await runJevAutonomousLoop(page, "先打开 new 页面，再打开 comments 页面", {
   maxSteps: 8,
@@ -281,9 +304,9 @@ console.log(result); // { success, reason, steps, history, phases, serverModels,
 把「自动驾驶」作为**独立技能**装给 Agent（可选）：
 
 ```bash
-npx skills add jiangkoumo/ego-jev          # 推荐
+npx skills add jiangkoumo/ego-decision-layer          # 推荐
 # 或本地链接：
-mkdir -p ~/.agents/skills/ego-jev && ln -sfn "$PWD/SKILL.md" ~/.agents/skills/ego-jev/SKILL.md
+mkdir -p ~/.agents/skills/ego-decision-layer && ln -sfn "$PWD/SKILL.md" ~/.agents/skills/ego-decision-layer/SKILL.md
 ```
 
 > **不要**把 Jev 章节加进 ego lite 应用包里的 `SKILL.md`。那是供应商受签名的应用包，
@@ -302,8 +325,8 @@ mkdir -p ~/.agents/skills/ego-jev && ln -sfn "$PWD/SKILL.md" ~/.agents/skills/eg
   "apiKeyJson": { "file": "~/.pi/agent/auth.json", "path": "opencode-go.key" },
   "model": "deepseek-v4.1-flash",
   "sessionHeader": "x-opencode-session",
-  "sessionId": "ego-jev",
-  "userAgent": "ego-jev/1.0"
+  "sessionId": "ego-decision-layer",
+  "userAgent": "ego-decision-layer/1.0"
 }
 ```
 
@@ -334,13 +357,13 @@ decide({ state, questions, options }) → { answers, meta }
 可用 `EGO_JEV_DECIDER_FILE` 覆盖路径）：
 
 ```json
-// ~/.config/ego-jev/decider.json
+// ~/.config/ego-decision-layer/decider.json
 {
   "kind": "openai-compatible",
   "baseUrl": "http://127.0.0.1:11434/v1",
   "model": "qwen2.5:7b",
   "apiKey": "ollama",
-  "apiKeyFile": "~/.config/ego-jev/local.key",
+  "apiKeyFile": "~/.config/ego-decision-layer/local.key",
   "timeoutMs": 30000,
   "headers": { "X-My-Gateway": "1" }
 }
@@ -363,7 +386,7 @@ decide({ state, questions, options }) → { answers, meta }
 接一个本地端点（不写 `--decider` 就仍走 System One，只有显式指定时才切）：
 
 ```bash
-ego-jev --decider openai-compatible \
+ego-decision-layer --decider openai-compatible \
   --base-url "http://127.0.0.1:11434/v1" --model "qwen2.5:7b" \
   --url "https://en.wikipedia.org/wiki/Main_Page" --until "/wiki/Jev" --text "Jev" \
   "在搜索框输入 Jev 并提交"
@@ -389,7 +412,7 @@ ego-jev --decider openai-compatible \
 
 ## 已知限制（实测）
 
-- **「装完就默认走 ego-jev」能到哪一步**（这些是别人踩过的坑，不是我们的猜测）：
+- **「装完就默认走 ego-decision-layer」能到哪一步**（这些是别人踩过的坑，不是我们的猜测）：
   - 个人作用域的同名技能可以**替换内置命令，但替换不了它的别名**——别名仍指向内置版本。
   - 个人作用域技能**在 Cowork / 云会话里不加载**（会话类型限制，不是配置问题）；always-on 那行也一样。
   - 插件作用域技能是**命名空间**的（`插件名:技能名`），所以插件渠道天然**不会**覆盖内置技能。
@@ -398,12 +421,12 @@ ego-jev --decider openai-compatible \
   - hooks（`SessionStart` / `UserPromptSubmit` 注入 `additionalContext`）是唯一「必须发生」的强制层；
     **本轮没做**——它要写用户的 Agent settings，代价是侵入用户配置。
 - **路由触发率：已分层量化，但样本很小（决策探针，不是执行成功率）**——方法：起全新会话（中立 cwd，
-  不读本仓库），给真实口吻的多步浏览器任务，只让它报「打算怎么做」、不许执行；判定「计划里是否走 ego-jev」。
-  - **交互式会话：5/5 主动走 ego-jev**（当时只有同名接管 + 自身技能两层，**没开 always-on**；
+  不读本仓库），给真实口吻的多步浏览器任务，只让它报「打算怎么做」、不许执行；判定「计划里是否走 ego-decision-layer」。
+  - **交互式会话：5/5 主动走 ego-decision-layer**（当时只有同名接管 + 自身技能两层，**没开 always-on**；
     含两条不含「点击/翻页」字眼的问法）。开启 always-on 后复测 2/2，无回归。
   - **子代理 / 一次性无会话上下文：0/6**（开 always-on 之前是 0/4）。探针确认这类上下文里
     **既没有技能清单、也没有任何 AGENTS.md 内容**——always-on 那行到不了它们。所以把浏览器活
-    派给子代理时，**必须在 handoff 里显式写「用 `ego-jev` CLI」**，否则它不会自己选。
+    派给子代理时，**必须在 handoff 里显式写「用 `ego-decision-layer` CLI」**，否则它不会自己选。
   - 注意事项：`n=5/6`、单机单模型、探针只报计划；这不能外推成「真实执行成功率」。
 - **跨域 iframe 不处理**：读不到 `contentDocument`，这类树不在观测范围内。
 - **frame 祖先带缩放/旋转时直接拒绝**：frame 内坐标换算会失真，所以宁可不点。
@@ -444,10 +467,10 @@ ego-jev --decider openai-compatible \
 > （凭证文件完好、随后自愈）：环境本身会变，只记「能跑通」不够。
 
 **方法**：同任务、同元素表、同验证器，「交替 3 轮取中位数」。
-A = `ego-jev` 单进程闭环；B = 经典循环（**每步一个独立进程** + 大模型 `kimi-k3` 思考）。
+A = `ego-decision-layer` 单进程闭环；B = 经典循环（**每步一个独立进程** + 大模型 `kimi-k3` 思考）。
 测于 2026-09-19。
 
-| 任务 | A（ego-jev） | B（经典循环） | 结果 |
+| 任务 | A（ego-decision-layer） | B（经典循环） | 结果 |
 | --- | ---: | ---: | --- |
 | Hacker News 两步复合导航 | 中位 **4.9s**（1 进程，12 次浏览器调用） | 中位 **9.7s**（3 进程） | **约 2.0×** |
 | 维基百科搜索（两组都要生成文本） | 中位 **5.4s**（1 步） | 中位 **10.1s**（2 进程） | **约 1.9×** |
@@ -500,14 +523,14 @@ bootstrap 95% CI，判定规则**跑前写死**）：
 ```bash
 cd examples/bench
 # 编辑 task.json（目标/URL/验证子串），然后：
-./run-pair.sh A                 # ego-jev 单进程闭环
+./run-pair.sh A                 # ego-decision-layer 单进程闭环
 ./run-pair.sh B kimi-k3         # 经典循环：每步一个进程 + 大模型
 ```
 
 基准脚本需要 OpenCode Go（或任何 OpenAI 兼容网关）的凭证，路径写在脚本里，按需修改。
 
 历史 A/B 对照的报告（`VERIFY-REPORT.md`、`PORT-REPORT.md`、`REVEAL-REPORT.md`、`BH-PORT-REPORT.md`）里，
-**B 臂**是 `browser-harness + jev-ultrafast`。它的引擎已经移植进 `scripts/ego-jev.mjs`，宿主 `bh` 也已移除，
+**B 臂**是 `browser-harness + jev-ultrafast`。它的引擎已经移植进 `scripts/decider-loop.mjs`，宿主 `bh` 也已移除，
 所以**驱动脚本已撤出仓库**（在 git 历史里，如 `git show 599a49b:bench/run-b.py`）。
 已发布的 B 栈数字仍可复算：原始数据在 `bench/raw/`，`bench/analyze-*.mjs` 会从它重算表格。
 
@@ -526,12 +549,12 @@ BENCH_OUT_DIR=/tmp/x bash bench/verify.sh 1   # 或写到别处，不污染仓�
 SKILL.md                 技能本体（刻意放在根目录——`npx skills add` 就是找它；也是版本号唯一来源）
 CHANGELOG.md             版本历史（顶部条目必须与 SKILL.md 的 metadata.version 一致）
 AGENTS.md                给其他 Agent 的安装/验证指令（可直接粘贴的 prompt 在里面）
-scripts/ego-jev.mjs      引擎
-scripts/ego-jev          CLI（自动在 同目录 / 仓库根 / ~/.agents/lib 里找引擎）
+scripts/decider-loop.mjs  引擎
+scripts/ego-decision-layer CLI（自动在 同目录 / 仓库根 / ~/.agents/lib 里找引擎）
 scripts/wire-agent-skills.sh   接管/刷新官方 ego-browser 入口；--check / --restore / --ensure / --status-json / --always-on
 overlay/ego-browser/     路由层的模板（接管时渲染到 Agent 技能目录）
 .claude-plugin/          Claude Code 插件元数据（plugin.json / marketplace.json）
-skills/ego-jev/          插件技能目录（SKILL.md / scripts / overlay 都指向仓库根的软链）
+skills/ego-decision-layer/  插件技能目录（SKILL.md / scripts / overlay 都指向仓库根的软链）
 docs/                    demo 素材与重做脚本（banner.svg / demo.gif / capture-demo.mjs …）
 examples/bench/          A/B 对照基准脚本（CLI 闭环 vs 每步大模型）
 bench/verify.sh          A 臂验证编排（--check-env 预检；结果落 bench/raw/ 或 BENCH_OUT_DIR）
@@ -552,7 +575,7 @@ update.sh                一键更新（幂等；自动识别克隆/拷贝两种
 - 同类项目与上游一览：[`docs/ECOSYSTEM.md`](docs/ECOSYSTEM.md)（中立清单，只引用各项目自己的 GitHub About
   与同一套 API 可复算的公开计数）
 
-本项目**没有**再分发 ego-lite 的任何文档或代码；`skill/ego-jev-section.md` 仅包含我们自己撰写的章节。
+本项目**没有**再分发 ego-lite 的任何文档或代码；`skill/` 目录下的历史章节草稿仅包含我们自己撰写的内容。
 
 ## License
 

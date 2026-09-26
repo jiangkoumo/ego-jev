@@ -3,7 +3,7 @@
 // 纯 node，无需浏览器 / 网络 / 凭证。用法: node bench/test-release-consistency.mjs
 const { spawnSync } = await import("node:child_process");
 const fs = await import("node:fs");
-const { dirname, join, relative } = await import("node:path");
+const { dirname, join, relative, basename } = await import("node:path");
 const { fileURLToPath } = await import("node:url");
 
 const REPO = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -36,6 +36,21 @@ check(".claude-plugin/marketplace.json version 一致", market.version === versi
 check("plugin.json 的 name 合法（kebab-case）", /^[a-z0-9]+(-[a-z0-9]+)*$/.test(plugin.name || ""), String(plugin.name));
 check("marketplace.json 的 plugins 条目带 name+source", Array.isArray(market.plugins) && market.plugins.length > 0 && market.plugins.every((p) => p.name && p.source), JSON.stringify(market.plugins));
 
+// ── [2b] 身份一致性：仓库目录名 / SKILL name / 插件清单 name 必须一致 ──
+console.log("\n[2b] 身份一致性");
+const IDENTITY = "ego-decision-layer";
+const fmName = fm ? (fm[1].match(/^\s*name:\s*"?([^"\s]+)"?\s*$/m) || [])[1] : null;
+check("SKILL.md name == 新身份名", fmName === IDENTITY, String(fmName));
+check("plugin.json name == 新身份名", plugin.name === IDENTITY, String(plugin.name));
+check("marketplace plugins[0].name == 新身份名", market.plugins[0]?.name === IDENTITY, JSON.stringify(market.plugins[0]?.name));
+check("插件技能目录 skills/<name>/ 存在", fs.existsSync(join(REPO, "skills", IDENTITY)), IDENTITY);
+{
+  const repoName = basename(REPO);
+  if (repoName === IDENTITY) console.log(`  ok   仓库目录名与新身份一致（${repoName}）`);
+  else if (repoName === "ego-jev") console.log(`  警告 本地 checkout 目录仍是旧名（${repoName}）——远端重命名后 clone/renames 会变成 ${IDENTITY}；不参与判定`);
+  else check("仓库目录名是已知身份名或旧名", false, repoName);
+}
+
 // ── [3] CHANGELOG 顶部条目版本一致 ──────────────────────────────────────────
 console.log("\n[3] CHANGELOG 顶部条目");
 const changelog = fs.readFileSync(CHANGELOG, "utf8");
@@ -43,21 +58,21 @@ const top = (changelog.match(/^##\s+([0-9]+\.[0-9]+\.[0-9]+)\s+—/m) || [])[1];
 check("CHANGELOG 第一个版本小节存在", Boolean(top), JSON.stringify(top));
 check("CHANGELOG 顶部版本一致", top === version, `${top} vs ${version}`);
 
-// ── [4] skills/ego-jev/SKILL.md 软链可解析且指向仓库根 ──────────────────────
+// ── [4] skills/ego-decision-layer/SKILL.md 软链可解析且指向仓库根 ──────────────
 console.log("\n[4] 插件技能软链");
-const linkPath = join(REPO, "skills", "ego-jev", "SKILL.md");
+const linkPath = join(REPO, "skills", IDENTITY, "SKILL.md");
 let isLink = false;
 try { isLink = fs.lstatSync(linkPath).isSymbolicLink(); } catch { isLink = false; }
-check("skills/ego-jev/SKILL.md 是软链", isLink, linkPath);
+check("skills/<name>/SKILL.md 是软链", isLink, linkPath);
 let resolved = null;
 try { resolved = fs.realpathSync(linkPath); } catch { resolved = null; }
 check("软链指向仓库根的 SKILL.md", resolved === fs.realpathSync(SKILL), String(resolved));
 // scripts / overlay 也应是软链（插件加载器下技能要能拿到引擎）
 for (const sub of ["scripts", "overlay"]) {
-  const p = join(REPO, "skills", "ego-jev", sub);
+  const p = join(REPO, "skills", IDENTITY, sub);
   let ok = false;
   try { ok = fs.lstatSync(p).isSymbolicLink() && fs.existsSync(p); } catch { ok = false; }
-  check(`skills/ego-jev/${sub} 是可解析的软链`, ok, p);
+  check(`skills/<name>/${sub} 是可解析的软链`, ok, p);
 }
 
 // ── [5] README 引用已生成的素材 ─────────────────────────────────────────────
@@ -113,6 +128,54 @@ console.log("\n[6] 外部仓库名扫描");
   };
   walk(REPO);
   check("代码行没有外部仓库名、文档里的 github URL 仅限已登记上游（生态清单除外）", hits.length === 0, hits.slice(0, 8).join(", "));
+}
+
+// ── [8] 旧名白名单：公开界面/测试里除白名单外不得再出现旧名 ────────────────
+console.log("\n[8] 旧名白名单");
+{
+  // 整文件放行：历史垫片 / 迁移测试与文档 / 历史版本记录 / 第三方事实引用 / 内部兼容标记。
+  const ALLOW_FILES = new Set([
+    "scripts/ego-jev",                                        // 历史入口垫片（兼容转发）
+    "scripts/rename-self.sh",                                  // 迁移脚本：必须读写旧名与旧路径
+    "bench/test-rename-self.mjs",                             // 迁移测试：必须构造旧布局
+    "bench/test-release-consistency.mjs",                     // 本文件（白名单与正则里必须写下旧名）
+    "CHANGELOG.md",                                           // 历史版本记录（不改写历史）
+    "docs/ECOSYSTEM.md",                                      // 第三方项目就叫 ego-jev（事实引用）
+    "THIRD-PARTY.md", "THIRD-PARTY-ASSESSMENT.md",            // 第三方位登记
+    // 历史报告：点状记录靠运行时的名字，不追改
+    "BH-PORT-REPORT.md", "EGO-SWITCH-REPORT.md", "FIX-REPORT.md",
+    "PORT-REPORT.md", "REVEAL-REPORT.md", "VERIFY-REPORT.md",
+  ]);
+  // 行级放行：迁移/历史/兼容语境的注释或文档行（README 迁移节、wire 里的旧路径说明等）
+  const ALLOW_LINE = /迁移|历史|旧|原名|曾用名|兼容|改名|新名|垫片|转发|legacy|formerly|renamed|migration|compat/i;
+  const SKIP_DIRS = new Set(["node_modules", ".git", "__pycache__", ".contrib", ".agent-tape", "demo-frames"]);
+  const EXT = new Set([".md", ".mjs", ".js", ".sh", ".json", ".in", ".yml", ".yaml", ".txt"]);
+  const violations = [];
+  const walkOld = (dir) => {
+    for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+      const p = join(dir, e.name);
+      const rel = relative(REPO, p);
+      if (e.isDirectory()) {
+        if (SKIP_DIRS.has(e.name) || rel === "bench/raw") continue;
+        walkOld(p);
+        continue;
+      }
+      // bench/ 只查公开回归测试与 lib；其余是本地开发工具，不属于公开界面
+      if (rel.startsWith("bench/") && !/^bench\/(test-[^/]+\.mjs|lib\.mjs)$/.test(rel)) continue;
+      const dot = e.name.lastIndexOf(".");
+      const ext = dot < 0 ? "" : e.name.slice(dot);
+      if (!EXT.has(ext)) continue;
+      if (ALLOW_FILES.has(rel)) continue;
+      fs.readFileSync(p, "utf8").split("\n").forEach((line, i) => {
+        // 内部兼容标记文件名本身放行（.ego-jev-overlay.json，保留以支持 --restore）
+        if (!/ego-jev|ego_jev/.test(line.replace(/\.ego-jev-overlay\.json/g, ""))) return;
+        if (ALLOW_LINE.test(line)) return;
+        violations.push(`${rel}:${i + 1}`);
+      });
+    }
+  };
+  walkOld(REPO);
+  check("旧名只出现在白名单 / 迁移历史语境（公开界面与测试）", violations.length === 0, violations.slice(0, 12).join(", "));
 }
 
 // ── [7] 与最新 tag 的一致性：打 tag 前必然不一致，只作为警告行 ──────────────

@@ -10,7 +10,7 @@ import { fileURLToPath } from "node:url";
 // 在 import 前设好：端点常量在模块加载时构建
 process.env.TYPESAFE_BASE_URL = "https://primary.example/v1";
 process.env.TYPESAFE_FALLBACK_BASE_URL = "https://fallback.example/v1";
-const JE = join(dirname(fileURLToPath(import.meta.url)), "..", "scripts", "ego-jev.mjs");
+const JE = join(dirname(fileURLToPath(import.meta.url)), "..", "scripts", "decider-loop.mjs");
 const { askJev } = await import(JE);
 
 let pass = 0, fail = 0;

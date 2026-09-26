@@ -14,11 +14,11 @@
 const { writeFile, mkdir } = await import("node:fs/promises");
 // 仓库根定位：ego 内嵌运行时拿不到 cwd、import.meta.url 是 "file:////[eval2]"、自定义 env 不传入。
 // ① 推荐（测当前工作树）：sed "s|__REPO__|$PWD|g" bench/test-emoji-clip.mjs | ego-browser nodejs
-// ② 直接 `< bench/test-emoji-clip.mjs`：走已安装技能（$HOME/.agents/skills/ego-jev）
+// ② 直接 `< bench/test-emoji-clip.mjs`：走已安装技能（$HOME/.agents/skills/ego-decision-layer）
 const REPO_INJECTED = "__REPO__";
-const ROOT = REPO_INJECTED.startsWith("/") ? REPO_INJECTED : (process.env.HOME || "") + "/.agents/skills/ego-jev";
+const ROOT = REPO_INJECTED.startsWith("/") ? REPO_INJECTED : (process.env.HOME || "") + "/.agents/skills/ego-decision-layer";
 const { BENCH, JE, RAW, loadBenchApiKey, loadBenchTextModel } = await import(ROOT + "/bench/lib.mjs").catch(() => {
-  throw new Error(`无法定位仓库根（${ROOT}）：请用 sed "s|__REPO__|$PWD|g" bench/<script> | ego-browser nodejs 运行，或先 npx skills add jiangkoumo/ego-jev`);
+  throw new Error(`无法定位仓库根（${ROOT}）：请用 sed "s|__REPO__|$PWD|g" bench/<script> | ego-browser nodejs 运行，或先 npx skills add jiangkoumo/ego-decision-layer`);
 });
 const { parseActionTargets, buildActionMenu, runJevStep } = await import(JE);
 

@@ -17,7 +17,7 @@ const { writeFile, mkdir } = await import("node:fs/promises");
 // ① 推荐（测当前工作树）：sed "s|__REPO__|$PWD|g" bench/x-scroll-tasks.js | ego-browser nodejs
 // ② 直接 `< bench/x-scroll-tasks.js`：走已安装技能（$HOME/.agents/skills/ego-jev）
 const REPO_INJECTED = "__REPO__";
-const ROOT = REPO_INJECTED.startsWith("/") ? REPO_INJECTED : (process.env.HOME || "") + "/.agents/skills/ego-jev";
+const ROOT = REPO_INJECTED.startsWith("/") ? REPO_INJECTED : (process.env.HOME || "") + "/.agents/skills/ego-decision-layer";
 const { BENCH, JE, RAW, loadBenchApiKey, loadBenchTextModel } = await import(ROOT + "/bench/lib.mjs").catch(() => {
   throw new Error(`无法定位仓库根（${ROOT}）：请用 sed "s|__REPO__|$PWD|g" bench/<script> | ego-browser nodejs 运行，或先 npx skills add jiangkoumo/ego-jev`);
 });
@@ -116,7 +116,7 @@ const maxSameActionRun = (labels) => {
   return best;
 };
 
-const out = { startedAt: new Date().toISOString(), rounds: ROUNDS, engine: "scripts/ego-jev.mjs", records: [] };
+const out = { startedAt: new Date().toISOString(), rounds: ROUNDS, engine: "scripts/decider-loop.mjs", records: [] };
 const space = await taskSpace(`ego-xscroll-${Date.now()}`);
 const raw = space.page("p1");
 

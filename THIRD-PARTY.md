@@ -10,10 +10,10 @@
 - **许可**：MIT License — Copyright (c) 2026 Browser Use
 - **涉及范围**（分级依据见 [`THIRD-PARTY-ASSESSMENT.md`](THIRD-PARTY-ASSESSMENT.md)，
   并排证据见 [`bench/raw/third-party-excerpts.md`](bench/raw/third-party-excerpts.md)）：
-  - `scripts/ego-jev.mjs` 的**响应校验** `validateChoice`（判据顺序与阈值 `0.02` / `1e-6` 一致）
-  - `scripts/ego-jev.mjs` 的**动作执行器**（动作前检查序列、下拉可用性谓词、
+  - `scripts/decider-loop.mjs` 的**响应校验** `validateChoice`（判据顺序与阈值 `0.02` / `1e-6` 一致）
+  - `scripts/decider-loop.mjs` 的**动作执行器**（动作前检查序列、下拉可用性谓词、
     鼠标按下/抬起、`selectAll` 的平台修饰键常量 `4` / `2`）
-  - `scripts/ego-jev.mjs` 的**观测层元素表构建**（部分子步骤）
+  - `scripts/decider-loop.mjs` 的**观测层元素表构建**（部分子步骤）
   - **提示词规则** `NEXT_ACTION` / `TARGET`
   - **动作后等待**（`after_input` 段）
   - **dynamic operation + target 架构**

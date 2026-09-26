@@ -8,9 +8,9 @@ const { readFileSync } = await import("node:fs");
 
 export function resolveLib(benchDir) {
   const found = [`${benchDir}/../..`, `${benchDir}/../../..`]
-    .flatMap((dir) => [resolve(dir, "scripts/ego-jev.mjs"), resolve(dir, "ego-jev.mjs")])
+    .flatMap((dir) => [resolve(dir, "scripts/decider-loop.mjs"), resolve(dir, "decider-loop.mjs")])
     .find(existsSync);
-  if (!found) throw new Error(`找不到 ego-jev.mjs（benchDir=${benchDir}）`);
+  if (!found) throw new Error(`找不到 decider-loop.mjs（benchDir=${benchDir}）`);
   return found;
 }
 
@@ -27,9 +27,9 @@ export function gateway(config) {
     headers: {
       Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json",
-      "User-Agent": "ego-jev-bench/1.0",
-      "x-opencode-session": "ego-jev-bench",
-      "x-opencode-client": "ego-jev",
+      "User-Agent": "ego-decision-layer-bench/1.0",
+      "x-opencode-session": "ego-decision-layer-bench",
+      "x-opencode-client": "ego-decision-layer",
     },
   };
 }

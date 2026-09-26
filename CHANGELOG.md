@@ -7,6 +7,43 @@
 每个版本按 **新增 / 修复 / 更正 / 未验证** 分组。「更正」记的是被实测推翻的旧结论，
 不是新功能；「未验证」如实列出还没测过的边界。
 
+## 0.4.0 — 2026-09-26
+
+> **破坏性变更（改名）**：项目从 `ego-jev` 改名为 **`ego-decision-layer`**。公开身份都变了：
+> 安装命令（`npx skills add jiangkoumo/ego-decision-layer`）、技能名（`ego-decision-layer`）、CLI 路径
+> （`scripts/ego-jev` → `scripts/ego-decision-layer`；引擎 `scripts/ego-jev.mjs` → `scripts/decider-loop.mjs`）、
+> 配置目录（`~/.config/ego-jev` → `~/.config/ego-decision-layer`）、always-on 块标记
+> （`<!-- ego-jev:route … -->` → `<!-- ego-decision-layer:route … -->`）。
+>
+> **迁移三步**（旧命令 `ego-jev` 仍可用，保留为兼容垫片；环境变量 `EGO_JEV_*` 与引擎的 24 个导出
+> **签名与名字都没动**）：
+>
+> ```bash
+> bash scripts/rename-self.sh --dry-run   # 1. 先看它会做什么（不写任何文件）
+> bash scripts/rename-self.sh             # 2. 执行（幂等）
+> # 3. 重开 Agent 会话（技能列表是启动时快照的）
+> ```
+
+### 新增
+
+- **改名 + 本地迁移脚本 `scripts/rename-self.sh`**：幂等、支持 `--dry-run`。顺序：旧接管先 `--restore` →
+  记下 always-on 清单 → 删旧技能软链 / 建新软链（`~/.local/bin` 也更新）→ 迁移配置目录 →
+  用新名重接管 → 重插 always-on → 自检。旧配置目录仍读得到（新目录不存在而旧目录存在时沿用并提示一次）。
+- **历史入口垫片 `scripts/ego-jev`**：打印一行改名提示后 exec 新 CLI，`~/.local/bin/ego-jev` 不断。
+- **`--restore` 能清旧 always-on 块**：wire 脚本同时识别新旧块标记。
+- **测试**：断言旧名的测试改到新名；`test-release-consistency.mjs` 新增**身份一致性**断言
+  （`SKILL.md` name == 插件清单 name == `skills/<name>/`）与**旧名白名单**扫描；新增
+  `bench/test-rename-self.mjs`（临时 HOME + 假官方软链：`--dry-run` 不写盘、真跑后迁移到位、
+  `--check` exit 0、再跑幂等）。
+
+### 未验证
+
+- 同 0.3.4：本地模型路径只用 stub `fetch` 验证，未在真实本地推理服务上端到端跑过；hooks 未做、
+  路由触发率未量化。
+- 改名后的**真实第三方会话**（Codex / Cursor 等重新读取新技能名）未实测；远端仓库改名由维护者在
+  GitHub 侧完成，本仓库只改本地身份。
+- 迁移脚本只在临时 HOME 的模拟布局上验证过；未在本机实盘的多用户 / 多技能目录组合上验证。
+
 ## 0.3.4 — 2026-09-26
 
 ### 新增

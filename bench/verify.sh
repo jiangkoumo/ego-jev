@@ -14,7 +14,7 @@
 #       静态服务（c.html / d.html 两个固定件不在仓库里）；没起就会记成 harness_error。
 #
 # 注：B 臂（browser-harness + jev-ultrafast）的驱动脚本已从仓库移除——它的引擎早已移植进
-#     scripts/ego-jev.mjs，产品路径、CLI、路由层从不依赖 browser-harness。
+#     scripts/decider-loop.mjs，产品路径、CLI、路由层从不依赖 browser-harness。
 #     历史脚本在 git 历史里（如 git show 599a49b:bench/run-b.py），
 #     报告里的 B 栈数字由 bench/raw/ 的原始数据复算（bench/analyze-*.mjs）。
 set -uo pipefail
@@ -62,7 +62,7 @@ MAX_ATTEMPTS=3
 
 {
   echo "PROTOCOL: ${BENCH}/verify-protocol.md"
-  echo "ENGINE_MD5_PRE: $(md5 -q "${BENCH}/../scripts/ego-jev.mjs" 2>/dev/null || echo '(md5 不可用)')"
+  echo "ENGINE_MD5_PRE: $(md5 -q "${BENCH}/../scripts/decider-loop.mjs" 2>/dev/null || echo '(md5 不可用)')"
   echo "OUT=$OUT"
   echo "ROUNDS=$ROUNDS"
 } | tee -a "$LOG"
@@ -96,5 +96,5 @@ for round in $(seq 1 "$ROUNDS"); do
   done
 done
 
-echo "ENGINE_MD5_POST: $(md5 -q "${BENCH}/../scripts/ego-jev.mjs" 2>/dev/null || echo '(md5 不可用)')" | tee -a "$LOG"
+echo "ENGINE_MD5_POST: $(md5 -q "${BENCH}/../scripts/decider-loop.mjs" 2>/dev/null || echo '(md5 不可用)')" | tee -a "$LOG"
 echo "DONE: $OUT"

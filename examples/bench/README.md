@@ -2,7 +2,7 @@
 
 对照两种循环，回答「Jev 闭环到底省不省时间」：
 
-- **A**：`ego-jev` 单进程闭环，每步由 Jev 决策
+- **A**：`ego-decision-layer` 单进程闭环，每步由 Jev 决策
 - **B**：经典循环——**每步一个独立进程** + 大模型以文本提示决策（就是「每走一步退出来交由大模型慢思考」的形态）
 
 两组使用**同一元素表、同一任务、同一验证器**；计时都从导航之后开始。
@@ -18,7 +18,7 @@
 
 | 变量 | 作用 | 默认 |
 | --- | --- | --- |
-| `EGO_JEV_LIB` | 引擎路径 | 从 cwd 向上找 `ego-jev.mjs` |
+| `EGO_JEV_LIB` | 引擎路径 | 从 cwd 向上找 `decider-loop.mjs` |
 | `BENCH_BASE_URL` | OpenAI 兼容网关 | `https://opencode.ai/zen/go/v1` |
 | `BENCH_API_KEY` | 网关密钥（优先） | — |
 | `BENCH_AUTH_FILE` / `BENCH_AUTH_PATH` | 从已有凭证文件按路径取密钥 | `~/.pi/agent/auth.json` / `opencode-go.key` |

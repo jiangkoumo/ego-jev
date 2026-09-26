@@ -12,7 +12,7 @@
 // 用法: node bench/test-select-reask.mjs
 const { dirname, join } = await import("node:path");
 const { fileURLToPath } = await import("node:url");
-const JE = join(dirname(fileURLToPath(import.meta.url)), "..", "scripts", "ego-jev.mjs");
+const JE = join(dirname(fileURLToPath(import.meta.url)), "..", "scripts", "decider-loop.mjs");
 const { runJevStep, runJevAutonomousLoop } = await import(JE);
 
 let pass = 0, fail = 0;

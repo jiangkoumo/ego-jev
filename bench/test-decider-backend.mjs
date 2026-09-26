@@ -13,10 +13,10 @@ import { tmpdir } from "node:os";
 
 // 默认 decider.json 指向一个不存在的路径：保证「未配置」分支不受本机已有配置影响。
 // 必须在动态 import 引擎之前设好（模块加载时读取）。
-const TMP = mkdtempSync(join(tmpdir(), "ego-jev-decider-"));
+const TMP = mkdtempSync(join(tmpdir(), "ego-decision-layer-decider-"));
 process.env.EGO_JEV_DECIDER_FILE = join(TMP, "nonexistent-decider.json");
 
-const JE = join(dirname(fileURLToPath(import.meta.url)), "..", "scripts", "ego-jev.mjs");
+const JE = join(dirname(fileURLToPath(import.meta.url)), "..", "scripts", "decider-loop.mjs");
 const {
   runJevStep, runJevAutonomousLoop, buildQuestions, renderQuestionsForText,
   parseDeciderAnswers, resolveDecider, loadDeciderConfig, resolveDeciderApiKey,

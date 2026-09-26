@@ -21,7 +21,7 @@ const { fileURLToPath } = await import("node:url");
 // 相对自身定位，不要写死绝对路径——CI 与别人的机器上都要能跑
 const BENCH = dirname(fileURLToPath(import.meta.url));
 const { runJevStep, runJevAutonomousLoop } = await import(
-  join(BENCH, "..", "scripts", "ego-jev.mjs")
+  join(BENCH, "..", "scripts", "decider-loop.mjs")
 );
 
 let pass = 0;

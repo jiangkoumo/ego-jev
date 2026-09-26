@@ -1,22 +1,22 @@
 ---
-name: ego-jev
-description: 多步线性浏览器任务（连续点击、翻页、搜索表单提交、导航跳转）的默认入口：用 `ego-jev` 一条命令让 Jev（TypeSafe System One）在单个 ego-browser 进程内闭环决策（browser automation / multi-step click chain / form submit / navigation），不再每步退回大模型思考。单步动作、精确 DOM/选择器、批量抓取仍走 ego-browser 原生 API；也可把官方 ego-browser 技能入口接管成路由层。当任务涉及浏览器多步操作、要写 ego-browser nodejs 脚本（await import / fetch / 凭证落盘）时读它。
+name: ego-decision-layer
+description: 多步线性浏览器任务（连续点击、翻页、搜索表单提交、导航跳转）的默认入口：用 `ego-decision-layer` 一条命令让决策层在单个 ego-browser 进程内闭环决策（默认 System One / Jev，可换本地 OpenAI 兼容后端；browser automation / multi-step click chain / form submit / navigation），不再每步退回大模型思考。单步动作、精确 DOM/选择器、批量抓取仍走 ego-browser 原生 API；也可把官方 ego-browser 技能入口接管成路由层。当任务涉及浏览器多步操作、要写 ego-browser nodejs 脚本（await import / fetch / 凭证落盘）时读它。
 metadata:
-  version: "0.3.4"
+  version: "0.4.0"
   date: "2026-09-26"
   requires: ego-browser
 ---
-# ego-jev — 给 ego-browser 装一个 Jev 决策闭环
+# ego-decision-layer — 给 ego-browser 装一个可插拔的决策层
 
-这是一个**附加技能（外挂）**：它只存在于 Agent 的技能目录里（如 `~/.agents/skills/ego-jev/`），
+这是一个**附加技能（外挂）**：它只存在于 Agent 的技能目录里（如 `~/.agents/skills/ego-decision-layer/`），
 **不修改 ego lite 应用包里的任何文件**，因此 ego lite 升级不会把它冲掉。
 
 本技能的组成（都在本 SKILL.md 所在目录内）：
 
 | 路径 | 作用 |
 | --- | --- |
-| `scripts/ego-jev.mjs` | 引擎（Jev 决策闭环、元素表解析、退出判定） |
-| `scripts/ego-jev` | 命令行入口（会自动在 同目录 / 仓库根 / `~/.agents/lib/` 里找引擎） |
+| `scripts/decider-loop.mjs` | 引擎（决策闭环、元素表解析、退出判定） |
+| `scripts/ego-decision-layer` | 命令行入口（会自动在 同目录 / 仓库根 / `~/.agents/lib/` 里找引擎） |
 | `scripts/wire-agent-skills.sh` | 把 Agent 技能目录里的官方 `ego-browser` 入口接管成**路由层**（见下节） |
 | `overlay/ego-browser/SKILL.md.in` | 路由层的模板（接管时生成，正文仍指向 App 当前版本） |
 | `examples/bench/` | 对照基准脚本（A 组 Jev 闭环 vs B 组经典循环） |
@@ -24,8 +24,8 @@ metadata:
 命令行两种调用方式，任选其一：
 
 ```bash
-ego-jev --url "…" "目标"                        # 已链接进 PATH 时
-"<本技能目录>/scripts/ego-jev" --url "…" "目标"  # 直接用技能内的入口
+ego-decision-layer --url "…" "目标"                        # 已链接进 PATH 时
+"<本技能目录>/scripts/ego-decision-layer" --url "…" "目标"  # 直接用技能内的入口
 ```
 
 基础用法、Space/Page/选择器/收尾纪律仍以 `ego-browser` 技能为准；本技能只负责「让 Jev 加速」这件事。
@@ -34,14 +34,14 @@ ego-jev --url "…" "目标"                        # 已链接进 PATH 时
 
 | 任务形状 | 走哪条路 |
 | --- | --- |
-| **多步线性**：连续点击、翻页/下一页、搜索框输入并提交、多字段表单、导航到目标页 | **本技能**（`ego-jev` CLI 或 `runJevAutonomousLoop`） |
+| **多步线性**：连续点击、翻页/下一页、搜索框输入并提交、多字段表单、导航到目标页 | **本技能**（`ego-decision-layer` CLI 或 `runJevAutonomousLoop`） |
 | 单个动作；需要精确选择器/DOM、批量抽取、截图、文件、网络请求、CDP | `ego-browser` 原生 API（读官方技能） |
 | 内容生成、业务判断（回什么话、选哪个商品、写哪段文案） | 大模型决定，把决定喂给上面两条 |
 
 **但「默认用哪个」不能只靠这段表格**：ego lite 会把官方 `ego-browser` 技能写进每个 Agent 的技能目录
 （`~/.agents/skills/ego-browser`、`~/.claude/skills/ego-browser` …，由 App 在安装/升级时重建），
-而官方正文不知道 ego-jev 存在 —— 于是 Agent 默认照它写逐步脚本。用本技能的接管脚本把这个入口换成
-**路由层**，Agent 先看到的就是上面的路由规则。**`install.sh` 默认就接管；`ego-jev` CLI 首次运行时
+而官方正文不知道 ego-decision-layer 存在 —— 于是 Agent 默认照它写逐步脚本。用本技能的接管脚本把这个入口换成
+**路由层**，Agent 先看到的就是上面的路由规则。**`install.sh` 默认就接管；`ego-decision-layer` CLI 首次运行时
 也会在检测到官方入口时补一次**（`EGO_JEV_NO_WIRE=1` 关闭）：
 
 ```bash
@@ -51,14 +51,14 @@ bash scripts/wire-agent-skills.sh --restore  # 还原成官方软链（启用标
 ```
 
 接管后：入口是包外的一层 `SKILL.md`，正文仍软链到 App 当前版本的官方技能（升级自动跟随），
-只有「先路由、再决定写不写脚本」那一段是本技能加的。`update.sh` 与 `ego-jev` CLI 都会自动重接管
+只有「先路由、再决定写不写脚本」那一段是本技能加的。`update.sh` 与 `ego-decision-layer` CLI 都会自动重接管
 （ego lite 升级会把入口还原）。**应用包内任何文件都没动。**
 `--restore` 是**粘性**的：它记下「不接管」的选择，之后 CLI 首跑不会自动接管回去；
 重新启用要显式跑一次接管（`bash scripts/wire-agent-skills.sh`）。
 
 想让它**在读技能之前**就知道路由：`bash scripts/wire-agent-skills.sh --always-on AGENTS.md`
 （显式开关，默认不写任何用户文件；块带标记、幂等、可 `--restore` 精确移除）。
-路由状态可事后审计：`ego-jev --route-status`（只读 JSON，不起浏览器、不要凭证）。
+路由状态可事后审计：`ego-decision-layer --route-status`（只读 JSON，不起浏览器、不要凭证）。
 
 ## 加速能力
 
@@ -99,7 +99,7 @@ HN 两步导航端到端因此从 4569ms 降到 1675ms。目标能用选择器�
 **凭证**：`ego-browser nodejs` 内嵌运行时只继承最小化登录环境（HOME/PATH 等），shell 里
 export 的变量不会传进去，所以凭证只能来自文件。查找顺序：
 `--api-key` > `TYPESAFE_API_KEY`（仅普通 node 进程可见）> `TYPESAFE_API_KEY_FILE` >
-`~/.config/ego-jev/credentials` > `~/.config/typesafe/api_key` > rc 文件（`~/.zshrc`/`~/.bashrc`/
+`~/.config/ego-decision-layer/credentials` > `~/.config/typesafe/api_key` > rc 文件（`~/.zshrc`/`~/.bashrc`/
 `~/.bash_profile`/`~/.profile`）里的 `export TYPESAFE_API_KEY=…`。所以已经 export 过 key 的机器
 不必再落盘一次。`~/.config/typesafe/api_key` 仍是「一行裸 Key」的既有形态（权限 600）；
 文件都找不到时 CLI 直接报错 exit 3。后端地址 `TYPESAFE_BASE_URL` 可覆盖，主后端失败时的
@@ -113,7 +113,7 @@ CLI 在父进程读取后写进配置传给子进程**（ego 运行时自身读�
 与引擎自己的 `askJev` 同签名；默认仍走 TypeSafe。
 
 **决策后端可换**：契约形如 `decide({ state, questions, options }) → { answers, meta }`；默认 System One
-（语义不变），配置 `~/.config/ego-jev/decider.json` 可切到本地 OpenAI 兼容端点
+（语义不变），配置 `~/.config/ego-decision-layer/decider.json` 可切到本地 OpenAI 兼容端点
 （`kind: "openai-compatible"`），CLI 用 `--decider` / `--base-url` / `--model` 覆盖。本地文本模型
 没有校准置信度（`capabilities.confidence: false`），引擎跳过置信度阈值升级但保留全部执行层护栏
 （陈旧 / `guardRejected` / 跨 frame fail-closed / 危险动作拦截 / 候选合法性校验）；细节见 README。
@@ -143,17 +143,17 @@ select_target     ← 原生下拉，候选写成 元素#选项序号（如 ref=
 
 ```bash
 # 简单目标
-ego-jev --url "https://example.com" "点击登录按钮并聚焦输入框"
+ego-decision-layer --url "https://example.com" "点击登录按钮并聚焦输入框"
 
 # 需要输入文本：候选由调用方给，Jev 只负责选字段和选哪段文本
-ego-jev --url "https://en.wikipedia.org/wiki/Main_Page" --text "Jev" \
+ego-decision-layer --url "https://en.wikipedia.org/wiki/Main_Page" --text "Jev" \
   --until "/wiki/Jev" "在页面顶部的搜索框中输入并提交搜索"
 
 # 让模型自己写文本（已配置好，无需 --text）
-ego-jev --url "https://en.wikipedia.org/wiki/Main_Page" "在维基百科搜索框里搜索哥德尔不完备定理"
+ego-decision-layer --url "https://en.wikipedia.org/wiki/Main_Page" "在维基百科搜索框里搜索哥德尔不完备定理"
 
 # 复用已有 space，并在完成后保留 space 供人工检查
-ego-jev --space 3 --keep-space --steps 15 "点击未发送帖子并保存"
+ego-decision-layer --space 3 --keep-space --steps 15 "点击未发送帖子并保存"
 ```
 
 `--until <substr>` 给确定性退出条件（URL 包含该子串即判成功），比依赖 Jev 自评 `done` 可靠得多，
@@ -167,9 +167,9 @@ ego-jev --space 3 --keep-space --steps 15 "点击未发送帖子并保存"
   "apiKeyJson": { "file": "~/.pi/agent/auth.json", "path": "opencode-go.key" },
   "model": "deepseek-v4.1-flash",
   "sessionHeader": "x-opencode-session",
-  "sessionId": "ego-jev",
-  "userAgent": "ego-jev/1.0",
-  "headers": { "x-opencode-client": "ego-jev" }
+  "sessionId": "ego-decision-layer",
+  "userAgent": "ego-decision-layer/1.0",
+  "headers": { "x-opencode-client": "ego-decision-layer" }
 }
 ```
 
@@ -182,7 +182,7 @@ ego-jev --space 3 --keep-space --steps 15 "点击未发送帖子并保存"
 2. **在任何 `ego-browser nodejs` 脚本中导入复用**：
 
 ```js
-import { runJevAutonomousLoop } from "<本技能目录>/scripts/ego-jev.mjs";
+import { runJevAutonomousLoop } from "<本技能目录>/scripts/decider-loop.mjs";
 
 // Jev 在当前页面自主连续操作，直到 check 通过或 Jev 判定 done
 const result = await runJevAutonomousLoop(page, "依次打开 new 页面，再打开 comments 页面", {
@@ -308,7 +308,7 @@ console.log(result); // { success, reason, steps, history }
 配套的两条环境事实：
 
 - **自定义环境变量一律不传入**（不止 `TYPESAFE_API_KEY`）：`export FOO=bar` 在运行时里读不到。
-  需要传配置时，在**父进程把值替换进脚本文本**再送进去（`ego-jev` CLI 就是这么传 goal/url 等配置的）；
+  需要传配置时，在**父进程把值替换进脚本文本**再送进去（`ego-decision-layer` CLI 就是这么传 goal/url 等配置的）；
   凭证走上面的文件链，不靠环境变量。
 - **`process.cwd()` 是 `/`**，不是 shell 的工作目录。脚本里不要依赖相对路径。
 

@@ -4,7 +4,7 @@
 
 ## 这是什么
 
-`ego-jev` 用 [TypeSafe](https://docs.typesafe.ai) 的 System One 模型 **Jev** 替代浏览器自动化里
+`ego-decision-layer` 用 [TypeSafe](https://docs.typesafe.ai) 的 System One 模型 **Jev** 替代浏览器自动化里
 「每步回到大模型思考」的往返：输入一张**索引化元素表**，一次请求返回**操作 + 目标元素**，
 观察/执行/校验/退出条件都由代码负责。
 
@@ -14,8 +14,8 @@
 ## 安装
 
 ```bash
-npx skills add jiangkoumo/ego-jev      # 推荐，一行装进 Agent 技能目录（含引擎与 CLI）
-# 或：git clone https://github.com/jiangkoumo/ego-jev.git && cd ego-jev && ./install.sh --test
+npx skills add jiangkoumo/ego-decision-layer      # 推荐，一行装进 Agent 技能目录（含引擎与 CLI）
+# 或：git clone https://github.com/jiangkoumo/ego-decision-layer.git && cd ego-decision-layer && ./install.sh --test
 ```
 
 ## 装完必须验证（别只看代码，跑起来）
@@ -23,7 +23,7 @@ npx skills add jiangkoumo/ego-jev      # 推荐，一行装进 Agent 技能目�
 ```bash
 ego-browser --version                                   # 前置条件
 test -f ~/.config/typesafe/api_key && echo "key ok"     # 凭证存在
-"<技能目录>/scripts/ego-jev" \
+"<技能目录>/scripts/ego-decision-layer" \
   --url "https://en.wikipedia.org/wiki/Main_Page" \
   --text "Jev" --until "/wiki/Jev" --steps 5 \
   "type Jev into the search box and submit"
@@ -44,7 +44,7 @@ bash "<技能目录>/scripts/wire-agent-skills.sh" --check   # 期望 exit 0
   用 `scripts/wire-agent-skills.sh`（幂等、可 `--restore`），别改包内 SKILL.md。
 - **凭证必须落盘成文件**：`ego-browser nodejs` 内嵌运行时只继承最小化登录环境，
   `TYPESAFE_API_KEY` 之类的**自定义环境变量不会传进去**。查找链：`--api-key` > 环境变量 >
-  `TYPESAFE_API_KEY_FILE` > `~/.config/ego-jev/credentials` > `~/.config/typesafe/api_key` >
+  `TYPESAFE_API_KEY_FILE` > `~/.config/ego-decision-layer/credentials` > `~/.config/typesafe/api_key` >
   rc 文件里的 `export TYPESAFE_API_KEY=…`。后端地址 `TYPESAFE_BASE_URL` 可覆盖，主后端失败时的
   降级端点 `TYPESAFE_FALLBACK_BASE_URL`（不设即不降级）；**这两个后端变量由 CLI 在父进程读取后写进
   配置传给子进程**（ego 运行时读不到自定义环境变量）。
@@ -67,8 +67,8 @@ bash "<技能目录>/scripts/wire-agent-skills.sh" --check   # 期望 exit 0
 
 ```
 SKILL.md                 技能本体（刻意放根目录，`npx skills add` 就是找它）
-scripts/ego-jev.mjs      引擎
-scripts/ego-jev          CLI（自动在 同目录 / 仓库根 / ~/.agents/lib 里找引擎）
+scripts/decider-loop.mjs  引擎
+scripts/ego-decision-layer CLI（自动在 同目录 / 仓库根 / ~/.agents/lib 里找引擎）
 scripts/wire-agent-skills.sh  把官方 ego-browser 入口接管成路由层（幂等，可 --check / --restore）
 overlay/ego-browser/     路由层模板（渲染到 Agent 技能目录，不是装进应用包）
 examples/bench/          A/B 对照基准（Jev 闭环 vs 每步大模型循环）
@@ -76,13 +76,13 @@ install.sh               手工安装（接 CLI 进 PATH + 准备凭证；`--wir
 update.sh                一键更新（接管过则自动重接管）
 CHANGELOG.md             版本历史（顶部条目必须与 SKILL.md 的 metadata.version 一致）
 .claude-plugin/          Claude Code 插件元数据（plugin.json / marketplace.json）
-skills/ego-jev/          插件技能目录（SKILL.md / scripts / overlay 是指向仓库根的相对软链）
+skills/ego-decision-layer/  插件技能目录（SKILL.md / scripts / overlay 是指向仓库根的相对软链）
 docs/                    demo 素材与重做脚本（banner.svg / demo.gif / capture-demo.mjs …）
 ```
 
 ## 开发约定
 
-- 引擎改动在 `scripts/ego-jev.mjs`，保持导出稳定：`askJev`、`parseActionTargets`、`enrichTargets`、
+- 引擎改动在 `scripts/decider-loop.mjs`，保持导出稳定：`askJev`、`parseActionTargets`、`enrichTargets`、
   `buildQuestions`、`runJevStep`、`runJevAutonomousLoop`、`generateText`、`loadTextModelConfig`、
   `resolveTextApiKey`、`loadApiKey`。
 - 改完引擎要重跑上面的冒烟测试**和** `./examples/bench/run-pair.sh A`。
@@ -103,7 +103,7 @@ docs/                    demo 素材与重做脚本（banner.svg / demo.gif / ca
 - 改 `scripts/wire-agent-skills.sh` / `overlay/` / `install.sh` 要重跑 `node bench/test-wire-skill.mjs`
   与 `node bench/test-route-trace.mjs`（都用临时 HOME 造官方软链，无需浏览器与凭证），
   并在真机上 `bash scripts/wire-agent-skills.sh --check` 一次。
-- `scripts/ego-jev` 启动时会调 `wire-agent-skills.sh --ensure`：已启用则静默刷新；未启用但检测到官方
+- `scripts/ego-decision-layer` 启动时会调 `wire-agent-skills.sh --ensure`：已启用则静默刷新；未启用但检测到官方
   入口则首跑接管一次并打印一行；两者都不是则什么都不做（`EGO_JEV_NO_WIRE=1`，旧名 `EGO_JEV_NO_HEAL=1`）。
   这步不得改变任务退出码；改这块要重跑同一个单测（[29]/[32] 段覆盖）。
 - **always-on 块只在显式 `--always-on <file>` 时写入**：默认安装/运行不写任何用户文件。
@@ -116,12 +116,12 @@ docs/                    demo 素材与重做脚本（banner.svg / demo.gif / ca
 - **demo 素材必须由真实运行产生**（不许手绘界面）：录帧用
   `sed "s|__REPO__|$PWD|g" docs/capture-demo.mjs | ego-browser nodejs`，再按 `docs/README.md`
   里的 ffmpeg 命令合成 GIF/MP4，社交预览图用 `docs/make-social-preview.mjs`。
-- 插件技能目录 `skills/ego-jev/` 里只放**指向仓库根**的相对软链，不复制 SKILL.md 正文
+- 插件技能目录 `skills/ego-decision-layer/` 里只放**指向仓库根**的相对软链，不复制 SKILL.md 正文
   （正文只有仓库根一份，软链保证 clone 后可用）。
 - 接管层只在 Agent 技能目录里写：`SKILL.md` 是生成的，`references/`、`scripts/`、`learnings/`
   是软链——不要把正文拷进去（会跟 App 版本脱节）。
 - 只用真实命令输出和退出码宣称完成；不确定就明说哪一步失败。
-- 基准的 B 臂（browser-harness + jev-ultrafast）的驱动脚本已撤出仓库（引擎已移植进 `scripts/ego-jev.mjs`），
+- 基准的 B 臂（browser-harness + jev-ultrafast）的驱动脚本已撤出仓库（引擎已移植进 `scripts/decider-loop.mjs`），
   报告里的 B 栈数字由 `bench/raw/` 原始数据复算，旧脚本在 git 历史里。改 benchmark 后跑
   `node bench/test-no-bh-dependency.mjs`（不变量：可执行脚本里不许出现 browser-harness 调用面）。
 - 报基准数字必须带上产生它的脚本。
