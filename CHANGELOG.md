@@ -7,6 +7,53 @@
 每个版本按 **新增 / 修复 / 更正 / 未验证** 分组。「更正」记的是被实测推翻的旧结论，
 不是新功能；「未验证」如实列出还没测过的边界。
 
+## 0.3.0 — 2026-09-26
+
+> **破坏性变更（安装默认行为）**：`./install.sh` 现在**默认**接管官方 `ego-browser` 入口；
+> `ego-jev` CLI 首次运行也会在检测到官方入口时接管一次。想退回旧行为：安装加 `--no-wire`，
+> 或随时 `bash scripts/wire-agent-skills.sh --restore`（把入口还原成官方软链，并移除所有 always-on 块）。
+
+### 新增
+
+- **首装就默认接管**：`install.sh` 默认执行接管（`--wire` 仍接受，视为显式启用；`--no-wire` 跳过）。
+  接管失败时安装仍然成功（提示原因 + 明确说 CLI 仍可用），只有显式 `--wire` 才让安装退出非零。
+- **CLI 首跑一次性接管**：`scripts/ego-jev` 跑任务前看一眼官方入口——已接管过就静默刷新；
+  没接管过但检测到官方入口，就首跑接管一次并打印一行说明（含 `--restore` 还原命令）；
+  两者都不是则什么都不做（不建目录、不打噪音）。`EGO_JEV_NO_WIRE=1` 整体关闭（旧名
+  `EGO_JEV_NO_HEAL=1` 仍接受）。这步任何失败只降级为一行提示，**不改变任务的退出码**。
+- **`--check` 给出结论而不是「跳过」**：没有官方入口的目录明确写「无需接管（没有官方
+  `ego-browser` 入口；该 Agent 通过自身的 ego-jev 技能被发现）」，并汇总
+  **已接管 N / 无需接管 M / 漂移 K**；有漂移仍 exit 1。`--check` 保持只读（连 mtime 都不变）。
+- **always-on 路由块（显式开关，默认不写任何用户文件）**：
+  `bash scripts/wire-agent-skills.sh --always-on <file>` 向指定文件插入一段带标记的说明块
+  （`<!-- ego-jev:route begin -->` … `end`），幂等、可 `--restore` 精确移除，首次写入前备份到
+  同目录 `.bak`。适合放在项目 `AGENTS.md` 或 `~/.claude/CLAUDE.md`：让 Agent 在读任何技能之前
+  就知道「多步线性浏览器任务先走 ego-jev」。
+- **路由可审计**：新增只读命令 `scripts/ego-jev --route-status`，输出机器可读 JSON
+  （`enabled` / `dirs[]` / `summary{n,m,k}` / `alwaysOn[]` / `vendor` / `generatedHash`），
+  不起浏览器、不需要凭证、不建 TaskSpace。同一份信息作为 `route` 段写进 CLI 的结果 JSON，
+  `renderJevSummary` 也带一行（`路由: 已接管 2 / 无需 1 / 漂移 0 · always-on 1`）。
+- **`--restore` 一次清两样**：同时把接管层还原成官方软链、并移除所有已记录的 always-on 块。
+
+### 修复
+
+- `--check` 对「目录里没有官方入口」只打一行「跳过」，用户看不出结论；现在给出明确结论与原因。
+- CLI 自愈只在**已有启用标记**时才动手，导致「装完但从未接管」的机器永远不会走 ego-jev；
+  现在首跑接管。
+
+### 更正
+
+- 旧文档把 `--wire` 写成可选的「顺便」动作，实际效果是多数用户装完仍走官方正文；
+  0.3.0 起默认接管，`--no-wire` 才是显式跳过。
+
+### 未验证
+
+- **hooks 方案没做**：`SessionStart` / `UserPromptSubmit` 注入 `additionalContext` 是唯一
+  「必须发生」的强制层，但它要写用户的 Agent settings；本轮只文档说明，不自动改用户设置。
+- **路由触发率没有量化**：没有测「Agent 实际走 ego-jev 的比例」（需要另一套 grader）。
+- **always-on 的覆盖边界如实记录**：个人作用域技能在 Cowork / 云会话里不加载，always-on 那行
+  一样受会话类型限制；它只影响读这个文件的 Agent。
+
 ## 0.2.0 — 2026-09-26
 
 > 本次把 `SKILL.md` 里从未发布过的 `1.0.0` 占位对齐到实际发布线 `0.2.0`。`1.0.0` 从未打过 tag、

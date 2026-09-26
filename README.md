@@ -88,36 +88,74 @@ npx skills add jiangkoumo/ego-jev
 ```bash
 git clone https://github.com/jiangkoumo/ego-jev.git
 cd ego-jev
-./install.sh          # 链接 CLI 进 ~/.local/bin，并准备凭证文件
-./install.sh --wire   # 顺便接管官方 ego-browser 入口（见下）
-./install.sh --test   # 顺带跑一次端到端冒烟测试
+./install.sh            # 链接 CLI 进 ~/.local/bin、准备凭证，并**默认接管**官方 ego-browser 入口
+./install.sh --no-wire  # 只装 CLI，不接管（旧行为）
+./install.sh --test     # 顺带跑一次端到端冒烟测试
 ```
 
-### 让 Agent 默认走 ego-jev（`--wire`）
+### 让 Agent 默认走 ego-jev（默认接管）
 
 ego lite 会把**官方** `ego-browser` 技能写进每个 Agent 的技能目录
 （`~/.agents/skills/ego-browser`、`~/.claude/skills/ego-browser` …，由 App 在安装/升级时重建），
 而官方正文不知道 ego-jev 存在——不管的话，Agent 默认照它写逐步脚本，ego-jev 根本不会被启动。
 
 `scripts/wire-agent-skills.sh` 把这个入口接管成一层**路由层**（包外）：Agent 先看到的
-「先路由、再决定写不写脚本」那一节是本技能加的，技能正文仍然软链到 App 的当前版本（升级自动跟随）：
+「先路由、再决定写不写脚本」那一节是本技能加的，技能正文仍然软链到 App 的当前版本（升级自动跟随）。
+**`install.sh` 默认就会做这件事**，`ego-jev` CLI 首次运行时也会在检测到官方入口时补一次：
 
 ```bash
-bash scripts/wire-agent-skills.sh            # 接管 / 刷新（幂等；只写 Agent 技能目录，不碰应用包）
-bash scripts/wire-agent-skills.sh --check     # 只读检查：入口还在不在、生成物是否过期（exit 1 = 需重跑）
-bash scripts/wire-agent-skills.sh --restore   # 还原成官方软链（启用标记一并清掉）
+bash scripts/wire-agent-skills.sh              # 接管 / 刷新（幂等；只写 Agent 技能目录，不碰应用包）
+bash scripts/wire-agent-skills.sh --check      # 只读检查：已接管 N / 无需接管 M / 漂移 K（漂移则 exit 1）
+bash scripts/wire-agent-skills.sh --restore    # 还原成官方软链（启用标记与 always-on 块一并清掉）
 ```
 
 退出码：`0` 正常 / `1` 需要处理（`--check` 发现漂移；或本次一个都没接管到）/ `2` 用法或环境错误。
 `--vendor`（或 `EGO_JEV_VENDOR`）显式指定时就是权威：目录里没有 `SKILL.md` 直接报错，不回退自动探测。
-`--check` 不只看生成物过期，也管「入口被 App 升回官方软链」「软链断向被删的旧版本目录」「入口直接不见了」，
-并会提醒「官方技能是拷贝目录时脚本不覆盖」。`--restore` 不需要 ego lite 还在（不会自锁）。
+`--check` 对每个目录给出结论（本机实测）：
 
-接管会在 `~/.config/ego-jev/wire-enabled.json` 留下启用标记（含接管过的目录列表）；之后有两道自愈：
-`./update.sh` 自动重接管/刷新（ego lite 升级会把入口重建回官方软链，甚至短时间变成断链），
-`ego-jev` CLI 每次跑任务前也静默检查一次（只在真漂移时才写盘；`EGO_JEV_NO_HEAL=1` 关闭）。
-目录被记在标记里、入口又不见了时，会按启用意图把路由层重建回去。指向别处的软链不会被碰，
-普通目录（官方技能的一份拷贝）不会被覆盖。路由只影响**新开的** Agent 会话（技能列表是启动时快照的）。
+```
+OK    ~/.agents/skills/ego-browser（路由层，生成物最新）
+OK    ~/.claude/skills/ego-browser（路由层，生成物最新）
+无需接管  ~/.codex/skills（没有官方 ego-browser 入口；该 Agent 通过自身的 ego-jev 技能被发现）
+
+==> 路由: 已接管 2 / 无需接管 3 / 漂移 0
+```
+
+`--check` 是**只读**的（不写启用标记、不改 mtime）；`--restore` 不需要 ego lite 还在（不会自锁）。
+接管会在 `~/.config/ego-jev/wire-enabled.json` 留下启用标记；`./update.sh` 与 `ego-jev` CLI
+都会据此自动重接管（`EGO_JEV_NO_WIRE=1`，旧名 `EGO_JEV_NO_HEAL=1` 仍接受）。
+路由只影响**新开的** Agent 会话（技能列表是启动时快照的）。
+
+### 让 Agent 在读任何技能之前就看到路由（always-on，显式开关）
+
+接管只覆盖「Agent 去读 `ego-browser` 技能」这条路径。若想让它**在读技能之前**就知道
+「多步线性浏览器任务先走 ego-jev」，可以把一段带标记的说明块写进常驻指令文件：
+
+```bash
+bash scripts/wire-agent-skills.sh --always-on AGENTS.md              # 项目级：只覆盖这个仓库，随仓库共享（最安全）
+bash scripts/wire-agent-skills.sh --always-on ~/.claude/CLAUDE.md    # 本机所有 Claude Code 项目
+```
+
+块用 `<!-- ego-jev:route begin -->` / `<!-- ego-jev:route end -->` 标记，**幂等**（重复跑只替换自己那一块），
+首次写入前备份到同目录 `.bak`，`--restore` 会把它连同接管层一起精确移除（块外内容一字不动）。
+**默认不会写任何用户文件**——只有你显式传 `--always-on <file>` 才写。
+
+三种放法各覆盖谁：
+
+| 放法 | 覆盖范围 |
+| --- | --- |
+| 项目 `AGENTS.md` | 只覆盖该仓库（开放标准，Codex / Cursor / Amp / Copilot 等都会读），随仓库共享 |
+| `~/.claude/CLAUDE.md` | 本机所有 Claude Code 项目（常驻指令文件） |
+| 个人作用域技能（`~/.agents/skills`、`~/.claude/skills`） | 该 Agent 的技能列表；**在 Cowork / 云会话里不加载**，always-on 那行也一样受会话类型限制 |
+
+### 路由可审计：`--route-status`
+
+```bash
+ego-jev --route-status        # 只读 JSON：接管情况 / always-on / 官方技能路径 / 生成物哈希
+```
+
+不起浏览器、不需要凭证、不建 TaskSpace。同一份信息也会作为 `route` 段写进每次任务的结果 JSON，
+`renderJevSummary` 收尾还会带一行：`路由: 已接管 2 / 无需 1 / 漂移 0 · always-on 1`。
 
 ### 方式 4：把这段 prompt 丢给你的 Agent
 
@@ -151,7 +189,7 @@ ego-browser --version                                        # 前置条件
   "在搜索框输入 Jev 并提交"
 # 期望：exit 0，且输出里 "success": true
 
-# 接管过官方入口的话（--wire），看它是否还生效：
+# 接管过官方入口的话（默认就会接管），看它是否还生效：
 bash "<技能目录>/scripts/wire-agent-skills.sh" --check   # 期望：exit 0（漂移则 exit 1）
 grep -l "先路由" ~/.agents/skills/ego-browser/SKILL.md     # 期望：打印出路径
 ```
@@ -279,6 +317,16 @@ mkdir -p ~/.agents/skills/ego-jev && ln -sfn "$PWD/SKILL.md" ~/.agents/skills/eg
 
 ## 已知限制（实测）
 
+- **「装完就默认走 ego-jev」能到哪一步**（这些是别人踩过的坑，不是我们的猜测）：
+  - 个人作用域的同名技能可以**替换内置命令，但替换不了它的别名**——别名仍指向内置版本。
+  - 个人作用域技能**在 Cowork / 云会话里不加载**（会话类型限制，不是配置问题）；always-on 那行也一样。
+  - 插件作用域技能是**命名空间**的（`插件名:技能名`），所以插件渠道天然**不会**覆盖内置技能。
+  - 想「让冲突源消失」可以用官方的 `disable-model-invocation: true`（把某技能整个移出上下文）
+    或 `Skill(name)` 权限 deny 规则；**我们只文档说明，不自动改用户设置**。
+  - hooks（`SessionStart` / `UserPromptSubmit` 注入 `additionalContext`）是唯一「必须发生」的强制层；
+    **本轮没做**——它要写用户的 Agent settings，代价是侵入用户配置。
+- **路由触发率没有量化**：我们没有测「Agent 实际走 ego-jev 的比例」（需要另一套 grader）；
+  本仓库只保证接管层在位、状态可审计（`--route-status`）。
 - **跨域 iframe 不处理**：读不到 `contentDocument`，这类树不在观测范围内。
 - **frame 祖先带缩放/旋转时直接拒绝**：frame 内坐标换算会失真，所以宁可不点。
   frame 元素到文档根的祖先链上有非 identity 的 2D 线性变换（scale/rotate/skew）或 `zoom !== 1`
@@ -402,7 +450,7 @@ CHANGELOG.md             版本历史（顶部条目必须与 SKILL.md 的 metad
 AGENTS.md                给其他 Agent 的安装/验证指令（可直接粘贴的 prompt 在里面）
 scripts/ego-jev.mjs      引擎
 scripts/ego-jev          CLI（自动在 同目录 / 仓库根 / ~/.agents/lib 里找引擎）
-scripts/wire-agent-skills.sh   把官方 ego-browser 入口接管成路由层（--check / --restore）
+scripts/wire-agent-skills.sh   接管/刷新官方 ego-browser 入口；--check / --restore / --ensure / --status-json / --always-on
 overlay/ego-browser/     路由层的模板（接管时渲染到 Agent 技能目录）
 .claude-plugin/          Claude Code 插件元数据（plugin.json / marketplace.json）
 skills/ego-jev/          插件技能目录（SKILL.md / scripts / overlay 都指向仓库根的软链）
@@ -410,7 +458,7 @@ docs/                    demo 素材与重做脚本（banner.svg / demo.gif / ca
 examples/bench/          A/B 对照基准脚本（CLI 闭环 vs 每步大模型）
 bench/verify.sh          A 臂验证编排（--check-env 预检；结果落 bench/raw/ 或 BENCH_OUT_DIR）
 bench/test-*.mjs         离线/在线测试（含 test-release-consistency.mjs、test-no-bh-dependency.mjs）
-install.sh               手工安装（接 CLI 进 PATH、准备凭证；`--wire` 顺便接管入口）
+install.sh               手工安装（接 CLI 进 PATH、准备凭证；**默认接管入口**，--no-wire 跳过）
 update.sh                一键更新（幂等；自动识别克隆/拷贝两种安装方式，并重接管入口）
 ```
 

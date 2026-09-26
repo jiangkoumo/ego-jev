@@ -9,22 +9,27 @@
 # 只写 Agent 技能目录，不碰 /Applications 里的应用包；`--restore` 可还原成官方软链。
 #
 # 用法:
-#   scripts/wire-agent-skills.sh [--dry-run] [--check] [--restore] [--if-enabled]
-#                                [--dir DIR]... [--vendor DIR]
+#   scripts/wire-agent-skills.sh [--dry-run] [--check] [--restore] [--if-enabled] [--ensure]
+#                                [--status-json] [--always-on FILE] [--dir DIR]... [--vendor DIR]
 #
 #   （默认动作）接管 / 刷新：把已存在的 ego-browser 入口换成路由层，幂等
-#   --check       只读检查：是否已接管、是否漂移（生成物过期 / 入口消失 / 软链断）
-#   --restore     还原成接管前的那条软链（不需要 ego lite 还在，逃生口不自锁）
+#   --check       只读检查：每个目录给出结论（已接管 / 无需接管 / 漂移），并汇总三个数字
+#   --restore     还原：接管层变回原软链，同时移除所有已记录的 always-on 块
 #   --if-enabled  仅当之前接管过（有启用标记）才动手；给 update.sh 用
+#   --ensure      给 CLI 首跑用：接管过就静默刷新；没接管过但检测到官方入口才首跑接管一次；
+#                 两者都不是就什么都不做（见下方 EGO_JEV_NO_WIRE）
+#   --status-json 只读：把同一份路由状态输出成 JSON（给 `ego-jev --route-status` 用）
+#   --always-on FILE  向 FILE 插入一段带标记的路由说明块（幂等、可 --restore 精确移除）
 #   --dry-run     只打印会做什么，不落盘
 #
 # 退出码: 0 正常 / 1 需要处理（--check 发现漂移；或接管动作没达成） / 2 用法或环境错误
 #
-# 环境变量（测试用）:
+# 环境变量:
 #   EGO_JEV_SKILLS_DIRS  以 : 分隔的技能目录列表，覆盖默认探测
 #   EGO_JEV_VENDOR       官方技能目录，覆盖自动探测
-#   EGO_JEV_CONFIG_DIR   启用标记目录，默认 ~/.config/ego-jev
+#   EGO_JEV_CONFIG_DIR   启用标记 / always-on 记录目录，默认 ~/.config/ego-jev
 #   EGO_JEV_SKILL_PATH   ego-jev 自己的 SKILL.md（写进路由层）
+#   EGO_JEV_NO_WIRE      设为非空：--ensure 什么都不做（CLI 首跑接管与自愈一并关闭）
 set -uo pipefail
 
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -32,16 +37,20 @@ TEMPLATE="$REPO_DIR/overlay/ego-browser/SKILL.md.in"
 WIRE_SCRIPT="$REPO_DIR/scripts/wire-agent-skills.sh"
 CONFIG_DIR="${EGO_JEV_CONFIG_DIR:-$HOME/.config/ego-jev}"
 FLAG_FILE="$CONFIG_DIR/wire-enabled.json"
+ALWAYS_ON_LIST="$CONFIG_DIR/always-on.list"
 MARKER_NAME=".ego-jev-overlay.json"
 MARKER_MAGIC='"overlay": "ego-jev"'
+ROUTE_BEGIN='<!-- ego-jev:route begin -->'
+ROUTE_END='<!-- ego-jev:route end -->'
 
 # 路由说明（进 frontmatter 的 description，是 Agent 选择技能的依据）
 ROUTING_NOTE='本入口已由 ego-jev 接管：连续点击、翻页、搜索表单提交、多字段填写、导航跳转这类多步线性任务，先用 `ego-jev` CLI 在单进程内闭环（一条命令，别写逐步脚本）；单步动作、精确 DOM/选择器操作、批量抓取再落到本技能的 ego-browser API。'
 
-MODE="wire"          # wire | check | restore
+MODE="wire"          # wire | check | restore | ensure | status | always-on
 DRY_RUN=0
 IF_ENABLED=0
 DIRS_FIXED=0
+ALWAYS_ON_FILE=""
 VENDOR_ARG="${EGO_JEV_VENDOR:-}"
 declare -a DIRS=()
 
@@ -55,9 +64,12 @@ while [[ $# -gt 0 ]]; do
     --restore) MODE="restore"; shift ;;
     --dry-run) DRY_RUN=1; shift ;;
     --if-enabled) IF_ENABLED=1; shift ;;
+    --ensure) MODE="ensure"; shift ;;
+    --status-json) MODE="status"; shift ;;
+    --always-on) [[ $# -ge 2 && -n "$2" ]] || fail "--always-on 需要一个非空文件路径"; MODE="always-on"; ALWAYS_ON_FILE="$2"; shift 2 ;;
     --dir) [[ $# -ge 2 && -n "$2" ]] || fail "--dir 需要一个非空目录"; DIRS+=("$2"); DIRS_FIXED=1; shift 2 ;;
     --vendor) [[ $# -ge 2 && -n "$2" ]] || fail "--vendor 需要一个非空目录"; VENDOR_ARG="$2"; shift 2 ;;
-    -h|--help) sed -n '2,26p' "$0"; exit 0 ;;
+    -h|--help) sed -n '2,29p' "$0"; exit 0 ;;
     *) fail "未知参数: $1" ;;
   esac
 done
@@ -167,6 +179,121 @@ install_overlay() {
   write_marker "$target" "$original"
 }
 
+# ── always-on 路由块（只在显式 --always-on 时写；幂等；可精确移除）──────────────
+# 块内容必须确定性（只含仓库路径，不含时间戳/随机数），否则 --check/--status 会误报。
+
+route_block() {
+  local jev line
+  jev="$(ego_jev_skill_path)"
+  while IFS= read -r line || [[ -n "$line" ]]; do
+    line="${line//'{{EGO_JEV_SKILL}}'/$jev}"
+    line="${line//'{{WIRE_SCRIPT}}'/$WIRE_SCRIPT}"
+    printf '%s\n' "$line"
+  done <<'BLOCK'
+<!-- ego-jev:route begin -->
+## 浏览器任务：多步线性先走 ego-jev
+
+多步线性浏览器任务（连续点击、翻页、搜索表单提交、多字段填写、导航跳转）先用 `ego-jev` CLI
+在单个进程内闭环；单步动作、精确 DOM/选择器、批量抓取仍走 `ego-browser` 原生 API。
+
+Multi-step linear browser work (click chains, pagination, form submits, navigation) should go
+through the `ego-jev` CLI first; single actions, precise DOM/selector work and bulk scraping stay
+on the `ego-browser` API.
+
+```bash
+ego-jev --url "https://…" --until "/expected/path" --steps 8 "把目标写清楚"
+```
+
+技能目录：`{{EGO_JEV_SKILL}}` · 路由层与 always-on 块的还原：`bash {{WIRE_SCRIPT}} --restore`
+<!-- ego-jev:route end -->
+BLOCK
+  return 0
+}
+
+always_on_files() { [[ -f "$ALWAYS_ON_LIST" ]] && grep -v '^$' "$ALWAYS_ON_LIST"; return 0; }
+
+always_on_add() {  # <file>
+  local f="$1" tmp
+  mkdir -p "$CONFIG_DIR" || return 1
+  tmp="$(mktemp "${TMPDIR:-/tmp}/ego-jev-ao.XXXXXX")" || return 1
+  { always_on_files; printf '%s\n' "$f"; } | sort -u > "$tmp" && mv "$tmp" "$ALWAYS_ON_LIST"
+}
+
+file_has_block() { [[ -f "$1" ]] && grep -qF "$ROUTE_BEGIN" "$1" 2>/dev/null && grep -qF "$ROUTE_END" "$1" 2>/dev/null; }
+
+# 生成「原文件（去掉旧块）+ 新块」到 stdout；块外内容按行原样保留
+file_with_block() {  # <file> <blockfile>
+  local file="$1" bf="$2" b e
+  if [[ -f "$file" ]]; then
+    b="$(grep -nF "$ROUTE_BEGIN" "$file" 2>/dev/null | head -1 | cut -d: -f1)"
+    e="$(grep -nF "$ROUTE_END" "$file" 2>/dev/null | head -1 | cut -d: -f1)"
+    if [[ -n "$b" && -n "$e" && "$e" -ge "$b" ]]; then
+      head -n "$((b - 1))" "$file"
+      cat "$bf"
+      tail -n "+$((e + 1))" "$file"
+      return 0
+    fi
+    cat "$file"
+    [[ -s "$file" ]] && printf '\n'
+  fi
+  cat "$bf"
+  return 0
+}
+
+file_without_block() {  # <file>：stdout = 去掉块后的内容
+  local file="$1" b e
+  [[ -f "$file" ]] || return 0
+  b="$(grep -nF "$ROUTE_BEGIN" "$file" 2>/dev/null | head -1 | cut -d: -f1)"
+  e="$(grep -nF "$ROUTE_END" "$file" 2>/dev/null | head -1 | cut -d: -f1)"
+  if [[ -n "$b" && -n "$e" && "$e" -ge "$b" ]]; then
+    head -n "$((b - 1))" "$file"
+    tail -n "+$((e + 1))" "$file"
+  else
+    cat "$file"
+  fi
+  return 0
+}
+
+apply_always_on() {  # <file>
+  local file="$1" bf tmp
+  bf="$(mktemp "${TMPDIR:-/tmp}/ego-jev-blk.XXXXXX")" || return 1
+  route_block > "$bf" || { rm -f "$bf"; return 1; }
+  if [[ -e "$file" ]]; then
+    [[ -e "$file.bak" ]] || cp "$file" "$file.bak" || { rm -f "$bf"; return 1; }
+  else
+    mkdir -p "$(dirname "$file")" || { rm -f "$bf"; return 1; }
+  fi
+  tmp="$(mktemp "${TMPDIR:-/tmp}/ego-jev-out.XXXXXX")" || { rm -f "$bf"; return 1; }
+  file_with_block "$file" "$bf" > "$tmp" && mv "$tmp" "$file" || { rm -f "$bf" "$tmp"; return 1; }
+  rm -f "$bf"
+  always_on_add "$file"
+}
+
+remove_always_on() {  # <file>：有 .bak 就按字节还原，否则只去块
+  local file="$1" tmp
+  if [[ -f "$file.bak" ]]; then
+    cp "$file.bak" "$file" && rm -f "$file.bak"
+    return 0
+  fi
+  [[ -f "$file" ]] || return 0
+  tmp="$(mktemp "${TMPDIR:-/tmp}/ego-jev-out.XXXXXX")" || return 1
+  file_without_block "$file" > "$tmp" && mv "$tmp" "$file"
+  [[ -s "$file" ]] || rm -f "$file"   # 只去块后变空、且无 .bak → 这是本脚本建的文件
+  return 0
+}
+
+json_escape() { printf '%s' "$1" | sed 's/\\/\\\\/g; s/"/\\"/g'; }
+
+generated_hash() {  # 路由层生成物的内容哈希（确定性）
+  local h=""
+  if command -v shasum >/dev/null 2>&1; then
+    h="$(render_overlay | shasum -a 256 | awk '{print $1}')"
+  elif command -v sha256sum >/dev/null 2>&1; then
+    h="$(render_overlay | sha256sum | awk '{print $1}')"
+  fi
+  printf 'sha256:%s' "$h"
+}
+
 # ── 解析官方技能目录（可以解析不到：--restore 不需要它）────────────────────────
 
 resolve_vendor() {
@@ -255,6 +382,35 @@ fi
 VENDOR_REAL=""
 [[ -n "$VENDOR" ]] && VENDOR_REAL="$(resolve_path "$VENDOR")"
 
+# 这个目录里有没有「官方 ego-browser 入口」可接管（我们的路由层，或一条指向 ego lite 的软链）
+has_wireable_entry() {
+  local dir="$1" target="$dir/ego-browser" raw
+  is_our_overlay "$target" && return 0
+  if [[ -L "$target" ]]; then
+    raw="$(readlink "$target")"
+    if looks_like_ego_vendor_path "$raw" || { [[ -n "$VENDOR" ]] && [[ "$(resolve_path "$target")" == "$VENDOR_REAL" ]]; }; then
+      return 0
+    fi
+  fi
+  return 1
+}
+
+# ── --ensure：给 CLI 首跑用 ──────────────────────────────────────────────
+# 已启用 → 静默刷新（等价 --if-enabled）；未启用但检测到官方入口 → 首跑接管一次；
+# 两者都不是 → 什么都不做（不建目录、不打噪音）。EGO_JEV_NO_WIRE 可整体关掉。
+FIRST_RUN=0
+if [[ "$MODE" == "ensure" ]]; then
+  if [[ -n "${EGO_JEV_NO_WIRE:-}" ]]; then exit 0; fi
+  if [[ -f "$FLAG_FILE" ]]; then
+    MODE="wire"
+  else
+    any_entry=0
+    for dir in "${DIRS[@]}"; do has_wireable_entry "$dir" && any_entry=1; done
+    if [[ $any_entry -eq 0 ]]; then exit 0; fi
+    MODE="wire"; FIRST_RUN=1
+  fi
+fi
+
 if [[ "$MODE" == "wire" && -z "$VENDOR" ]]; then
   any_overlay=0
   for dir in "${DIRS[@]}"; do is_our_overlay "$dir/ego-browser" && any_overlay=1; done
@@ -264,12 +420,31 @@ if [[ "$MODE" == "wire" && -z "$VENDOR" ]]; then
   warn "找不到 ego lite 的官方技能目录：本次只能报告状态，不能刷新（装好 ego lite 后重跑）"
 fi
 
+# ── --always-on：只写指定的那个文件（默认不写任何用户文件）──────────────────────
+if [[ "$MODE" == "always-on" ]]; then
+  if [[ $DRY_RUN -eq 1 ]]; then
+    echo "==> ego-jev always-on（dry-run）"
+    info "会向 ${ALWAYS_ON_FILE} 插入/替换路由块（块外内容不动；首次会备份到 ${ALWAYS_ON_FILE}.bak）"
+    exit 0
+  fi
+  if apply_always_on "$ALWAYS_ON_FILE"; then
+    echo "==> ego-jev always-on"
+    info "已写入路由块: ${ALWAYS_ON_FILE}（幂等）"
+    info "移除它（连同路由层）: bash ${WIRE_SCRIPT} --restore"
+    exit 0
+  fi
+  warn "写入失败: ${ALWAYS_ON_FILE}"
+  exit 1
+fi
+
 # ── 三个动作 ─────────────────────────────────────────────────────────────────
 
 had_drift=0
 n_overlay=0
 n_skipped=0
 n_failed=0
+n_drift=0
+n_noneed=0
 did_something=0
 declare -a WIRED_DIRS=()
 
@@ -335,49 +510,50 @@ wire_one() {
   n_skipped=$((n_skipped + 1))
 }
 
-check_one() {
+# 只读探测：输出 "<state>\t<target>"（不打印、不写盘）；--check 与 --status-json 共用
+probe_dir() {
   local dir="$1" target="$dir/ego-browser" sub missing=0 raw
   if is_our_overlay "$target"; then
-    if [[ -z "$VENDOR" ]]; then
-      warn "漂移  ${target}（ego lite 技能目录找不到：无法校验/刷新，装好后重跑本脚本）"; had_drift=1
-      return
-    fi
+    if [[ -z "$VENDOR" ]]; then printf 'wired-novendor\t\n'; return; fi
     for sub in "$VENDOR"/*/; do
       [[ -e "$sub" ]] || continue
       [[ -e "$target/$(basename "$sub")" ]] || missing=1   # 软链断了：通常指向被删掉的旧版本目录
     done
-    if [[ $missing -eq 1 ]]; then
-      warn "漂移  ${target}（官方子目录软链已失效：ego lite 升级删掉了旧版本目录，重跑本脚本）"; had_drift=1
-    elif [[ "$(render_overlay)" == "$(cat "$target/SKILL.md")" ]]; then
-      info "OK    ${target}（路由层，生成物最新）"
-    else
-      warn "漂移  ${target}（生成物过期：ego lite 升级过，重跑本脚本刷新）"; had_drift=1
-    fi
+    if [[ $missing -eq 1 ]]; then printf 'wired-broken\t\n'; return; fi
+    if [[ "$(render_overlay)" == "$(cat "$target/SKILL.md")" ]]; then printf 'wired-ok\t\n'; else printf 'wired-stale\t\n'; fi
     return
   fi
   if [[ -L "$target" ]]; then
     raw="$(readlink "$target")"
     if looks_like_ego_vendor_path "$raw" || [[ -n "$VENDOR" && "$(resolve_path "$target")" == "$VENDOR_REAL" ]]; then
-      if [[ -e "$target" ]]; then
-        warn "未接管  ${target}（还是官方软链：重跑本脚本接管）"
-      else
-        warn "漂移  ${target}（软链断向 ${raw}：升级窗口，重跑本脚本接管）"
-      fi
+      if [[ -e "$target" ]]; then printf 'official\t%s\n' "$raw"; else printf 'official-broken\t%s\n' "$raw"; fi
     else
-      warn "未知  ${target}（软链指向别处，不是 ego lite 技能）: → ${raw}"
+      printf 'foreign\t%s\n' "$raw"
     fi
-    had_drift=1
     return
   fi
-  if [[ -e "$target" ]]; then
-    warn "未知  ${target}（既不是我们的路由层，也不是官方软链）"; had_drift=1
-    return
-  fi
-  if [[ -d "$dir" ]] && is_recorded "$dir"; then
-    warn "漂移  ${dir}（接管过，但 ego-browser 入口不见了：重跑本脚本）"; had_drift=1
-    return
-  fi
-  info "跳过  ${dir}（没有 ego-browser 入口）"
+  if [[ -e "$target" ]]; then printf 'plain\t\n'; return; fi
+  if [[ -d "$dir" ]] && is_recorded "$dir"; then printf 'missing-recorded\t\n'; return; fi
+  if [[ -d "$dir" ]]; then printf 'none\t\n'; else printf 'no-dir\t\n'; fi
+}
+
+# 人类可读渲染 + 计数（只打印，不写盘）
+render_check_line() {  # <state> <dir> <target>
+  local state="$1" dir="$2" t="$3" target="$dir/ego-browser"
+  case "$state" in
+    wired-ok) info "OK    ${target}（路由层，生成物最新）"; n_overlay=$((n_overlay + 1)) ;;
+    wired-stale) warn "漂移  ${target}（生成物过期：ego lite 升级过，重跑本脚本刷新）"; n_drift=$((n_drift + 1)); had_drift=1 ;;
+    wired-broken) warn "漂移  ${target}（官方子目录软链已失效：ego lite 升级删掉了旧版本目录，重跑本脚本）"; n_drift=$((n_drift + 1)); had_drift=1 ;;
+    wired-novendor) warn "漂移  ${target}（ego lite 技能目录找不到：无法校验/刷新，装好后重跑本脚本）"; n_drift=$((n_drift + 1)); had_drift=1 ;;
+    official) warn "未接管  ${target}（还是官方软链：重跑本脚本接管）"; n_drift=$((n_drift + 1)); had_drift=1 ;;
+    official-broken) warn "漂移  ${target}（软链断向 ${t}：升级窗口，重跑本脚本接管）"; n_drift=$((n_drift + 1)); had_drift=1 ;;
+    foreign) warn "未知  ${target}（软链指向别处，不是 ego lite 技能）: → ${t}"; n_drift=$((n_drift + 1)); had_drift=1 ;;
+    plain) warn "未知  ${target}（既不是我们的路由层，也不是官方软链）"; n_drift=$((n_drift + 1)); had_drift=1 ;;
+    missing-recorded) warn "漂移  ${dir}（接管过，但 ego-browser 入口不见了：重跑本脚本）"; n_drift=$((n_drift + 1)); had_drift=1 ;;
+    none) info "无需接管  ${dir}（没有官方 ego-browser 入口；该 Agent 通过自身的 ego-jev 技能被发现）"; n_noneed=$((n_noneed + 1)) ;;
+    no-dir) info "无需接管  ${dir}（目录不存在）"; n_noneed=$((n_noneed + 1)) ;;
+  esac
+  return 0
 }
 
 restore_one() {
@@ -416,13 +592,57 @@ restore_one() {
   did_something=1
 }
 
+# 只读状态（机器可读）：`ego-jev --route-status` 用它；不写盘、不起浏览器、不要凭证
+emit_status_json() {
+  local dir rec st tg first=1 n=0 m=0 k=0 ao_first=1 f wired drift entry hasEntry
+  printf '{\n'
+  if [[ -f "$FLAG_FILE" ]]; then printf '  "enabled": true,\n'; else printf '  "enabled": false,\n'; fi
+  if [[ -n "$VENDOR" ]]; then printf '  "vendor": "%s",\n' "$(json_escape "$VENDOR")"; else printf '  "vendor": null,\n'; fi
+  printf '  "generatedHash": "%s",\n' "$(generated_hash)"
+  printf '  "dirs": ['
+  for dir in "${DIRS[@]}"; do
+    rec="$(probe_dir "$dir")"
+    st="${rec%%$'\t'*}"
+    tg="${rec#*$'\t'}"
+    wired=false; drift=false; entry="none"; hasEntry=false
+    case "$st" in
+      wired-ok) wired=true; entry="wired"; hasEntry=true; n=$((n + 1)) ;;
+      wired-stale|wired-broken|wired-novendor) wired=true; drift=true; entry="wired"; hasEntry=true; k=$((k + 1)) ;;
+      official|official-broken) drift=true; entry="official"; hasEntry=true; k=$((k + 1)) ;;
+      foreign) drift=true; entry="foreign"; k=$((k + 1)) ;;
+      plain) drift=true; entry="plain"; k=$((k + 1)) ;;
+      missing-recorded) drift=true; entry="missing"; k=$((k + 1)) ;;
+      *) entry="none"; m=$((m + 1)) ;;
+    esac
+    [[ $first -eq 0 ]] && printf ','
+    printf '\n    { "dir": "%s", "entry": "%s", "hasEntry": %s, "wired": %s, "drift": %s, "target": "%s" }' \
+      "$(json_escape "$dir")" "$entry" "$hasEntry" "$wired" "$drift" "$(json_escape "$tg")"
+    first=0
+  done
+  printf '\n  ],\n'
+  printf '  "summary": { "n": %s, "m": %s, "k": %s },\n' "$n" "$m" "$k"
+  printf '  "alwaysOn": ['
+  while IFS= read -r f; do
+    [[ -n "$f" ]] || continue
+    file_has_block "$f" || continue
+    [[ $ao_first -eq 0 ]] && printf ', '
+    printf '"%s"' "$(json_escape "$f")"
+    ao_first=0
+  done < <(always_on_files)
+  printf ']\n'
+  printf '}\n'
+}
+
+if [[ "$MODE" == "status" ]]; then emit_status_json; exit 0; fi
+
 echo "==> ego-jev 路由接管（${MODE}）"
 info "官方技能: ${VENDOR:-（未找到）}"
 
+rec=""
 for dir in "${DIRS[@]}"; do
   case "$MODE" in
     wire) wire_one "$dir" ;;
-    check) check_one "$dir" ;;
+    check) rec="$(probe_dir "$dir")"; render_check_line "${rec%%$'\t'*}" "$dir" "${rec#*$'\t'}" ;;
     restore) restore_one "$dir" ;;
   esac
 done
@@ -430,6 +650,13 @@ done
 case "$MODE" in
   check)
     echo
+    ao_count=0
+    while IFS= read -r f; do
+      [[ -n "$f" ]] || continue
+      file_has_block "$f" && ao_count=$((ao_count + 1))
+    done < <(always_on_files)
+    echo "==> 路由: 已接管 ${n_overlay} / 无需接管 ${n_noneed} / 漂移 ${n_drift}"
+    info "always-on 块: ${ao_count} 个文件在位"
     if [[ $had_drift -eq 0 ]]; then
       echo "==> 检查通过：所有 ego-browser 入口都已接管且最新"
       exit 0
@@ -438,12 +665,22 @@ case "$MODE" in
     exit 1
     ;;
   restore)
-    if [[ $DRY_RUN -eq 0 && -f "$FLAG_FILE" ]]; then
-      left=0
-      for dir in "${DIRS[@]}"; do is_our_overlay "$dir/ego-browser" && left=1; done
-      if [[ $left -eq 0 ]]; then
-        rm -f "$FLAG_FILE"
-        info "已清掉启用标记: ${FLAG_FILE}"
+    if [[ $DRY_RUN -eq 0 ]]; then
+      ao_left=0
+      while IFS= read -r f; do
+        [[ -n "$f" ]] || continue
+        remove_always_on "$f"
+        ao_left=$((ao_left + 1))
+      done < <(always_on_files)
+      [[ $ao_left -gt 0 ]] && info "已移除 ${ao_left} 个 always-on 块（还原成原文件）"
+      rm -f "$ALWAYS_ON_LIST"
+      if [[ -f "$FLAG_FILE" ]]; then
+        left=0
+        for dir in "${DIRS[@]}"; do is_our_overlay "$dir/ego-browser" && left=1; done
+        if [[ $left -eq 0 ]]; then
+          rm -f "$FLAG_FILE"
+          info "已清掉启用标记: ${FLAG_FILE}"
+        fi
       fi
     fi
     exit $(( n_failed > 0 ? 1 : 0 ))
@@ -469,6 +706,9 @@ if [[ $DRY_RUN -eq 0 && $did_something -eq 1 ]]; then
 fi
 
 echo
+if [[ $FIRST_RUN -eq 1 && $n_overlay -gt 0 ]]; then
+  echo "已首跑接管 ${n_overlay} 个入口：多步线性浏览器任务默认走 ego-jev；还原: bash ${WIRE_SCRIPT} --restore"
+fi
 if [[ $n_overlay -gt 0 ]]; then
   echo "已接管 ${n_overlay} 个入口：多步线性任务先走 ego-jev，其余仍按官方 ego-browser API。"
   echo "技能正文照旧从 App 当前版本读取（软链跟随升级）；新开的 Agent 会话才会看到这层路由。"

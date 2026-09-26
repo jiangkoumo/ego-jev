@@ -43,6 +43,8 @@ USAGE() {
   --keep <a,b>       完成后保留的页面标签，如 p1,p2（默认全部关闭）
   --keep-space       完成后不关闭 taskSpace，便于人工接手检查
   --api-key <key>    直接传入 Jev API Key
+  --route-status     只读打印路由状态 JSON（接管情况 / always-on / 官方技能路径），
+                     不起浏览器、不需要凭证
   --help, -h         显示帮助
 
 环境变量:
@@ -51,8 +53,9 @@ USAGE() {
   TYPESAFE_TEXT_MODEL_FILE   文本生成配置（默认 ~/.config/typesafe/text_model.json）
   EGO_JEV_LIB                引擎路径（默认按 同目录/仓库根/用户级 lib 依次查找）
   EGO_BROWSER_BIN            ego-browser 可执行文件（默认 PATH 里的 ego-browser）
-  EGO_JEV_NO_HEAL            设为非空则不在启动时自动重接管官方 ego-browser 入口
-  EGO_JEV_CONFIG_DIR         路由层启用标记目录（默认 ~/.config/ego-jev）
+  EGO_JEV_NO_WIRE            设为非空则不做首跑接管 / 自愈（EGO_JEV_NO_HEAL 是旧名，仍接受）
+  EGO_JEV_NO_HEAL            同上（旧名）
+  EGO_JEV_CONFIG_DIR         路由层启用标记 / always-on 记录目录（默认 ~/.config/ego-jev）
 
 退出码:
   0 目标达成 (check_passed / jev_done)
@@ -63,29 +66,41 @@ USAGE() {
 注意:
   * ego-browser 内嵌运行时不会继承 shell 环境变量，所以凭证必须落盘成文件。
   * --until 不要用会被浏览器自动翻译改写的 UI 字符串做比较，建议比对 URL 路径或 DOM 状态。
-  * 跑任务前会检查官方 ego-browser 技能入口是否还在（接管过才动手）：ego lite 升级会把
-    入口重建回官方软链，这里会静默重接管，用 EGO_JEV_NO_HEAL=1 关闭。
+  * 跑任务前会看一眼官方 ego-browser 入口：接管过就静默重接管（ego lite 升级会把它还原）；
+    没接管过但检测到入口，就首跑接管一次并打印一行；都没有则什么都不做。
+    EGO_JEV_NO_WIRE=1（或旧名 EGO_JEV_NO_HEAL=1）关闭这步。
 TXT
 }
 
-# 路由层自愈：只对「接管过」（有启用标记）的机器动手，失败静默（不能影响浏览器任务）。
+# 路由层首跑接管 / 自愈：已启用则静默刷新；未启用但检测到官方入口则首跑接管一次并打印一行；
+# 都没有则什么都不做。任何失败只降级为一行提示，绝不影响任务本身（退出码不变）。
 heal_skill_entry() {
-  [ -n "${EGO_JEV_NO_HEAL:-}" ] && return 0
-  local cfg_dir="${EGO_JEV_CONFIG_DIR:-$HOME/.config/ego-jev}"
-  [ -f "$cfg_dir/wire-enabled.json" ] || return 0
-  local wire="$SCRIPT_DIR/wire-agent-skills.sh"
+  [ -n "${EGO_JEV_NO_WIRE:-}" ] && return 0
+  [ -n "${EGO_JEV_NO_HEAL:-}" ] && return 0   # 旧名，仍接受
+  local wire out
+  wire="$SCRIPT_DIR/wire-agent-skills.sh"
   [ -f "$wire" ] || wire="$SCRIPT_DIR/../scripts/wire-agent-skills.sh"
   [ -f "$wire" ] || return 0
-  local out
-  out="$(bash "$wire" --if-enabled 2>&1)" || true
+  out="$(bash "$wire" --ensure 2>&1)" || true
   case "$out" in
+    *"已首跑接管"*)
+      printf '[ego-jev] 首次运行：已接管官方 ego-browser 入口，多步浏览器任务默认走 ego-jev；还原：bash %s --restore\n' "$wire" >&2 ;;
     *"已接管:"*|*"已刷新:"*|*"已重建入口:"*)
-      printf '[ego-jev] 官方 ego-browser 入口被 ego lite 升级还原了，已自动重接管；EGO_JEV_NO_HEAL=1 可关掉这个自愈\n' >&2 ;;
+      printf '[ego-jev] 官方 ego-browser 入口被 ego lite 升级还原了，已自动重接管；EGO_JEV_NO_WIRE=1 可关掉这步\n' >&2 ;;
   esac
   return 0
 }
 
-TARGET_URL=""; SPACE_ID=""; MAX_STEPS="10"; UNTIL=""; KEEP=""; KEEP_SPACE="0"; API_KEY_OVERRIDE=""; GOAL=""; TEXTS=()
+# 路由状态（只读、纯 shell，不起浏览器、不要凭证）；失败降级为 null，绝不影响任务
+write_route_status() {  # <out-file>
+  local out="$1" wire
+  wire="$SCRIPT_DIR/wire-agent-skills.sh"
+  [ -f "$wire" ] || wire="$SCRIPT_DIR/../scripts/wire-agent-skills.sh"
+  if [ -f "$wire" ] && bash "$wire" --status-json > "$out" 2>/dev/null; then return 0; fi
+  printf 'null\n' > "$out"
+}
+
+TARGET_URL=""; SPACE_ID=""; MAX_STEPS="10"; UNTIL=""; KEEP=""; KEEP_SPACE="0"; API_KEY_OVERRIDE=""; GOAL=""; TEXTS=(); ROUTE_STATUS=0
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --url) TARGET_URL="$2"; shift 2 ;;
@@ -95,6 +110,7 @@ while [[ $# -gt 0 ]]; do
     --keep) KEEP="$2"; shift 2 ;;
     --keep-space) KEEP_SPACE="1"; shift ;;
     --api-key) API_KEY_OVERRIDE="$2"; shift 2 ;;
+    --route-status) ROUTE_STATUS=1; shift ;;
     --text) TEXTS+=("$2"); shift 2 ;;
     -h|--help) USAGE; exit 0 ;;
     --) shift; GOAL="${GOAL:+$GOAL }$*"; break ;;
@@ -102,6 +118,14 @@ while [[ $# -gt 0 ]]; do
     *) GOAL="${GOAL:+$GOAL }$1"; shift ;;
   esac
 done
+
+# --route-status：只读状态，不要求目标 / 凭证 / 浏览器
+if [[ "$ROUTE_STATUS" == "1" ]]; then
+  ROUTE_WIRE="$SCRIPT_DIR/wire-agent-skills.sh"
+  [ -f "$ROUTE_WIRE" ] || ROUTE_WIRE="$SCRIPT_DIR/../scripts/wire-agent-skills.sh"
+  [ -f "$ROUTE_WIRE" ] || { echo "错误: 找不到 wire-agent-skills.sh" >&2; exit 2; }
+  exec bash "$ROUTE_WIRE" --status-json
+fi
 
 if [[ -z "$GOAL" ]]; then echo "错误: 请提供目标描述" >&2; exit 2; fi
 if [[ ! -f "$LIB" ]]; then echo "错误: 找不到引擎 ${LIB}（可用 EGO_JEV_LIB 指定）" >&2; exit 2; fi
@@ -121,11 +145,16 @@ heal_skill_entry
 TMPD="$(mktemp -d "${TMPDIR:-/tmp}/ego-jev.XXXXXX")"
 trap 'rm -rf "$TMPD"' EXIT
 
+# 路由状态（只读，不起浏览器）：作为 route 段写进结果 JSON，也进 renderJevSummary
+ROUTE_JSON="$TMPD/route.json"
+write_route_status "$ROUTE_JSON"
+
 # 用 node 生成 JSON，避免 shell 转义问题（goal 里的引号/换行/$ 都安全）
 JEV_GOAL="$GOAL" JEV_URL="$TARGET_URL" JEV_UNTIL="$UNTIL" JEV_KEEP="$KEEP" \
 JEV_STEPS="$MAX_STEPS" JEV_KEY="$API_KEY_OVERRIDE" JEV_SPACE="$SPACE_ID" \
 JEV_KEEP_SPACE="$KEEP_SPACE" JEV_CONFIG_OUT="$TMPD/config.json" \
 JEV_BASE_URL="${TYPESAFE_BASE_URL:-}" JEV_FALLBACK_BASE_URL="${TYPESAFE_FALLBACK_BASE_URL:-}" \
+JEV_ROUTE_FILE="$ROUTE_JSON" \
 node -e '
   const fs = require("node:fs");
   fs.writeFileSync(process.env.JEV_CONFIG_OUT, JSON.stringify({
@@ -140,6 +169,7 @@ node -e '
     // ego 运行时拿不到父进程环境变量，后端地址必须在父进程读好、写进配置再送进去
     baseUrl: process.env.JEV_BASE_URL || null,
     fallbackBaseUrl: process.env.JEV_FALLBACK_BASE_URL || null,
+    routeFile: process.env.JEV_ROUTE_FILE || null,
     texts: process.argv.slice(1),
   }, null, 2));
 ' "${TEXTS[@]+"${TEXTS[@]}"}"
@@ -152,6 +182,10 @@ const { runJevAutonomousLoop, renderJevSummary } = await import("$LIB");
 
 const cfg = JSON.parse(await readFile("$CFG", "utf8"));
 const startedAt = Date.now();
+
+// 路由状态（父进程只读算好的；失败就是 null，绝不影响任务）
+let route = null;
+try { if (cfg.routeFile) route = JSON.parse(await readFile(cfg.routeFile, "utf8")); } catch { route = null; }
 
 let task;
 if (cfg.spaceId) {
@@ -186,6 +220,7 @@ const result = await runJevAutonomousLoop(page, cfg.goal, {
   check: cfg.until ? async (p) => (await p.url()).includes(cfg.until) : undefined,
 });
 
+result.route = route;
 console.log(renderJevSummary(result));
 console.log(JSON.stringify({
   success: result.success, reason: result.reason, steps: result.steps,
@@ -193,6 +228,7 @@ console.log(JSON.stringify({
   spaceId: task.spaceId,
   phases: result.phases, serverModels: result.serverModels, usage: result.usage,
   serverEndpoints: result.serverEndpoints,
+  route,
 }, null, 2));
 
 if (result.success && !cfg.keepSpace) {

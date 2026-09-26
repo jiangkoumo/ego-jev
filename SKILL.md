@@ -2,7 +2,7 @@
 name: ego-jev
 description: 多步线性浏览器任务（连续点击、翻页、搜索表单提交、导航跳转）的默认入口：用 `ego-jev` 一条命令让 Jev（TypeSafe System One）在单个 ego-browser 进程内闭环决策（browser automation / multi-step click chain / form submit / navigation），不再每步退回大模型思考。单步动作、精确 DOM/选择器、批量抓取仍走 ego-browser 原生 API；也可把官方 ego-browser 技能入口接管成路由层。当任务涉及浏览器多步操作、要写 ego-browser nodejs 脚本（await import / fetch / 凭证落盘）时读它。
 metadata:
-  version: "0.2.0"
+  version: "0.3.0"
   date: "2026-09-26"
   requires: ego-browser
 ---
@@ -41,18 +41,22 @@ ego-jev --url "…" "目标"                        # 已链接进 PATH 时
 **但「默认用哪个」不能只靠这段表格**：ego lite 会把官方 `ego-browser` 技能写进每个 Agent 的技能目录
 （`~/.agents/skills/ego-browser`、`~/.claude/skills/ego-browser` …，由 App 在安装/升级时重建），
 而官方正文不知道 ego-jev 存在 —— 于是 Agent 默认照它写逐步脚本。用本技能的接管脚本把这个入口换成
-**路由层**，Agent 先看到的就是上面的路由规则：
+**路由层**，Agent 先看到的就是上面的路由规则。**`install.sh` 默认就接管；`ego-jev` CLI 首次运行时
+也会在检测到官方入口时补一次**（`EGO_JEV_NO_WIRE=1` 关闭）：
 
 ```bash
 bash scripts/wire-agent-skills.sh            # 接管/刷新（幂等；只写 Agent 技能目录，不碰应用包）
-bash scripts/wire-agent-skills.sh --check    # 只读检查是否已接管 / 是否漂移（exit 1 = 需要重跑）
-bash scripts/wire-agent-skills.sh --restore  # 还原成官方软链
+bash scripts/wire-agent-skills.sh --check    # 只读：已接管 N / 无需接管 M / 漂移 K（漂移则 exit 1）
+bash scripts/wire-agent-skills.sh --restore  # 还原成官方软链（启用标记与 always-on 块一并清掉）
 ```
 
 接管后：入口是包外的一层 `SKILL.md`，正文仍软链到 App 当前版本的官方技能（升级自动跟随），
-只有「先路由、再决定写不写脚本」那一段是本技能加的。两道自愈：`update.sh` 在接管过时会自动重接管，
-`ego-jev` CLI 每次跑任务前也会静默检查一次（入口被 ego lite 升级还原时自动补回；`EGO_JEV_NO_HEAL=1` 关闭）。
-**应用包内任何文件都没动。**
+只有「先路由、再决定写不写脚本」那一段是本技能加的。`update.sh` 与 `ego-jev` CLI 都会自动重接管
+（ego lite 升级会把入口还原）。**应用包内任何文件都没动。**
+
+想让它**在读技能之前**就知道路由：`bash scripts/wire-agent-skills.sh --always-on AGENTS.md`
+（显式开关，默认不写任何用户文件；块带标记、幂等、可 `--restore` 精确移除）。
+路由状态可事后审计：`ego-jev --route-status`（只读 JSON，不起浏览器、不要凭证）。
 
 ## 加速能力
 

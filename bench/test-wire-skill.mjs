@@ -575,12 +575,32 @@ const restoreOfficialEntry = () => {
   check("也没有自愈提示", !r2.out.includes("已自动重接管"));
 }
 {
-  setup();                                          // 从没接管过的机器
+  setup();                                          // 从没接管过的机器：CLI 首跑会一次性接管
   makeFakeEgoBrowser();
   stubKey();
   const r = runCli();
-  check("没接管过就不动手", fs.lstatSync(ENTRY).isSymbolicLink() && !isOurOverlayAt(ENTRY), r.out);
-  check("没接管过也不写启用标记", !fs.existsSync(join(CFG, "wire-enabled.json")));
+  check("首跑：检测到官方入口 → 接管一次", isOurOverlayAt(ENTRY), r.out);
+  check("首跑：打印一行说明（含还原提示）", r.out.includes("首次运行") && r.out.includes("--restore"), r.out);
+  check("首跑：退出码仍来自引擎（fake ego-browser 的 3）", r.code === 3, `code=${r.code}`);
+  check("首跑：写了启用标记", fs.existsSync(join(CFG, "wire-enabled.json")));
+  const r2 = runCli();
+  check("第二次：已启用 → 静默刷新，不再打首跑说明", isOurOverlayAt(ENTRY) && !r2.out.includes("首次运行"), r2.out);
+}
+{
+  setup();                                          // 连官方入口都没有的机器：CLI 什么都不做
+  makeFakeEgoBrowser();
+  stubKey();
+  fs.rmSync(ENTRY, { recursive: true, force: true });
+  const r = runCli();
+  check("没有官方入口 → 不建目录、不写标记", !fs.existsSync(ENTRY) && !fs.existsSync(join(CFG, "wire-enabled.json")), r.out);
+}
+{
+  setup();                                          // EGO_JEV_NO_WIRE 整体关掉
+  makeFakeEgoBrowser();
+  stubKey();
+  const r = runCli({ EGO_JEV_NO_WIRE: "1" });
+  check("EGO_JEV_NO_WIRE=1 → 完全不接管", fs.lstatSync(ENTRY).isSymbolicLink() && !isOurOverlayAt(ENTRY), r.out);
+  check("EGO_JEV_NO_WIRE=1 → 没有首跑说明", !r.out.includes("首次运行"), r.out);
 }
 {
   setup();                                          // 缺凭证的错误路径不写盘
@@ -609,6 +629,82 @@ console.log("\n[30] bash 3.2 变量展开陷阱");
   stubKey();
   const r = runCli({ EGO_BROWSER_BIN: "no-such-ego-binary-xyz", EGO_JEV_NO_HEAL: "1" });
   check("ego-browser 缺失时报错而不是崩", r.code === 2 && !r.out.includes("unbound variable") && r.out.includes("找不到"), `code=${r.code} ${r.out.slice(0, 120)}`);
+}
+
+// ── [31] --check：无需接管结论 + 三个数字 + 只读 ────────────────────────────
+console.log("\n[31] --check 结论与只读性");
+{
+  setup();
+  fs.mkdirSync(join(HOME, ".codex", "skills", "ego-jev"), { recursive: true });
+  fs.writeFileSync(join(HOME, ".codex", "skills", "ego-jev", "SKILL.md"), "---\nname: ego-jev\n---\n");
+  wire();
+  const c = wire("--check");
+  check("--check exit 0", c.code === 0, c.out);
+  check("无需接管：写明结论与原因", c.out.includes("无需接管") && c.out.includes("没有官方 ego-browser 入口"), c.out);
+  const m = c.out.match(/已接管 (\d+) \/ 无需接管 (\d+) \/ 漂移 (\d+)/);
+  check("汇总三个数字", Boolean(m), c.out);
+  check("数字：1 接管 / 0 漂移", Boolean(m) && m[1] === "1" && m[3] === "0", c.out);
+  check("--check 报告 always-on 块数", /always-on 块: \d+ 个文件在位/.test(c.out), c.out);
+  const snapshotTree = (dir) => {
+    const out = [];
+    const walk = (d) => {
+      for (const e of fs.readdirSync(d, { withFileTypes: true })) {
+        const p = join(d, e.name);
+        const st = fs.lstatSync(p);
+        if (st.isSymbolicLink()) { out.push(`${p}|L|${st.mtimeMs}|${fs.readlinkSync(p)}`); continue; }
+        if (st.isDirectory()) { out.push(`${p}|D|${st.mtimeMs}`); walk(p); continue; }
+        out.push(`${p}|F|${st.mtimeMs}|${st.size}`);
+      }
+    };
+    walk(dir);
+    return out.sort().join("\n");
+  };
+  const before = snapshotTree(root);
+  const c2 = wire("--check");
+  check("--check 两次输出一致", c.out === c2.out);
+  check("--check 没有写任何文件（含 mtime）", snapshotTree(root) === before);
+}
+
+// ── [32] --ensure：CLI 首跑用的三态 ────────────────────────────────────────
+console.log("\n[32] --ensure 三态");
+{
+  setup();
+  const r = wire("--ensure");
+  check("未启用但有官方入口 → 首跑接管（exit 0）", r.code === 0 && isOurOverlayAt(ENTRY), r.out);
+  check("输出含首跑标记", r.out.includes("已首跑接管"), r.out);
+  const r2 = wire("--ensure");
+  check("已启用 → 静默刷新（不再首跑）", r2.code === 0 && !r2.out.includes("已首跑接管"), r2.out);
+}
+{
+  setup();
+  fs.rmSync(ENTRY, { recursive: true, force: true });
+  const r = wire("--ensure");
+  check("无官方入口 → 什么都不做（exit 0，无输出）", r.code === 0 && r.out.trim() === "", JSON.stringify(r.out));
+  check("无官方入口 → 不写启用标记", !fs.existsSync(join(CFG, "wire-enabled.json")));
+}
+{
+  setup();
+  const r = wireEnv({ EGO_JEV_NO_WIRE: "1" }, "--ensure");
+  check("EGO_JEV_NO_WIRE=1 → 什么都不做", r.code === 0 && fs.lstatSync(ENTRY).isSymbolicLink() && !isOurOverlayAt(ENTRY), r.out);
+}
+
+// ── [33] install.sh 默认接管 / --no-wire ─────────────────────────────────────
+console.log("\n[33] install.sh 默认接管");
+{
+  setup();
+  makeFakeEgoBrowser();
+  const env = { ...baseEnv(), PATH: `${dirname(process.execPath)}:${fakeBin}:/usr/bin:/bin` };
+  const r = spawnSync("bash", [join(REPO, "install.sh"), "--bindir", join(root, "bin33a"), "--skills-dir", join(root, "skills33a")], { env, encoding: "utf8" });
+  check("默认（不带 --wire）就接管", isOurOverlayAt(ENTRY), `status=${r.status} ${(r.stdout || "").slice(-200)}`);
+  check("默认接管也成功退出", r.status === 0, `status=${r.status}`);
+}
+{
+  setup();
+  makeFakeEgoBrowser();
+  const env = { ...baseEnv(), PATH: `${dirname(process.execPath)}:${fakeBin}:/usr/bin:/bin` };
+  const r = spawnSync("bash", [join(REPO, "install.sh"), "--no-wire", "--bindir", join(root, "bin33b"), "--skills-dir", join(root, "skills33b")], { env, encoding: "utf8" });
+  check("--no-wire 跳过接管", fs.lstatSync(ENTRY).isSymbolicLink() && !isOurOverlayAt(ENTRY), `status=${r.status} ${(r.stdout || "").slice(-200)}`);
+  check("--no-wire 仍成功退出", r.status === 0, `status=${r.status}`);
 }
 
 fs.rmSync(root, { recursive: true, force: true });

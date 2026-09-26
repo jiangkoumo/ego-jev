@@ -100,10 +100,14 @@ docs/                    demo 素材与重做脚本（banner.svg / demo.gif / ca
 - 改危险动作词表或 `assessDanger` 要重跑 `node bench/test-guardrails.mjs`（[6]/[7] 段覆盖）。
 - 改 `select` 执行分支 / `optionStale` / `maxOptionRetries` 要重跑 `node bench/test-select-reask.mjs`
   （离线）；真实站点成功率测量用 `bench/test-native-select.mjs`（需网络 + 凭证，缺一 SKIP）。
-- 改 `scripts/wire-agent-skills.sh` / `overlay/` 要重跑 `node bench/test-wire-skill.mjs`
-  （用临时 HOME 造官方软链，无需浏览器与凭证），并在真机上 `--check` 一次。
-- `scripts/ego-jev` 启动时会调 `wire-agent-skills.sh --if-enabled` 自愈（只在有启用标记时动手，失败静默，
-  `EGO_JEV_NO_HEAL=1` 或 `EGO_JEV_CONFIG_DIR` 可控制）；改这块要重跑同一个单测（[29] 段覆盖）。
+- 改 `scripts/wire-agent-skills.sh` / `overlay/` / `install.sh` 要重跑 `node bench/test-wire-skill.mjs`
+  与 `node bench/test-route-trace.mjs`（都用临时 HOME 造官方软链，无需浏览器与凭证），
+  并在真机上 `bash scripts/wire-agent-skills.sh --check` 一次。
+- `scripts/ego-jev` 启动时会调 `wire-agent-skills.sh --ensure`：已启用则静默刷新；未启用但检测到官方
+  入口则首跑接管一次并打印一行；两者都不是则什么都不做（`EGO_JEV_NO_WIRE=1`，旧名 `EGO_JEV_NO_HEAL=1`）。
+  这步不得改变任务退出码；改这块要重跑同一个单测（[29]/[32] 段覆盖）。
+- **always-on 块只在显式 `--always-on <file>` 时写入**：默认安装/运行不写任何用户文件。
+  `--check` 必须保持只读（不写启用标记、不改 mtime）；`--restore` 要同时清掉接管层与 always-on 块。
 - 接管脚本要兼容 macOS 自带的 bash 3.2（没有 `local -n`、关联数组、`mapfile`）。
 - 生成物必须确定性（不能写时间戳/随机数），否则 `--check` 会永远报漂移。
 - **版本号只有一个来源**：`SKILL.md` 的 frontmatter `metadata.version`；`CHANGELOG.md` 顶部条目、

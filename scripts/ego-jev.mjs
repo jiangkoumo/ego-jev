@@ -2125,5 +2125,15 @@ export function renderJevSummary(result = {}) {
         ? ` | 用量 input ${usage.input_tokens ?? 0} / output ${usage.output_tokens ?? 0}`
         : "")
   );
+  const route = result.route;
+  if (route && typeof route === "object" && route.summary) {
+    const s = route.summary;
+    const ao = Array.isArray(route.alwaysOn) ? route.alwaysOn.length : 0;
+    lines.push(
+      `路由: 已接管 ${s.n ?? 0} / 无需 ${s.m ?? 0} / 漂移 ${s.k ?? 0}` +
+        (ao ? ` · always-on ${ao}` : "") +
+        (route.enabled === false ? " · 未启用" : "")
+    );
+  }
   return lines.join("\n");
 }

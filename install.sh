@@ -6,25 +6,27 @@
 #   2. 把 scripts/ego-jev 链接进 PATH
 #   3. 准备 ~/.config/typesafe/api_key（会把 shell 里的 TYPESAFE_API_KEY 落盘，权限 600）
 #   4. 提示 ego-jev 技能怎么装（本脚本不改任何应用包内文件）
-#   5. `--wire`：把 Agent 技能目录里的官方 ego-browser 入口接管成路由层，
-#      让多步浏览器任务默认走 ego-jev（可还原，同样不碰应用包）
+#   5. **默认**把 Agent 技能目录里的官方 ego-browser 入口接管成路由层（可还原，不碰应用包）
+#      想跳过就加 --no-wire；--wire 是显式启用（与默认等价，接管失败会让安装退出非零）
 #
-# 用法: ./install.sh [--bindir DIR] [--test] [--skills-dir DIR] [--wire]
+# 用法: ./install.sh [--bindir DIR] [--test] [--skills-dir DIR] [--wire|--no-wire]
 set -euo pipefail
 
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BINDIR="${BINDIR:-$HOME/.local/bin}"
 SKILLS_DIR="${AGENT_SKILLS_DIR:-$HOME/.agents/skills}"
 RUN_TEST=0
-WIRE=0
+WIRE=1          # 默认接管；--no-wire 跳过；--wire 是显式启用（与默认等价，但接管失败会让安装退出非零）
+WIRE_EXPLICIT=0
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --bindir) BINDIR="$2"; shift 2 ;;
     --skills-dir) SKILLS_DIR="$2"; shift 2 ;;
-    --wire) WIRE=1; shift ;;
+    --wire) WIRE=1; WIRE_EXPLICIT=1; shift ;;
+    --no-wire) WIRE=0; shift ;;
     --test) RUN_TEST=1; shift ;;
-    -h|--help) sed -n '2,13p' "$0"; exit 0 ;;
+    -h|--help) sed -n '2,14p' "$0"; exit 0 ;;
     *) echo "未知参数: $1" >&2; exit 2 ;;
   esac
 done
@@ -93,11 +95,9 @@ if [ "$WIRE" = "1" ]; then
     echo "  ! 接管没完成——上面是原因；ego-jev CLI 仍可用。修好后重跑：bash \"$REPO_DIR/scripts/wire-agent-skills.sh\"" >&2
   fi
 else
-  echo "==> 5/5 接管官方 ego-browser 入口（未启用：加 --wire）"
-  info "ego lite 会把官方 ego-browser 技能写进每个 Agent 的技能目录，"
-  info "而官方正文不知道 ego-jev —— 不接管的话，Agent 默认照它写逐步脚本。"
-  info "接管（可还原、不改应用包）: bash \"$REPO_DIR/scripts/wire-agent-skills.sh\""
-  info "或安装时直接带上: ./install.sh --wire"
+  echo "==> 5/5 接管官方 ego-browser 入口（--no-wire 已跳过）"
+  info "跳过接管：Agent 仍会照官方 ego-browser 正文写逐步脚本。"
+  info "想接管：bash \"$REPO_DIR/scripts/wire-agent-skills.sh\""
 fi
 
 echo
@@ -105,4 +105,4 @@ echo "完成。常用命令："
 echo "  ego-jev --url \"https://…\" --until \"/expected/path\" \"目标描述\""
 echo "  引擎也可在 ego-browser nodejs 脚本里 import: $REPO_DIR/scripts/ego-jev.mjs"
 
-[ "$WIRE_FAILED" = "0" ] || exit 1
+if [ "$WIRE_FAILED" = "1" ] && [ "$WIRE_EXPLICIT" = "1" ]; then exit 1; fi
